@@ -1,0 +1,253 @@
+NORMALIZING INPUT
+normalizing the input by mapping the smallest value to 0 and shifting all other values accordingly could simplify the sorting logic and reduce potential issues with negative numbers.
+
+Why Normalize?
+Consistency in Indexing:
+If the smallest number is always 0, then all numbers are positive, making comparisons and indexing easier.
+Avoiding Negative Index Handling:
+You don't need to worry about negative values when comparing or assigning indices.
+Potential Performance Improvement:
+Some sorting techniques work better with non-negative numbers.
+
+Input Stack:
+css
+Copiar
+Editar
+[ 3 | 12 | 8 | 5 | 30 | 24 | 18 ]
+After Normalization (Min = 3):
+css
+Copiar
+Editar
+[ 0 | 9 | 5 | 2 | 27 | 21 | 15 ]
+The smallest value (3) is now 0.
+All other values are reduced by 3.
+
+Subtracting the minimum value from all elements works just as well with negative numbers because it shifts the entire set of numbers up so that the smallest number becomes 0.
+
+Example with Negative Numbers
+Original Stack:
+css
+Copiar
+Editar
+[ -10 | -3 | -7 | 0 | 5 | -2 | 8 ]
+Step 1: Find Minimum Value
+The smallest number is -10.
+Step 2: Subtract -10 from Every Element
+Each number is adjusted by subtracting -10, which is equivalent to adding 10:
+
+Original	Normalized (num - min)
+-10	0
+-3	7
+-7	3
+0	10
+5	15
+-2	8
+8	18
+Normalized Stack:
+css
+Copiar
+Editar
+[ 0 | 7 | 3 | 10 | 15 | 8 | 18 ]
+Why This Works
+The smallest value always becomes 0, no matter if it was negative or positive.
+All numbers retain their relative order, just shifted to be non-negative.
+Sorting logic remains unchanged because the original positions relative to each other stay the same.
+Edge Case: All Negative Numbers
+If your original stack was:
+
+css
+Copiar
+Editar
+[ -50 | -40 | -30 | -20 | -10 ]
+The minimum is -50, so we subtract -50 from everything:
+css
+Copiar
+Editar
+[ 0 | 10 | 20 | 30 | 40 ]
+Now, it behaves exactly like a regular positive number stack.
+
+PUSH FUNCTION
+----------------
+Does this correctly update the links? Yes! 
+💡 Edge Case Considerations:
+
+If src only had one element before push(), it will correctly set *src = NULL.
+The push() function correctly updates the linked list.
+It handles previous and next properly.
+
+
+Optimizing push_cheapest_node Using abmedian
+---------------------------------------------
+✅ We will optimize based on abmedian:
+
+If cheapest and target are in the same half, we can use rr or rrr instead of separate operations.
+Otherwise, we rotate them separately.
+
+///////////////////////////////////////////////////////////
+AFTER PUSH FROM A TO B, AND SORT THE LAST 3 ELEMENTS IN A
+
+1. Unmark Previous Cheapest Nodes
+You’re correct. Before selecting the next cheapest node, it’s important to reset the ->cheap flag for all nodes in the stack. This ensures that the new node selected is the only one marked as the cheapest.
+
+2. Finding the Cheapest to Push From B to A
+After resetting the ->cheap flags, you’ll need to call find_cheapest again, but this time the function should look for the smallest node in B (as opposed to the largest in A). The process will be similar to when finding the cheapest to push from A to B, with the distinction of using the smallest instead of the largest.
+
+You can reuse the get_push_cost and count_rotations functions. Here's how you can adapt get_push_cost: ??????? Y EL EJEMPLO???
+
+Find Target (Smallest Node in A): Use find_smallest_node for stack A.
+Count Rotations: Use count_rotations to figure out how much rotation is required for both stacks A and B to get the smallest node in A and the current node from B into the correct positions.
+
+3. Reusing find_cheapest Logic
+Yes, you can reuse the find_cheapest function, but make sure you adapt it for this new purpose. The logic should now:
+
+Reset the ->cheap flag for all nodes.
+Use find_smallest_node to find the node in A where the smallest value is.
+Calculate the cost for each node in B and find the cheapest node to push.
+
+FREE_STACK IMPROVEMENT
+----------------
+✅ Added NULL check to free_stack() to prevent freeing NULL.
+✅ Modified free_stack() to set stack = NULL after freeing.
+✅ Updated populate_stack() to ensure array is freed when needed.
+✅ Updated calls in main.c to pass &stack_a and &stack_b.
+
+ERROR MANAGEMENT
+----------------------------------
+- If no parameters are specified, the program must not display anything and give the
+prompt back.
+
+----> "Give the prompt back" means return control to the terminal without any output.
+
+• In case of error, it must display "Error" followed by a ’\n’ on the standard error.
+Errors include for example: some arguments aren’t integers, some arguments are
+bigger than an integer and/or there are duplicates.
+
+ STDERR = fd = 2
+
+  Based on the project description, you need to ensure the following errors are handled correctly:
+
+- No arguments given → Program must do nothing.
+		-- check in main (ac < 2>)
+		
+- Invalid characters (e.g., letters, symbols, floats) → Print "Error\n" to stderr.
+- Numbers out of int range → Print "Error\n" to stderr.
+- Duplicate numbers → Print "Error\n" to stderr.
+
+void	ft_putendl_fd(char *s, int fd)
+{
+	unsigned int	i;
+
+	i = 0;
+	while (s[i] != '\0')
+	{
+		write(fd, &s[i], 1);
+		i++;
+	}
+	write(fd, "\n", 1);
+}
+
+
+https://github.com/rizky/42-corrections/blob/master/push_swap.pdf
+
+- extra spaces in instructions: cuando "  " o siempre??
+
+=========================
+back up of sort 3 logic
+
+ // Case 2: 3, 1, 2
+ // Case 3: 2, 3, 1
+ // Case 4: 1, 3, 2
+ // Case 5: 2, 1, 3
+
+=======================
+ /* VALGRIND	 */
+valgrind --leak-check=full --track-origins=yes ./push_swap 
+
+/* memory */
+df -H
+
+xclean sin fish
+========================================
+
+ARG="4 67 3 87 23"; ./push_swap $ARG | ./checker_OS $ARG
+
+./bin/visualizer
+(inside build folder)
+=====================================
+
+i have made many changes to the code . It is working but because I need to optimize the amount of operations I have made further changes in the functions in charge of rotating the stacks so cheapest and target are in the head 
+
+With this function, the code works with no interruptions or leaks: 
+
+void	push_cheap_a(t_stack **st_a, t_stack *cheap, t_stack **st_b, int sz_a)
+{
+	int	size_b;
+
+	size_b = stack_size(*st_b);
+	if (!cheap)
+		return ;
+	while ((cheap->index != 0 || cheap->target->index != 0) && sz_a > 3)
+	{
+		if (cheap->index != 0)
+		{
+			if (cheap->index <= sz_a / 2)
+				ra(st_a);
+			else
+				rra(st_a);
+			update_index_abmedian(st_a);
+		}
+		if (cheap->target->index != 0)
+		{
+			if (cheap->target->index <= size_b / 2)
+				rb(st_b);
+			else
+				rrb(st_b);
+			update_index_abmedian(st_b);
+		}
+	}
+	pb(st_b, st_a);
+}
+
+(the variable names have been change because of 42 school Norms)
+
+I want to optimize the code by rotating both stacks at the same time when possible, but I am having problems implementing it. I wrote this, but now the program is stuck
+
+void	push_cheap_a(t_stack **st_a, t_stack *cheap, t_stack **st_b, int sz_a)
+{
+	int	size_b;
+
+	size_b = stack_size(*st_b);
+	if (!cheap)
+		return ;
+	while (cheap->index != 0 || cheap->target->index != 0)//agregue este while a ver que pasa
+	{
+		if (cheap->abmedian && cheap->target->abmedian)
+			rr(st_a, st_b);
+		else if (!cheap->abmedian && !cheap->target->abmedian)
+			rrr(st_a, st_b);
+		update_index_abmedian(st_b);
+		update_index_abmedian(st_a);
+	}
+	while ((cheap->index != 0 || cheap->target->index != 0) && sz_a > 3)
+	{
+		if (cheap->index != 0)
+		{
+			if (cheap->index <= sz_a / 2)
+				ra(st_a);
+			else
+				rra(st_a);
+			update_index_abmedian(st_a);
+		}
+		if (cheap->target->index != 0)
+		{
+			if (cheap->target->index <= size_b / 2)
+				rb(st_b);
+			else
+				rrb(st_b);
+			update_index_abmedian(st_b);
+		}
+	}
+	pb(st_b, st_a);
+}
+==========================
+poner flag para que rr y rrr no imprimi cada mensaje de ra y rb o rra y rrb
