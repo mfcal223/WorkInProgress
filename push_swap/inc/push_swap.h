@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/23 13:20:11 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/12 15:17:26 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/14 12:38:00 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,19 +56,15 @@ int		find_min(t_stack *stack);
 void	normalize_stack(t_stack *stack);
 
 /* push outils */
-t_stack	*target_b(t_stack *stack_a_node, t_stack *stack_b);
 t_stack	*target_a(t_stack *stack_b_node, t_stack *stack_a);
-int		get_push_cost(t_stack *node, t_stack *src, t_stack *dst, char st_name);
-t_stack	*find_cheapest(t_stack **src, t_stack **dst, char st_name);
+int		get_push_cost(t_stack *node, t_stack *src, t_stack *dst);
+t_stack	*find_cheapest(t_stack **src, t_stack **dst);
 void	check_head_min(t_stack **stack_a);
 
-/* sort bigger stack */
-void	push_cheap_a(t_stack **st_a, t_stack *cheap, t_stack **st_b, int sz_a);
+/* sort bigger stack + 2 statics functions  */
 void	push_cheap_b(t_stack **st_b, t_stack *cheap, t_stack **st_a, int sz_b);
 void	push_b_to_a(t_stack **stack_b, t_stack **stack_a);
-void	push_a_to_b(t_stack **stack_a, t_stack **stack_b, int size_a);
 void	sort_bigger_stack(t_stack **stack_a, t_stack **stack_b, int size_a);
-
 
 /* sort 3 */
 void	sort_three(t_stack **stack_a);
