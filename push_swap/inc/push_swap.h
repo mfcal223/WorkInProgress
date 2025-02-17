@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/23 13:20:11 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/14 12:38:00 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/17 11:12:44 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ typedef struct stack_element
 	int						cost;		//push cost
 	bool					abmedian;	//to ra or rra when pushing from B
 	bool					cheap;		//is it the cheapest or not?
+	bool					normal;		//flag to track if has been normalized
 	struct stack_element	*target;	//where an element should go
 	struct stack_element	*next;		// ptr to next node
 	struct stack_element	*previous;	//not sure about this or only next
@@ -84,7 +85,7 @@ t_stack	*populate_stack(int *array, int count);
 t_stack	*create_stack(int ac, char **av);
 
 /* atol */
-int		ft_atol(const char *str);
+long	ft_atol(const char *str);
 int		ft_isspace(char c);
 /* parse_num */
 int		*parse_num(int ac, char **av, int *count);

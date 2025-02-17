@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 15:49:35 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/06 11:29:39 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/14 14:38:09 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,10 +48,9 @@ int	*convert_to_numbers(char **array_words, int count)
 			return (NULL);
 		}
 		array_number[i] = ft_atoi(array_words[i]);
-		free(array_words[i]);
 		i++;
 	}
-	free(array_words);
+	free_split(array_words);
 	return (array_number);
 }
 

@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/23 14:06:57 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/14 12:15:34 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/17 11:50:27 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,17 +32,10 @@ int	sort_stack(t_stack **stack_a, t_stack **stack_b)
 
 	if (!*stack_a)
 		return (0);
-	if (check_status(*stack_a))
-		return (0);
 	while (!check_status(*stack_a))
 	{
 		size_a = stack_size(*stack_a);
-		if (size_a < 2)
-		{
-			display_error();
-			return (0);
-		}
-		else if (size_a == 2)
+		if (size_a == 2)
 			sa(stack_a);
 		else if (size_a == 3)
 			sort_three(stack_a);
@@ -63,14 +56,21 @@ int	main(int ac, char **av)
 	stack_a = NULL;
 	stack_b = NULL;
 	sorted = 0;
-	if (ac < 2)
+	if (ac < 2 || (ac == 2 && av[1][0] == '\0'))
 		return (0);
 	stack_a = create_stack(ac, av);
 	if (!stack_a)
 		return (1);
+	if (check_status(stack_a) || stack_size(stack_a) == 1)
+	{
+		free_stack(&stack_a);
+		return (0);
+	}
 	normalize_stack(stack_a);
 	sorted = sort_stack(&stack_a, &stack_b);
-	free_stack(&stack_a);
-	free_stack(&stack_b);
+	if (stack_a)
+		free_stack(&stack_a);
+	if (stack_b)
+		free_stack(&stack_b);
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 15:56:31 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/05 16:26:08 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/17 10:44:48 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,9 @@ int	is_out_of_range(char *string)
 
 	num = ft_atol(string);
 	if (num > INT_MAX || num < INT_MIN)
+	{
 		return (1);
+	}
 	return (0);
 }
 
@@ -75,7 +77,6 @@ int	check_duplicates(int *array_number, int count)
 		{
 			if (array_number[i] == array_number[j])
 			{
-				free(array_number);
 				display_error();
 				return (1);
 			}

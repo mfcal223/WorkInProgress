@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 09:34:11 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/06 09:35:51 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/17 11:22:44 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,24 @@ int	find_min(t_stack *stack)
 
 void	normalize_stack(t_stack *stack)
 {
-	int	min;
+	int		value;
+	t_stack	*temp;
+	t_stack	*min_node;
 
-	min = find_min(stack);
-	while (stack)
+	value = 0;
+	while (true)
 	{
-		stack->num -= min;
-		stack = stack->next;
+		min_node = NULL;
+		temp = stack;
+		while (temp)
+		{
+			if (!temp->normal && (!min_node || temp->num < min_node->num))
+				min_node = temp;
+			temp = temp->next;
+		}
+		if (!min_node)
+			break ;
+		min_node->num = value++;
+		min_node->normal = true;
 	}
 }

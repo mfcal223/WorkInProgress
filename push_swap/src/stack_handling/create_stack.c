@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/24 11:26:32 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/06 09:38:38 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/17 16:19:07 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ t_stack	*create_node(int num)
 	new_node->cost = 0;
 	new_node->abmedian = false;
 	new_node->cheap = false;
+	new_node->normal = false;
 	new_node->target = NULL;
 	new_node->next = NULL;
 	new_node->previous = NULL;
@@ -55,7 +56,7 @@ t_stack	*populate_stack(int *array, int count)
 	head = NULL;
 	curr = NULL;
 	i = 0;
-	if (count < 3)
+	if (count < 2)
 		return (NULL);
 	while (i < count)
 	{
@@ -84,12 +85,13 @@ t_stack	*create_stack(int ac, char **av)
 		array_number = split_num(av[1], &count);
 	else
 		array_number = parse_num(ac, av, &count);
-	if (!array_number)
+	if (!array_number || count < 2)
 		return (NULL);
 	if (check_duplicates(array_number, count))
+	{
+		free(array_number);
 		return (NULL);
-	if (count == 0)
-		return (NULL);
+	}
 	stack_a = populate_stack(array_number, count);
 	free(array_number);
 	return (stack_a);

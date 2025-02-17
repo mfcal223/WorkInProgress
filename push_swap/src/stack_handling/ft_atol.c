@@ -6,18 +6,18 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/27 08:42:42 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/06 09:54:50 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/17 10:41:38 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
-int	ft_atol(const char *str)
+long	ft_atol(const char *str)
 {
-	int	i;
-	int	sign;
-	int	sum;
-	int	k;
+	int		i;
+	int		sign;
+	long	sum;
+	int		k;
 
 	i = 0;
 	k = 0;
