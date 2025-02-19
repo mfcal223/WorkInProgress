@@ -1,0 +1,61 @@
+#-------------------- NAME --------------------------------#
+NAME = so_long
+
+# ----------------- FLAGS --------------------------------#
+CC = cc 
+CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR) -I$(MLX_DIR) -I$(LIBFT_DIR)/inc
+MLX_FLAGS = -L$(MLX_DIR) -lmlx -lXext -lX11 -lm
+RM = rm -f
+
+AR = ar
+ARFLAGS = rcs
+
+
+#---------------------- DIRECTORIES ----------------------#
+SRC_DIR = src
+OBJ_DIR = obj
+INC_DIR = inc
+LIBFT_DIR = libft_printf
+MLX_DIR = minilibx-linux
+
+#------------- SOURCE FILES -------------------------------#
+SRC = $(SRC_DIR)/window_test.c \
+
+#------------- OBJECT FILES -------------------------------#
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+
+LIBFT_FILE = $(LIBFT_DIR)/libft_printf.a
+#MLX = $(MLX_DIR)/libmlx.a
+
+#------------------RULES ----------------------------------#
+all: $(MLX) $(LIBFT) $(NAME)
+
+# Create object directory if needed and compile source files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+# Compile the final executable
+$(NAME): $(OBJS)
+	$(CC) $(OBJS) $(LIBFT) $(MLX) $(MLX_FLAGS) -o $(NAME)
+
+# Compile libft if not already compiled
+$(LIBFT):
+	make -C $(LIBFT_DIR)
+
+# Compile MiniLibX if not already compiled
+$(MLX):
+	make -C $(MLX_DIR)
+
+# Clean object files
+clean:
+	rm -rf $(OBJ_DIR)
+	make clean -C $(LIBFT_DIR)
+	make clean -C $(MLX_DIR)
+
+# Full clean (removes compiled binary)
+fclean: clean
+	rm -f $(NAME)
+	make fclean -C $(LIBFT_DIR)
