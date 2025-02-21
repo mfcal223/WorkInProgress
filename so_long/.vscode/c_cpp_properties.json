@@ -2,17 +2,15 @@
   "configurations": [
     {
       "name": "linux-gcc-x64",
-      "includePath": [
-        "${workspaceFolder}/**",
-        "${workspaceFolder}/minilibx-linux"
-      ],
+      "intelliSenseMode": "linux-gcc-x64",
       "compilerPath": "/usr/bin/gcc",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [],
       "cStandard": "${default}",
       "cppStandard": "${default}",
-      "intelliSenseMode": "linux-gcc-x64",
-      "compilerArgs": [
-        ""
-      ]
+      "compilerArgs": []
     }
   ],
   "version": 4

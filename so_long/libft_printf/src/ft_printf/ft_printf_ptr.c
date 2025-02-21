@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_printf_ptr.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mcalciat <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/19 10:47:19 by mcalciat          #+#    #+#             */
-/*   Updated: 2024/11/19 10:47:32 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/02/21 11:45:08 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void	ft_print_ptr(void *ptr, size_t *i)
 }
 /*
 comments:
-- addr = (unsigned long long) ptr; // adapt data type pter address 
+- addr = (unsigned long long) ptr; // adapt image type pter address 
 - write(1, "0x", 2);// Print pointer prefix
 
 PARA UN MAIN:	

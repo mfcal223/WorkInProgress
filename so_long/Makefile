@@ -18,7 +18,9 @@ LIBFT_DIR = libft_printf
 MLX_DIR = minilibx-linux
 
 #------------- SOURCE FILES -------------------------------#
-SRCS = $(SRC_DIR)/window_test.c
+SRCS = $(SRC_DIR)/so_long.c \
+	$(SRC_DIR)/map_check.c \
+	$(SRC_DIR)/window_admin.c 
 
 #------------- OBJECT FILES -------------------------------#
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)

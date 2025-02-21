@@ -1,0 +1,551 @@
+MINILIBX is an X server which allows "things" to be display on screen. 
+It is build based on X.org library. This API allows display on screen think for beginners.
+
+
+/* SETTING UP MINILIBX*/
+
+Download the .zip. Extract it in the root folder of project.
+Navigate into the minilibx folder and compile it. 
+$> make
+
+After running make, ensure that a libmlx.a file is created inside the MiniLibX 
+directory. This static library will be linked when compiling your project.
+
+
+/*MAKE FILES NOTES */
+- ISSUE COMPILING AND INCLUDING HEADER
+in your Makefile, you already have this line:
+Makefile
+CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR) -I$(MLX_DIR) -I$(LIBFT_DIR)/inc
+This is correct because it adds the minilibx-linux directory to the include path with -I$(MLX_DIR).
+
+The error is occurring because:
+
+You're trying to include the file as "minilibx-linux/mlx.h" in your header, but
+The compiler is already being told to look in the minilibx-linux directory through the -I flag
+When you use the -I flag in the compiler, it adds that directory to the search path, so you don't need to (and shouldn't) include the directory name in the include statement.
+
+Here's what's happening:
+
+When you write #include "minilibx-linux/mlx.h", the compiler looks for a file named exactly that
+But because you've added -Iminilibx-linux to your compiler flags, the compiler is already looking in that directory, so you just need to use #include <mlx.h>
+To fix this:
+
+Modify your inc/so_long.h file as shown above
+(# include <mlx.h>           /* This is the correct way when using -I flag */)
+
+
+/*-------------------------------------*/
+
+INITIALIZATION:
+
+BASIC WINDOW MANAGEMENT: 
+----------------------
+(1) 
+mlx_init():
+ This will establish a connection to the correct graphical system and will return a void * which holds the location of our current MLX instance.
+
+This sparks the connection to the X-server.
+
+(2)
+mlx_new_window()
+This will return a pointer to the window we have just created. We can give the window height, width and a title.
+
+A window is just a huge gigantic malloc.
+
+(3)
+mlx_loop() to initiate the window rendering.
+This keeps the process "alive".
+It is an >>event loop<<.
+
+(4)
+mlx_key_hook() ?????
+
+"Hooking into events" = reacting to events, like pressing a key. Doing this triggers another function that will behave as a handler. 
+Every event should have its prototype handler.
+
+MLX_HOOK ES COMO KEY_HOOK??
+
+(5)
+mlx_hook() and mlx_destroy_window()
+mlx_hook() calls an auxiliary function (I called close_window) to be able to close  the window by click the [x] on the corner.
+This action will call another function of the minilibx = mlx_destroy_window()
+
+this closes the connection and frees the display. It is a cleanup function.
+
+
+(6) MLX_LOOP_HOOK
+is triggered when no event is processed. pe. textthat changes color except when you press a key like SPACE
+
+
+WRITING PIXELS TO A IMAGE
+----------------------------
+
+To put pixels in an image:  mlx_pixel_put function is very, very slow. This is because it tries to push the pixel instantly to the window (without waiting for the frame to be entirely rendered).
+Because of this sole reason, we will have to buffer all of our pixels to a image, which we will then push to the window and manage the same thing with a custom made mlx_pixel_put().
+
+we will use a image structure. 
+typedef struct s_image
+{
+	void	*img;
+	char	*addr;
+	int		bits_per_pixel;
+	int		line_length;
+	int		endian;
+}			t_image;
+
+bits_per_pixel means exactly that. 1 pixel = 1 INT = 32 bits
+
+
+
+We create an image by doing :
+
+img.img = mlx_new_image(mlx, 1920, 1080);
+
+and then we can call `mlx_get_image_addr`, we pass `bits_per_pixel`, `line_length`, and `endian` by reference. These will then be set accordingly for the *current* image address.
+
+Now we have the image address, but still no pixels. Before we start with this, we must understand that the bytes are not aligned, this means that the line_length differs from the actual window width. We therefore should ALWAYS calculate the memory offset using the line length set by mlx_get_image_addr.
+
+We can calculate it very easily by using the following formula:
+
+int offset = (y * line_length + x * (bits_per_pixel / 8));
+
+my_mlx_pixel_put will include this calculation.
+
+Note that this will cause an issue. Because an image is represented in real time in a window, changing the same image will cause a bunch of screen-tearing when writing to it. You should therefore create two or more images to hold your frames temporarily. You can then write to a temporary image, so that you don’t have to write to the currently presented image.
+
+
+
+Pushing images to a window
+----------------------------
+
+
+=========================================================================================
+
+TENER EN CUENTA QUE EN LOS HEADER HABRA QUE USAR ESTRUCTURAS QUE SE INCLUYEN ENTRE SI. lA ESTRUCTURA DE LA VENTAA INCLUIRA LA DEIMAGENES, DE MAPA, DE COORDENADAS O DE LO QUE SEA QUE HAYA QUE USAR.
+
+Main game structure includes:
+- MLX connection
+- Textures and images
+- Map image
+- Player position (ship)
+- Game state (moves, collectibles, etc.)
+
+1. Initialization Phase --> MAIN()
+Program starts by checking command line arguments (must be 2: program name and map file)
+Validates map file extension (must be .ber)
+
+2. GAME_START()
+Initializes game structure (t_game in my code, t_init in malaga) with default values.
+/* for this I have: 
+- added another struct to be the central image structure that connects all functions:
+	Contains game state
+	Holds graphics resources
+	Stores map information
+	Tracks player position and collectibles
+*/
+-------------------
+What is "path"?
+In your ft_start_map function, path is the file path to the map that the player wants to load. It is passed as an argument from main() and stored inside the t_game (or t_init) structure.
+
+For example:
+
+sh
+Copiar
+Editar
+./so_long maps/map.ber
+maps/map.ber → This is stored in game->path.
+Why Do We Store path?
+It allows the game to know which file to read.
+Helps when reloading or validating the map.
+If needed, you can save game progress or reload the same map.
+---------------------------------------------------------------------------
+/* MALAGA INIT STRUCTURE */
+typedef struct s_init
+{
+	mlx_t			*mlx;			// Connection to the graphic display.
+	t_txts			txts;			// Textures of the game.
+	t_images		imgs;			// Images of the game.
+	t_cell			cell;			// Object of the game.
+	t_map			*map;			// Map of the game.
+	t_coord			ship;			// Position of the player.
+	t_coord			shark;			// Position of the enemy.
+	t_coord			size;			// Size in pixels of the window.
+	char			**status_a;		// Matrix of the map.
+	char			**status_b;		// Matrix of the map.
+	char			*path;			// Path to the map.
+	int				moves;			// Number of moves.
+	int				counter;		// Number of collectibles.
+	int				collec;			// Number of collectibles.
+	int				c;				// Collectibles collected.	
+	int				flag;			// 0 = game, 1 = win, 2 = lose
+	char			course;			// Direction of the player.
+	bool			walking;		// Walking or not.
+}	t_init;
+---------------------------------------------------------------------------- 
+
+
+int	ft_start_map(char *path)
+{
+	t_init	*game;
+
+	game = ft_calloc(sizeof(t_init), 1);
+	if (!game)
+		return (FAILURE);
+	game = ft_initialize_game(game); // !!!! 
+	game->path = path;
+	if (ft_map(&game) == 1)
+		return (FAILURE);
+	game = ft_find_ship(game); // searchs for player
+	game = ft_flood(game); //checks the map
+	game->status_b = ft_free_status(game->status_b, game->size.y); // ???
+	if (ft_check_failed(game, ft_count_obj(game->map)) == FAILURE) //???
+	{
+		ft_free_all(game, 1);
+		return (FAILURE);
+	}
+	ft_mlx_init(game); // ???
+	ft_free_all(game, 0); 
+	return (SUCCESS);
+}
+void	ft_free_all(t_init *game, int error)
+{
+	if (error == 2)
+	{
+		ft_free_stack(&game->map);
+		free(game);
+	}
+	if (error == 1)
+	{
+		game->status_a = ft_free_status(game->status_a, game->size.y);
+		ft_free_stack(&game->map);
+		free(game);
+	}
+	if (error == 0)
+	{
+		game->status_a = ft_free_status(game->status_a, game->size.y);
+		ft_free_stack(&game->map);
+		ft_free_txt(&game);
+		ft_free_img(&game);
+		mlx_terminate(game->mlx);
+		free(game);
+	}
+}
+
+t_cell	ft_count_obj(t_map *map)
+{
+	t_cell	obj;
+	int		i;
+
+	ft_objs_init(&obj);
+	while (map)
+	{
+		i = 0;
+		while (map->map[i])
+		{
+			if (map->map[i] == PLAYER)
+				obj.ship++;
+			if (map->map[i] == COLLECT)
+				obj.collec++;
+			if (map->map[i] == EXIT)
+				obj.exit++;
+			i++;
+		}
+		map = map->next;
+	}
+	return (obj);
+}
+
+int	ft_check_failed(t_init *game, t_cell objects)
+{
+	int	x;
+
+	x = SUCCESS;
+	if (ft_check_obj_nbr(objects) == FAILURE)
+		x = FAILURE;
+	if (ft_check_obj(game->cell, objects) == FAILURE)
+		x = FAILURE;
+	if (ft_check_form(game) == FAILURE)
+		x = FAILURE;
+	if (ft_check_borders(game) == FAILURE)
+		x = FAILURE;
+	if (x == FAILURE)
+	{
+		(ft_map_error(ERR_GENERAL));
+		return (FAILURE);
+	}
+	return (SUCCESS);
+}
+
+char	**ft_free_status(char **status, int len)
+{
+	int	i;
+
+	i = 0;
+	while (i <= len)
+	{
+		free(status[i]);
+		status[i] = NULL;
+		i++;
+	}
+	return (status);
+}
+
+t_init	*ft_flood(t_init *game)
+{
+	game->cell.ship = 0;
+	game->cell.collec = 0;
+	game->cell.exit = 0;
+	game = *ft_fill(game->status_b, game->size, game->ship, &game);
+	return (game);
+}
+
+t_init	*ft_find_ship(t_init *ship)
+{
+	int		i;
+	int		j;
+
+	j = 1;
+	ship->ship.x = 0;
+	ship->ship.y = 0;
+	while (j < ship->size.y)
+	{
+		i = 1;
+		while (ship->status_a[j][i] != '\n')
+		{
+			if (ship->status_a[j][i] == PLAYER)
+			{
+				ship->ship.x = i;
+				ship->ship.y = j;
+				return (ship);
+			}
+			i++;
+		}
+		j++;
+	}
+	return (ship);
+}
+
+int	ft_map(t_init **game)
+{
+	t_init	*tmp;
+
+	tmp = *game;
+	tmp->map = ft_map_init(tmp);
+	if (!tmp->map)
+	{
+		free(tmp);
+		return (1);
+	}
+	tmp->size.x = ft_map_x(tmp->map);
+	tmp->size.y = ft_map_y(tmp->map);
+	tmp->status_a = ft_status_map(tmp);
+	if (!tmp->status_a)
+	{
+		ft_free_all(tmp, 2);
+		return (FAILURE);
+	}
+	tmp->status_b = ft_status_map(tmp);
+	if (!tmp->status_b)
+	{
+		ft_free_all(tmp, 1);
+		return (FAILURE);
+	}
+	*game = tmp;
+	return (SUCCESS);
+}
+
+t_init	*ft_initialize_game(t_init *init)
+{
+	init->mlx = NULL;
+	init->path = NULL;
+	init->map = NULL;
+	init->status_a = NULL;
+	init->status_b = 0;
+	init->ship.x = 0;
+	init->ship.y = 0;
+	init->size.x = 0;
+	init->size.y = 0;
+	init->moves = 0;
+	init->c = 0;
+	init->counter = 0;
+	init->collec = 0;
+	init->flag = 0;
+	return (init);
+}
+
+void	ft_mlx_init(t_init *gm)
+{
+	gm = ft_find_ship(gm);
+	gm->mlx = mlx_init(gm->size.x * 64, gm->size.y * 64, "so_long", true);
+	if (!gm || !gm->mlx)
+	{
+		ft_map_error(ERR_MLX);
+		ft_free_all(gm, 1);
+		exit(FAILURE);
+	}
+	ft_init_txts(gm);
+	ft_init_imgs(gm);
+	ft_drawing_map(gm);
+	gm->imgs.ship = NULL;
+	mlx_key_hook(gm->mlx, ft_key_press, gm);
+	mlx_loop(gm->mlx);
+}
+
+
+
+2. Map Loading and Validation
+
+Reads map file line by line
+Creates a linked list structure to store the map
+Validates map requirements:
+Must be rectangular
+Must be surrounded by walls
+Must contain:
+One player (P)
+At least one collectible (C)
+One exit (E)
+Must be possible to reach all collectibles and exit
+
+----------
+next step
+----------
+3. Graphics Initialization
+
+Initializes MLX42 library
+Loads all required textures:
+- - Ocean (background)
+- Wall
+- Ship (player) with different directions
+- Collectibles
+- Exit (closed and open states)
+- Shark (enemy)
+- Converts textures to images for display
+
+4. Game Loop
+
+Main game loop starts with mlx_loop()
+Handles keyboard input through ft_key_press:
+- Arrow keys for movement
+- ESC to exit ✅
+- Updates game state:
+- Player position
+- Collectibles collected
+- Move counter
+- Win/lose conditions
+
+
+=========================================================
+
+WHY IS IT game AND NOT *game IN MAIN()
+Let me explain why game in main doesn't need to be declared as a pointer (t_game *game) and should remain as a regular structure variable (t_game game).
+
+There are several important reasons:
+
+Memory Management and Stack vs Heap:
+
+When you declare t_game game in main, the structure is created on the stack
+The stack memory is automatically managed (allocated when the function starts, deallocated when it ends)
+If you declared t_game *game, you would need to:
+C
+t_game *game;
+game = malloc(sizeof(t_game)); // Manual allocation required
+if (!game)
+    return (1);
+// ... use game
+free(game); // Manual deallocation required
+Direct Access vs Indirect Access:
+
+With t_game game:
+C
+game.mlx = mlx_init();
+game.win = mlx_new_window(game.mlx, ...);
+With t_game *game:
+C
+game->mlx = mlx_init();
+game->win = mlx_new_window(game->mlx, ...);
+Direct access is cleaner and slightly more efficient
+Lifetime and Scope:
+
+The game structure contains all your program's essential image
+You want this image to exist for the entire duration of your program
+Stack allocation in main guarantees this (it lives as long as main runs)
+You don't need the flexibility of heap allocation here
+MLX Event Handling:
+
+When setting up event hooks, you pass &game to give MLX access to your structure:
+C
+mlx_hook(game.win, 17, 0, close_window, &game);
+This creates a pointer when needed, without storing the structure itself as a pointer
+Here's a metaphor that might help:
+
+Think of game like your game's control panel
+You want the actual panel (the structure) in your main room (main function)
+When someone needs to make changes (like close_window), you give them directions to the panel (a pointer using &)
+You don't want just directions to a panel (pointer) in your main room - you want the actual panel
+So in summary:
+
+C
+int main(void)
+{
+    t_game game;        // ✅ The actual control panel
+    // vs
+    t_game *game;       // ❌ Just directions to a control panel that doesn't exist yet
+This approach gives you:
+
+Automatic memory management
+Direct access to structure members
+Clear ownership of the image
+The ability to share the address when needed (using &game)
+
+===================================================================
+
+QUE TAL SI QUIERO DECLARAR EL PATH PARA EL FOLDER DE MAPS:
+
+#include <fcntl.h>
+
+#define MAP_FOLDER "src/maps/"
+
+int main(int ac, char **av)
+{
+    char    *full_path;
+    
+    if (ac != 2)
+    {
+        ft_printf("Wrong input: try ./so_long <file with map.ber>\n");
+        return (1);
+    }
+    if (check_extension(av[1]) == 1)
+    {
+        ft_printf("Wrong map extension. Try map.ber\n");
+        return (1);
+    }
+    
+    // Allocate and construct full path
+    full_path = ft_strjoin(MAP_FOLDER, av[1]);
+    if (!full_path)
+    {
+        ft_printf("Error: Memory allocation failed\n");
+        return (1);
+    }
+
+    // Check if the file exists
+    int fd = open(full_path, O_RDONLY);
+    if (fd < 0)
+    {
+        ft_printf("Error: Cannot open %s\n", full_path);
+        free(full_path);
+        return (1);
+    }
+    close(fd);
+
+    // Pass full path to window_init
+    if (window_init(full_path) == 1)
+    {
+        free(full_path);
+        return (1);
+    }
+
+    free(full_path);
+    return (0);
+}
