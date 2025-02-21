@@ -12,7 +12,7 @@
 typedef struct s_data
 {
 	void	*img;
-	char	*addr;
+	char	*addr;			//pixel ptr (to the 1st pixel)
 	int		bits_per_pixel;
 	int		line_length;
 	int		endian;
@@ -20,8 +20,8 @@ typedef struct s_data
 
 typedef struct s_vars 
 {
-    void    *mlx;
-    void    *win;
+    void    *mlx;	//ptr return by mlx_init
+    void    *win;	// ptr to the window
     t_data  pic;
 }           t_vars;
 
