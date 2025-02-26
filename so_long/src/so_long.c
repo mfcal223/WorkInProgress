@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   so_long.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/02/26 14:09:08 by mcalciat          #+#    #+#             */
+/*   Updated: 2025/02/26 15:53:36 by mcalciat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "so_long.h"
 /*
 void ft_load_images(t_game *game)
@@ -10,21 +22,21 @@ void ft_load_images(t_game *game)
 }
 */
 
-t_game	*ft_initialize_game(t_game *game)
+t_game	*initialize_game(t_game *game)
 {
 	game->mlx = NULL;
 	game->win = NULL;
 	game->path =  NULL;
 	game->map = NULL;
-	game->array_map = NULL;
-	game->array_ff = NULL;
+	game->array_map = NULL;//array_map
+	game->array_ff = NULL;//status_b
 	game->size.x = 0;
 	game->size.y = 0;
 	game->player.x = 0;
 	game->player.y = 0;
 	game->moves = 0;
 	game->items = 0;
-	//game->flag = 0;
+	game->flag = 0;
 	game->imgs.wall.img = NULL;
 	game->imgs.floor.img = NULL;
 	game->imgs.player.img = NULL;
@@ -38,28 +50,42 @@ int	game_start(char *map)
 {
 	t_game	*game;
 
-	game = ft_calloc(sizeof(t_game), 1);// CHECK EL FREE!!!
+	game = ft_calloc(sizeof(t_game), 1);
 	if (!game)
 		return (1);
-	game = ft_initialize_game(game);  // 1️⃣ Initialize game structure
-	game->path = path;
-	if (ft_map(&game) == 1) // 2️⃣ Load and validate map
-		return (FAILURE);
-		
-/*	game = ft_find_ship(game); // 3️⃣ Locate player (P)
-	game = ft_flood(game); // 4️⃣ Flood-fill to check map accessibility
-	game->status_b = ft_free_status(game->status_b, game->size.y); // 5️⃣ Cleanup redundant status map
-	if (ft_check_failed(game, ft_count_obj(game->map)) == FAILURE) // 6️⃣ Validate map structure & objects
+	game = initialize_game(game);
+	game->path = map;
+	if (build_map(&game) == 1)
 	{
-		ft_free_all(game, 1);
-		return (FAILURE);
+		ft_printf("Error creating map.\n");//delete - debugging purpouse
+		return (1);
 	}
-	ft_mlx_init(game); // 7️⃣ Initialize MiniLibX and start game loop
-	ft_free_all(game, 0);  // 8️⃣ Free memory on exit
-	return (SUCCESS);
-*/
+	else//delete entire else - debugging purpouse
+	{
+		ft_printf("map created succesfully.\n");
+	}
+	//--------------------------------------------
+	/*MAKE 1 FUNCTION TO ADMINISTER THE VALIDATION ?????*/
+	game = find_player(game);
+	if (!game)
+	{
+		ft_printf("Error: Map needs player starting position.\n");
+		ft_free_all(game, 1);
+		return (1);
+	}
+	game = ft_flood(game);
+	ft_printf("map flooded succesfully.\n");
+	if (ft_check_failed(game, ft_count_obj(game->map)) == 1) 
+	{
+		ft_printf("Map check failed.\n");
+		ft_free_all(game, 1);
+		return (1);
+	}
+	//------------------------------------------------
+	my_mlx_init(game); // 7️⃣ Initialize MiniLibX and start game loop */
+	ft_free_all(game, 0);
+	return (0);
 }
-
 
 /* MAIN */
 int main(int ac, char **av)

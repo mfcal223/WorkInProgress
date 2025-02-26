@@ -6,7 +6,7 @@
 #    By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/09 09:41:05 by mcalciat          #+#    #+#              #
-#    Updated: 2025/02/24 13:35:36 by mcalciat         ###   ########.fr        #
+#    Updated: 2025/02/06 09:54:35 by mcalciat         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,6 @@ RM = rm -f
 INC_DIR = inc
 FT_PRINTF_DIR = src/ft_printf
 LIBFT_DIR = src/libft
-GNL_DIR = src/gnl
 
 #------------- SOURCE FILES -----------------------------#
 LIBFT_SRC = 	$(LIBFT_DIR)/ft_atoi.c\
@@ -74,10 +73,7 @@ FT_PRINTF_SRC = $(FT_PRINTF_DIR)/ft_printf.c\
 		$(FT_PRINTF_DIR)/ft_printf_nbr.c $(FT_PRINTF_DIR)/ft_printf_ptr.c\
 		$(FT_PRINTF_DIR)/ft_printf_string.c $(FT_PRINTF_DIR)/ft_printf_char.c
 
-GNL_SRC = $(GNL_DIR)/get_next_line.c \
-        $(GNL_DIR)/get_next_line_utils.c
-
-OBJ_FILES = $(LIBFT_SRC:.c=.o) $(FT_PRINTF_SRC:.c=.o) $(GNL_SRC:.c=.o)
+OBJ_FILES = $(LIBFT_SRC:.c=.o) $(FT_PRINTF_SRC:.c=.o)
 		
 #-------------------- NAME --------------------------------#
 NAME = libft_printf.a

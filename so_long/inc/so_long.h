@@ -1,47 +1,71 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   so_long.h                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/02/26 14:09:23 by mcalciat          #+#    #+#             */
+/*   Updated: 2025/02/26 17:11:40 by mcalciat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef SO_LONG_H
 # define SO_LONG_H
 
 # include "../libft_printf/inc/ft_printf.h"
+# include "../libft_printf/inc/get_next_line.h"
 # include "../libft_printf/inc/libft.h"
+# include "../minilibx-linux/mlx.h"
+# include "../minilibx-linux/mlx_int.h"
+# include <fcntl.h>  // for open() and close()
 # include <mlx.h>    /* This is the correct way when using -I flag */
 # include <stddef.h> // Needed for NULL
 # include <stdlib.h>
 # include <unistd.h>
 
-//#define MAP_FOLDER "maps/"
-# define W_WIDTH 800
-# define W_HEIGHT 600
+/* window size */
+//# define W_WIDTH 800
+//# define W_HEIGHT 600
 
-/* struc used in initial window handling */
-/*typedef struct s_image
+/* Map elements. */
+# define WALL '1'
+# define FLOOR '0'
+# define PJ 'P'
+# define ITEM 'C'
+# define EXIT 'E'
+# define ENEMY 'X'
+
+// *** Keycodes for the game. ***
+
+# define ESC 65307   // ASCII value for the 'esc' key.
+# define UP 65362    // ASCII value for the up arrow key.
+# define DOWN 65364  // ASCII value for the down arrow key.
+# define LEFT 65361  // ASCII value for the left arrow key.
+# define RIGHT 65363 // ASCII value for the right arrow key.
+
+typedef struct s_cell
 {
-	void	*img;
-	char	*addr;			//pixel ptr (to the 1st pixel)
-	int		bits_per_pixel;
-	int		line_length;
-	int		endian;
-}			t_image;*/
-/* // MY ORIGINAL STRUC
-typedef struct s_game
-{
-	void    *mlx;	//ptr return by mlx_init
-	void    *win;	// ptr to the window
-	t_image			pic;
-}					t_game;
-*/
+	int player; // ex-ship
+	int shark;  // enemy
+	int ocean;  // floor
+	int	wall;
+	int	item;
+	int	exit;
+}		t_cell;
 
 /* structure for the game*/
 typedef struct s_map // linked list to store the map
 {
-	char			*map;
+	char			*map; // map->map = each line of the map
 	struct s_map	*next;
 }					t_map;
 
 typedef struct s_coord
 {
-	int	x;
-	int	y;
-}		t_coord;
+	int		x;
+	int		y;
+}			t_coord;
 
 typedef struct s_pixel
 {
@@ -63,30 +87,65 @@ typedef struct s_imgs
 
 typedef struct s_game
 {
-	void	*mlx;			// MiniLibX instance
-	void	*win;			// Window instance
-	char	*path;			// Path to the map file
-	t_map	*map;			// Linked list storing the map
-	char	**array_map;	// 2D array for map representation
-	char	**array_ff;		// 2D array for flood-fill validation
-	t_coord	size;     		// Map size (width & height)
-	t_coord	player;   		// Player position (x, y)
-	int		moves;			// Number of player moves
-	int		items;			// Number of collectibles
-	//int	flag;			// to use to allowed using the exit in the map
-	t_imgs	imgs;
-}			t_game;
+	void *mlx;        // MiniLibX instance
+	void *win;        // Window instance
+	char *path;       // Path to the map file
+	t_map *map;       // Linked list storing the map
+	char **array_map; // 2D array for map representation (status_a)
+	char **array_ff;  // 2D array for flood-fill validation (status_b)
+	t_coord size;     // Map size (width & height)
+	t_coord player;   // Player position (x, y)
+	t_cell cell;      // Content of a cell (coordenate?)
+	int moves;        // Number of player moves
+	int items;        // Number of collectibles
+	int flag;         // to use to allowed using the exit in the map
+	t_imgs			imgs;
+}					t_game;
 
-/* MAP CHECK */
-int		check_extension(char *map);
+/* FREE OUTILS */                               // REVISAR COM OPTIMIZAR
+void	free_duplicate(char **duplicate, int len); // free array "copy" of map
+void	free_list(t_map **stack);                  // HACE FREE DEL MAPA???
+void	ft_free_all(t_game *game, int error);      // general free function
 
-/* WINDOW ADMIN */
-int		close_window(t_game *game);
-void	my_mlx_pixel_put(t_pixel *img, int x, int y, int color);
-int		handle_keypress(int keycode, t_game *game);
-int		window_init(char *map);
+/* MAP CREATION */
+char				**duplicate_map(t_game *game);
+int					map_x_width(t_map *width);
+int					map_y_heigth(t_map *height);
+t_map				*create_map_array(t_game *game);
+int					build_map(t_game **game);
+
+/* MAP CREATION 2 */
+t_map				*add_line(char *line);
+void				append_line(t_game *game, t_map *new);
+void				create_array(t_game *game, char *line);
+int					check_extension(char *map);
+
+/* MAP VALIDATION 1 */
+t_cell				ft_count_obj(t_map *map);
+t_game				**ft_check_cell(t_game **game, char check);
+t_game				**ft_fill(char **tab, t_coord size, t_coord curr,
+						t_game **game);
+t_game				*ft_flood(t_game *game);
+t_game				*find_player(t_game *game);
+
+/* MAP VALIDATION 2 */
+int					ft_check_obj(t_cell checked, t_cell objects);
+int					ft_check_obj_nbr(t_cell objects);
+int					ft_check_form(t_game *game);
+int					ft_check_borders(t_game *game);
+int					ft_check_failed(t_game *game, t_cell objects);
+
+/* SO LONG */
+t_game				*initialize_game(t_game *game);
+int					game_start(char *map);
 
 #endif
+
+/* WINDOW ADMIN */
+/*int		close_window(t_game *game);
+void				my_mlx_pixel_put(t_pixel *img, int x, int y, int color);
+int					handle_keypress(int keycode, t_game *game);
+int	window_init(char *map);*/
 
 /*
 #ifndef SO_LONG_H           // If the header file has not been included.
@@ -117,7 +176,7 @@ int		window_init(char *map);
 
 # define TRUE 1             // Boolean true.
 # define FALSE 0            // Boolean false.
-# define BOOL 				 // Boolean type. Value can be TRUE or FALSE.
+# define BOOL 					// Boolean type. Value can be TRUE or FALSE.
 
 // *** Colors for the terminal. ***
 
@@ -134,15 +193,6 @@ int		window_init(char *map);
 # define PINK "\033[1;95m"      	// Pink color for the terminal.
 # define RESET "\033[0m"        	// Reset color for the terminal.
 # define SLOW_BLINK "\033[5m"   	// Slow blink for the terminal.
-
-// *** Map elements. ***
-
-# define PLAYER 'P'     // Player character.
-# define ENEMY 'X'      // Enemy character.
-# define WALL '1'       // Wall character.
-# define FLOOR '0'      // Floor character.
-# define COLLECT 'C'    // Collectible character.
-# define EXIT 'E'       // Exit character.
 
 // *** Error messages. ***
 
@@ -165,14 +215,7 @@ int		window_init(char *map);
 # define FAILURE 1      // Failure return value. Used for error handling.
 # define SUCCESS 0      // Success... 0 is the default return value.
 
-// *** Keycodes for the game. ***
 
-# define LEFT 65361        // ASCII value for the left arrow key.
-# define RIGHT 65363       // ASCII value for the right arrow key.
-# define DOWN 65364        // ASCII value for the down arrow key.
-# define UP 65362          // ASCII value for the up arrow key.
-
-# define ESC 65307         // ASCII value for the 'esc' key.
 
 // *** Paths to graphic imgs. ***
 
@@ -232,18 +275,6 @@ typedef struct s_images
 //The images are created to store the images of the game. The images are
 //the visual objetcs that are displayed in the game.
 
-// *** Structure for the map. ***
-
-typedef struct s_map
-{
-	char			*map;
-	struct s_map	*next;
-}					t_map;
-
-//The map is used to store the map of the game. *map store the information
-//of the map. *next is used to store the next map. For example, if the player
-//goes to the next level. It is not used in this game.
-
 // *** Structure for the cells. ***
 
 typedef struct s_cell
@@ -292,7 +323,7 @@ typedef struct s_init
 	t_coord			shark;			// Position of the enemy.
 	t_coord			size;			// Size in pixels of the window.
 	char			**status_a;		// Matrix of the map.
-	char			**status_b;		// Matrix of the map.
+	char			**status_b;		// Matrix of the map for flood fill.
 	char			*path;			// Path to the map.
 	int				moves;			// Number of moves.
 	int				counter;		// Number of collectibles.
@@ -317,4 +348,22 @@ typedef struct s_init
 //	flag is used to store the flag of the game. 0 = game, 1 = win, 2 = lose.
 //	course is used to store the direction of the player.
 //	walking is used to store if the player is walking or not.
+*/
+
+/* struc used in initial window handling */
+/*typedef struct s_image
+{
+	void	*img;
+	char	*addr;			//pixel ptr (to the 1st pixel)
+	int		bits_per_pixel;
+	int		line_length;
+	int		endian;
+}			t_image;*/
+/* // MY ORIGINAL STRUC
+typedef struct s_game
+{
+	void    *mlx;	//ptr return by mlx_init
+	void    *win;	// ptr to the window
+	t_image			pic;
+}					t_game;
 */

@@ -3,7 +3,7 @@ NAME = so_long
 
 # ----------------- FLAGS --------------------------------#
 CC = cc 
-CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR) -I$(MLX_DIR) -I$(LIBFT_DIR)/inc
+CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR) -I$(MLX_DIR) -I$(GNL_DIR) -I$(LIBFT_DIR)/inc
 MLX_FLAGS = -L$(MLX_DIR) -lmlx -lXext -lX11 -lm
 RM = rm -f
 
@@ -16,14 +16,15 @@ OBJ_DIR = obj
 INC_DIR = inc
 LIBFT_DIR = libft_printf
 MLX_DIR = minilibx-linux
+GNL_DIR = gnl
 
 #------------- SOURCE FILES -------------------------------#
 SRCS = $(SRC_DIR)/so_long.c \
 	$(SRC_DIR)/map_creation.c \
 	$(SRC_DIR)/map_creation2.c \
-	$(SRC_DIR)/map_validation1.c \
-	$(SRC_DIR)/map_validation2.c \
 	$(SRC_DIR)/free_outils.c \
+	$(GNL_DIR)/get_next_line.c \
+	$(GNL_DIR)/get_next_line_utils.c 
 
 #$(SRC_DIR)/window_admin.c \
 
@@ -44,6 +45,10 @@ $(OBJ_DIR):
 
 # Create object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Special rule for GNL files
+$(OBJ_DIR)/%.o: $(GNL_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Compile the final executable

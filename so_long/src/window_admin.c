@@ -10,6 +10,9 @@ int handle_keypress(int keycode, t_game *game)
 
 int close_window(t_game *game)
 {
+/*	POR CAMBIAR NOMBRE DE VARIABLES Y ORGANIZACION DE ESTRUCTURAS, LOS NOMBRES DE ESTAS 
+	VARIABLES SON DISTINTOS - Y ADEMAS SE CREO UNA ESTRUCTURA INTERMEDIA ("S_IMGS") A COMO 
+	ESTABA ORGANIZADO ANTES. HAY QUE REVISAR COMO UPDATEAR ESTO!!!*/
     // Destroy the image first
     if (game->pic.img)
         mlx_destroy_image(game->mlx, game->pic.img);
@@ -26,14 +29,14 @@ int close_window(t_game *game)
     return (0);
 }
 /* IMAGE PUSHING */
-void	my_mlx_pixel_put(t_image *image, int x, int y, int color)
+void	my_mlx_pixel_put(t_pixel *img, int x, int y, int color)
 {
 	char	*dst;
 
 	// Add bounds checking
-	if (x < 0 || y < 0 || x >= WINDOW_WIDTH || y >= WINDOW_HEIGHT)
+	if (x < 0 || y < 0 || x >= W_WIDTH || y >= W_HEIGHT)
 		return ;
-	dst = image->addr + (y * image->line_length + x * (image->bits_per_pixel / 8));
+	dst = img->addr + (y * img->line_length + x * (img->bits_per_pixel / 8));
 	*(unsigned int *)dst = color;
 }
 /* in oceano video, dst is an INT */
@@ -53,6 +56,9 @@ int	window_init(char *map)
 		close_window(&game);
 		return (1);
 	}
+/*	POR CAMBIAR NOMBRE DE VARIABLES Y ORGANIZACION DE ESTRUCTURAS, LOS NOMBRES DE ESTAS 
+	VARIABLES SON DISTINTOS - Y ADEMAS SE CREO UNA ESTRUCTURA INTERMEDIA ("S_IMGS") A COMO 
+	ESTABA ORGANIZADO ANTES. HAY QUE REVISAR COMO UPDATEAR ESTO!!!
 	// Create image
 	game.pic.img = mlx_new_image(game.mlx, 800, 600);
 	if (!game.pic.img)
@@ -72,6 +78,7 @@ int	window_init(char *map)
 	my_mlx_pixel_put(&game.pic, 5, 15, 0x000000FF); // blue
 	// Put image to window
 	mlx_put_image_to_window(game.mlx, game.win, game.pic.img, 0, 0);
+	*/
 	// Start event loop
 	mlx_loop(game.mlx);
 	close_window(&game);
