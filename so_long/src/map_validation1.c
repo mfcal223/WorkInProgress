@@ -6,13 +6,13 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:09:28 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/26 14:14:57 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/03 14:52:18 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
-/* change to count_objects */
-t_cell	ft_count_obj(t_map *map)
+
+t_cell	count_objects(t_map *map)
 {
 	t_cell	objects;
 	int		i;
@@ -38,13 +38,12 @@ t_cell	ft_count_obj(t_map *map)
 	return (objects);
 }
 
-/* cambiar a count objects */
-t_game	**ft_check_cell(t_game **game, char check)
+t_game	**cell_objects(t_game **game, char check)
 {
 	if (check == ITEM)
 	{
 		(*game)->cell.item++;
-		(*game)->items++;//redundant????
+		(*game)->items++;
 	}
 	if (check == PJ)
 		(*game)->cell.player++;
@@ -52,46 +51,47 @@ t_game	**ft_check_cell(t_game **game, char check)
 		(*game)->cell.exit++;
 	return (game);
 }
-/* cambiar a path_valid_ff */
-t_game	**ft_fill(char **tab, t_coord size, t_coord curr, t_game **game)
+
+t_game	**path_valid_ff(char **tab, t_coord size, t_coord curr, t_game **game)
 {
 	if (curr.y < 0 || curr.y >= size.y || curr.x < 0 || curr.x >= size.x
 		|| tab[curr.y][curr.x] == '1' || tab[curr.y][curr.x] == 'F')
 		return (game);
-	if (curr.x >= (int)ft_strlen(tab[curr.y]))//check agregado para q no intente ff fuera del aray
+	if (curr.x >= (int)ft_strlen(tab[curr.y]))
 		return (game);
 	if (tab[curr.y][curr.x] == 'E')
 	{
 		tab[curr.y][curr.x] = 'F';
-		(*game)->cell.exit = 1; // exit found
+		(*game)->cell.exit = 1;
 		return (game);
 	}
-	game = ft_check_cell(game, tab[curr.y][curr.x]);
+	game = cell_objects(game, tab[curr.y][curr.x]);
 	tab[curr.y][curr.x] = 'F';
-	game = ft_fill(tab, size, (t_coord){curr.x - 1, curr.y}, game);
-	game = ft_fill(tab, size, (t_coord){curr.x + 1, curr.y}, game);
-	game = ft_fill(tab, size, (t_coord){curr.x, curr.y - 1}, game);
-	game = ft_fill(tab, size, (t_coord){curr.x, curr.y + 1}, game);
+	game = path_valid_ff(tab, size, (t_coord){curr.x - 1, curr.y}, game);
+	game = path_valid_ff(tab, size, (t_coord){curr.x + 1, curr.y}, game);
+	game = path_valid_ff(tab, size, (t_coord){curr.x, curr.y - 1}, game);
+	game = path_valid_ff(tab, size, (t_coord){curr.x, curr.y + 1}, game);
 	return (game);
 }
-/* cambiar a map_validation */
-t_game	*ft_flood(t_game *game)
+
+t_game	*map_validation(t_game *game)
 {
 	game->cell.player = 0;
 	game->cell.item = 0;
 	game->cell.exit = 0;
-	game = *ft_fill(game->array_ff, game->size, game->player, &game);
+	game = *path_valid_ff(game->array_ff, game->size, game->player, &game);
 	return (game);
 }
 
+/*finds position of Player and updates those coords int the game struct */
 t_game	*find_player(t_game *game)
 {
 	int	i;
 	int	j;
 
 	j = 0;
-	game->player.x = 0; // si ya lo inicialice, hay que repetir aca????
-	game->player.y = 0; // si ya lo inicialice, hay que repetir aca????
+	game->player.x = 0;
+	game->player.y = 0;
 	while (j < game->size.y)
 	{
 		i = 0;
@@ -109,4 +109,3 @@ t_game	*find_player(t_game *game)
 	}
 	return (game);
 }
-/*finds position of Player and updates those coords int the game struct */

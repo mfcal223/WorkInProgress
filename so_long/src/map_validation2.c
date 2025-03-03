@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:39:45 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/02/26 14:39:46 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/03 14:54:13 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 /* compare quantity of elementes counted in the map and counted by 
 flood fill (which are reachables)*/
-int	ft_check_obj(t_cell checked, t_cell objects)
+int	compare_counts(t_cell checked, t_cell objects)
 {
 	if (checked.player != objects.player)
 		return (1);
@@ -26,7 +26,7 @@ int	ft_check_obj(t_cell checked, t_cell objects)
 }
 
 /* checks minimun quantities are fullfilled */
-int	ft_check_obj_nbr(t_cell objects)
+int	check_min_count(t_cell objects)
 {
 	if (objects.player != 1)
 		ft_printf("Error: there should be 1 player.\n");
@@ -50,8 +50,10 @@ int	ft_check_form(t_game *game)
 		while (game->array_map[j][i] != '\n' && game->array_map[j][i] != '\0')
 		{
 			if (game->array_map[j][i] != FLOOR && game->array_map[j][i] != WALL
-				&& game->array_map[j][i] != PJ && game->array_map[j][i] != 'C'
-				&& game->array_map[j][i] != EXIT)
+				&& game->array_map[j][i] != PJ
+				&& game->array_map[j][i] != ITEM
+				&& game->array_map[j][i] != EXIT
+				&& game->array_map[j][i] != ENEMY)
 				return (1);
 			i++;
 		}
@@ -90,15 +92,16 @@ int	ft_check_borders(t_game *game)
 	return (0);
 }
 /*j = rows / i = columns */
+
 /* cambiar nombre a map_check */
 int	ft_check_failed(t_game *game, t_cell objects)
 {
-	int x;
+	int	x;
 
 	x = 0;
-	if (ft_check_obj_nbr(objects) == 1)
+	if (check_min_count(objects) == 1)
 		x = 1;
-	if (ft_check_obj(game->cell, objects) == 1)
+	if (compare_counts(game->cell, objects) == 1)
 		x = 1;
 	if (ft_check_form(game) == 1)
 		x = 1;
@@ -111,32 +114,3 @@ int	ft_check_failed(t_game *game, t_cell objects)
 	}
 	return (0);
 }
-
-/* CHECK_FORM version 1
-int	ft_check_form(t_game *game)
-{
-	int	i;
-	int	j;
-	int	l_size;
-
-	j = 0;
-	l_size = 0;
-	while (game->array_map[j][l_size] != '\n')
-		l_size++;
-	while (j < game->size.y)
-	{
-		i = 0;
-		while (game->array_map[j][i] != '\n' && game->array_map[j][i] != '\0')
-		{
-			if (game->array_map[j][i] != FLOOR && game->array_map[j][i] != WALL
-				&& game->array_map[j][i] != PJ && game->array_map[j][i] != 'C'
-				&& game->array_map[j][i] != EXIT)
-				return (1);
-			i++;
-		}
-		if (l_size != i)
-			return (1);
-		j++;
-	}
-	return (0);
-}*/

@@ -1,5 +1,0 @@
-valgrind --leak-check=full ./so_long maps/
-
-
-
-

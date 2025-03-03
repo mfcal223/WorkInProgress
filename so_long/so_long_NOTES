@@ -1,3 +1,9 @@
+k = 0;
+(*i)++;
+
+k = ((*i)++ == -1)
+==========================================
+
 MINILIBX is an X server which allows "things" to be display on screen. 
 It is build based on X.org library. This API allows display on screen think for beginners.
 
@@ -78,7 +84,7 @@ this closes the connection and frees the display. It is a cleanup function.
 is triggered when no event is processed. pe. textthat changes color except when you press a key like SPACE
 
 
-WRITING PIXELS TO A IMAGE
+📌 WRITING PIXELS TO A IMAGE
 ----------------------------
 
 To put pixels in an image:  mlx_pixel_put function is very, very slow. This is because it tries to push the pixel instantly to the window (without waiting for the frame to be entirely rendered).
@@ -89,12 +95,12 @@ typedef struct s_image
 {
 	void	*img;
 	char	*addr;
-	int		bits_per_pixel;
-	int		line_length;
+	int		bppix;
+	int		line_len;
 	int		endian;
 }			t_image;
 
-bits_per_pixel means exactly that. 1 pixel = 1 INT = 32 bits
+bppix means exactly that. 1 pixel = 1 INT = 32 bits
 
 
 
@@ -102,13 +108,13 @@ We create an image by doing :
 
 img.img = mlx_new_image(mlx, 1920, 1080);
 
-and then we can call `mlx_get_image_addr`, we pass `bits_per_pixel`, `line_length`, and `endian` by reference. These will then be set accordingly for the *current* image address.
+and then we can call `mlx_get_image_addr`, we pass `bppix`, `line_len`, and `endian` by reference. These will then be set accordingly for the *current* image address.
 
-Now we have the image address, but still no pixels. Before we start with this, we must understand that the bytes are not aligned, this means that the line_length differs from the actual window width. We therefore should ALWAYS calculate the memory offset using the line length set by mlx_get_image_addr.
+Now we have the image address, but still no pixels. Before we start with this, we must understand that the bytes are not aligned, this means that the line_len differs from the actual window width. We therefore should ALWAYS calculate the memory offset using the line length set by mlx_get_image_addr.
 
 We can calculate it very easily by using the following formula:
 
-int offset = (y * line_length + x * (bits_per_pixel / 8));
+int offset = (y * line_len + x * (bppix / 8));
 
 my_mlx_pixel_put will include this calculation.
 
@@ -118,6 +124,37 @@ Note that this will cause an issue. Because an image is represented in real time
 
 Pushing images to a window
 ----------------------------
+
+
+📌 Explanation of mlx_string_put()
+-----------------------------------
+mlx_string_put() is a MiniLibX function that prints a string on the game window at a specific position.
+
+Function Prototype (from mlx.h):
+
+int mlx_string_put(void *mlx_ptr, void *win_ptr, int x, int y, int color, char *string);
+Parameters:
+mlx_ptr → Pointer to the MiniLibX instance (game->mlx).
+win_ptr → Pointer to the game window (game->win).
+x → X-coordinate (horizontal position).
+y → Y-coordinate (vertical position).
+color → Text color (hexadecimal format, e.g., 0xFFFFFF for white).
+string → The text to display (must be a char * string).
+Example:
+c
+Copiar
+Editar
+mlx_string_put(game->mlx, game->win, 10, 20, 0xFFFFFF, "Hello, World!");
+✅ This prints "Hello, World!" at position (10, 20) in white (0xFFFFFF).
+
+How to Add a Word Before moves_str
+Since mlx_string_put() only takes one string, we must concatenate the word ("Moves: ") and the number (moves_str) into a new string.
+
+✅ Solution Using ft_strjoin()
+Use ft_itoa() to convert the integer game->moves to a string.
+Use ft_strjoin() to concatenate "Moves: " with moves_str.
+Pass the final string to mlx_string_put().
+Free both moves_str and the concatenated string to avoid memory leaks.
 
 =========================================================================================
 =========================================================================================
@@ -220,31 +257,6 @@ int	map_y_heigth(t_map *height) // = num of lines (ft_map_y) = num of nodes
 
 
 =========================================================================================
----------------------------------------------------------------------------
-
-/* MALAGA INIT STRUCTURE */
-typedef struct s_init
-{
-	mlx_t			*mlx;			// Connection to the graphic display.
-	t_txts			txts;			// Textures of the game.
-	t_images		imgs;			// Images of the game.
-	t_cell			cell;			// Object of the game.
-	t_map			*map;			// Map of the game.
-	t_coord			ship;			// Position of the player.
-	t_coord			shark;			// Position of the enemy.
-	t_coord			size;			// Size in pixels of the window.
-	char			**status_a;		// Matrix of the map.
-	char			**status_b;		// Matrix of the map.
-	char			*path;			// Path to the map.
-	int				moves;			// Number of moves.
-	int				counter;		// Number of collectibles.
-	int				collec;			// Number of collectibles.
-	int				c;				// Collectibles collected.	
-	int				flag;			// 0 = game, 1 = win, 2 = lose
-	char			course;			// Direction of the player.
-	bool			walking;		// Walking or not.
-}	t_init;
----------------------------------------------------------------------------- 
 =========================================================================================
 =========================================================================================
 2.2 Map Loading and Validation
@@ -268,26 +280,26 @@ locate the cell that represents the player.
 When it finds that cell, it updates the ship field in the game structure (of type t_coord) 
 with the player's x and y coordinates.
 
-✅FT_FLOOD() / FT_FILL() / FT_CHECK_CELL()
+✅map_validation() / path_valid_ff() / cell_objects()
 --Validation of Map Solvability:
 In many games (like so_long), it’s crucial to ensure that the level is solvable. This means the player should be able to reach all collectibles and the exit from the starting position.
 --Marking Visited Cells:
 By marking cells as visited (with 'F'), the algorithm avoids infinite loops and ensures that each cell is processed only once.
 --Updating Game State:
-As the algorithm “floods” through the accessible area, it uses helper functions (like ft_check_cell) to update the game state. This ensures that you know which important elements (exits, collectibles, etc.) are reachable.
+As the algorithm “floods” through the accessible area, it uses helper functions (like cell_objects) to update the game state. This ensures that you know which important elements (exits, collectibles, etc.) are reachable.
 
 After these functions run, you can compare these counters with the total number of collectibles and the expected exit count to determine if the map is valid—that is, if the player can reach all necessary elements.
 
-! Although both ft_fill and ft_check_cell check for 'E', they serve different purposes.!
+! Although both path_valid_ff and cell_objects check for 'E', they serve different purposes.!
 
-1️⃣ ft_fill(): Ensuring That the Exit Is Reachable
-The primary role of ft_fill() is to perform the flood fill and ensure accessibility.
+1️⃣ path_valid_ff(): Ensuring That the Exit Is Reachable
+The primary role of path_valid_ff() is to perform the flood fill and ensure accessibility.
 The condition if (tab[curr.y][curr.x] == 'E') stops the flood fill from passing through an exit, ensuring that the algorithm terminates early when an exit is found.
 The return (game); prevents unnecessary recursive calls beyond the exit.
-2️⃣ ft_check_cell(): Counting the Number of Exits Found
-ft_check_cell() is used to track how many exits exist and are reachable.
-While ft_fill() marks an exit as found and prevents further recursion, it does not count how many times an exit is encountered.
-ft_check_cell() ensures that every encounter with an exit increases the count, which is important if there are multiple exits in the game.
+2️⃣ cell_objects(): Counting the Number of Exits Found
+cell_objects() is used to track how many exits exist and are reachable.
+While path_valid_ff() marks an exit as found and prevents further recursion, it does not count how many times an exit is encountered.
+cell_objects() ensures that every encounter with an exit increases the count, which is important if there are multiple exits in the game.
 
 ----------------------------------------------------------------------------
 
@@ -305,7 +317,7 @@ Ensures that the left (i == 0) and right (i == game->size.x - 1) edges of middle
 Returns 1 if any of these conditions fail; otherwise, returns 0.
 
 ------------------------------------------------------------------------------------
-FT_COUNT_OBJS()
+count_objectsS()
 
 Is map->map[i] each line of the map?
 Yes! Your t_map is a linked list, where:
@@ -329,12 +341,12 @@ Third node (map->next->next->map) = "1C01"
 Fourth node (map->next->next->next->map) = "1E11"
 Each row is stored in a separate linked list node, and the function reads one row at a time while looping through each character in that row.
 
-ft_check_obj()
+compare_counts()
 /* compare quantity of elementes counted in the map and counted by 
 flood fill (which are reachables)*/
 
 
-ft_check_obj_nbr()
+check_min_count()
 /* checks minimun quantities of main elements are fullfilled */
 
 
@@ -348,15 +360,15 @@ TEST DE MAPAS INVALIDOS
 PROBLEM WHEN MAP IS NOT RECTANGULAR:
 The most likely cause is that your map is not rectangular, meaning some rows are shorter than others.
 
-Your ft_fill() function assumes all rows are of equal length (size.x).
+Your path_valid_ff() function assumes all rows are of equal length (size.x).
 
 If a row is shorter, then accessing tab[curr.y][curr.x] could be out of bounds.
-Your duplicate_map() (or ft_strdup()) might be copying shorter rows, but ft_fill() assumes they are the same length.
+Your duplicate_map() (or ft_strdup()) might be copying shorter rows, but path_valid_ff() assumes they are the same length.
 
-If ft_fill() moves horizontally (curr.x + 1) on a short row, it accesses memory beyond the allocated row.
+If path_valid_ff() moves horizontally (curr.x + 1) on a short row, it accesses memory beyond the allocated row.
 
-✅ Fix: Ensure ft_fill() Checks Row Length Before Accessing
-Modify ft_fill() to check if curr.x is within the row’s actual length before accessing tab[curr.y][curr.x]:
+✅ Fix: Ensure path_valid_ff() Checks Row Length Before Accessing
+Modify path_valid_ff() to check if curr.x is within the row’s actual length before accessing tab[curr.y][curr.x]:
 
 	if (curr.x >= ft_strlen(tab[curr.y]))
 		return (game);
@@ -369,7 +381,7 @@ Right now, your ft_check_form() function should already be checking for non-rect
 if (ft_strlen(game->array_map[j]) != game->size.x)
 	return (1); // Error: Rows must have same length
 
-If this condition is already in ft_check_form(), then the invalid map should be rejected before reaching ft_fill().
+If this condition is already in ft_check_form(), then the invalid map should be rejected before reaching path_valid_ff().
 
 📌TESTCASES : 
 
@@ -428,7 +440,7 @@ next step
 
 Initializes MLX42 library
 Loads all required textures:
-- - Ocean (background)
+- - floor (background)
 - Wall
 - Ship (player) with different directions
 - Collectibles
@@ -436,6 +448,98 @@ Loads all required textures:
 - Shark (enemy)
 - Converts textures to images for display
 
+
+
+📌 MLX_XPM_FILE_TO_IMAGE()
+------------------------------- 
+mlx_xpm_file_to_image automatically obtains the size of the loaded XPM image and writes those values into the memory locations pointed to by &size_x and &size_y. This is done through pass-by-reference using pointers.
+
+🎯Here's how it works:
+
+int size_x;  // Will store the width of the loaded image
+int size_y;  // Will store the height of the loaded image
+
+// When this function is called:
+game->imgs.player.img = mlx_xpm_file_to_image(game->mlx, 
+                                             "textures/player.xpm", 
+                                             &size_x,    // Address of size_x
+                                             &size_y);   // Address of size_y
+
+// After the function call:
+// - size_x now contains the width of the loaded image
+// - size_y now contains the height of the loaded image
+
+
+📌 MLX_KEY_HOOK()
+-------------------------------
+mlx_key_hook(game->win, handle_keypress, game);
+✔️ First argument: The window to listen for key events
+✔️ Second argument: Function pointer to your key handler
+✔️ Third argument: A parameter that will be passed to your handler (usually your game struct)
+
+int handle_keypress(int keycode, t_game *game)
+{
+    // keycode: Automatically filled with the key that was pressed
+    // game: Your game structure (passed as the third parameter in mlx_key_hook)
+[...] //define the key
+}
+
+
+
+📌 RENDERING 
+-----------------------
+Rendering is the process of drawing/displaying images on the screen. In your game:
+
+Each game element (wall, player, etc.) is represented by an image
+The mlx_put_image_to_window function places these images at specific coordinates
+By doing this for all elements, you create the complete game screen
+
+THE ORDER IN WHICH ELEMENTS ARE RENDERED IS IMPORTANT
+WALL> PJ > ITEMS > EXIT
+
+BUT IF YOUR PLAYER IS SEMI TRANSPARENT
+Rendering Order: This is the most important consideration. With transparent images, rendering order becomes crucial:
+C
+int render_frame(t_game *game)
+{
+    mlx_clear_window(game->mlx, game->win);
+    
+    // Always render in this order for proper transparency:
+    render_map(game);         // 1. Background (floor) and walls first
+    render_exit(game);        // 2. Exit (if it has transparency)
+    render_collectibles(game);// 3. Collectibles (with transparency)
+    render_player(game);      // 4. Player (with transparency) last
+    
+    return (0);
+}
+
+Floor Rendering and Map Representation In your map array, when you have 'P', 'C', or 'E', these positions should also be considered as having a floor underneath. Think of it as layers:
+Layer 1: Floor (everywhere except walls)
+Layer 2: Game elements (player, collectibles, exit)
+
+Key points:
+
+When the player moves:
+
+Old position ('P') becomes '0' (floor)
+New position becomes 'P'
+The rendering system will automatically show floor underneath due to the layered approach
+When collecting items:
+
+The 'C' position becomes '0' (floor)
+The rendering system will show floor there in subsequent frames
+The exit ('E') remains in the map array even after the player moves over it:
+
+This way the exit remains visible even if the player steps on it
+The rendering order (floor → exit → player) ensures everything looks correct
+Here's a visualization of the layers when rendering:
+
+Code
+Map Array:    '0' '1' 'P' 'C' 'E'
+              │   │   │   │   │
+Layer 1:    Floor  Wall  Floor Floor Floor
+Layer 2:     ---  ---  Player Item Exit
+=====================================================================================
 4. Game Loop
 
 Main game loop starts with mlx_loop()
@@ -563,3 +667,319 @@ int main(int ac, char **av)
     free(full_path);
     return (0);
 }
+=================================================================================================================================================
+1️⃣ Enemy Patrols: The Player Loses If They Touch an Enemy
+Steps:
+Define the Enemy (ENEMY) in so_long.h (already defined but not used).
+Modify map_validation2.c to Allow Enemies in the Map.
+Spawn Enemies in build_map() (random or pre-defined locations).
+Make Enemies Move (Patrolling AI).
+Modify move_player() to Check for Collision with an Enemy.
+Game Over if Player Touches an Enemy.
+
+2️⃣ Sprite Animation for the Player
+Steps:
+Load Multiple Sprites for Animation (player1.xpm, player2.xpm, etc.).
+Modify render_player() to Cycle Through Sprites Every Frame.
+Use mlx_loop_hook() to Update the Animation Over Time.
+
+3️⃣ On-Screen Movement Counter
+Steps:
+Use mlx_string_put() to Display the Move Count in the Game Window.
+Update the Counter Every Time the Player Moves.
+Ensure It Doesn’t Overlap Game Objects.
+=================================================================================================================================================
+
+
+ADDING ENEMIES
+
+Answer: Freeing Enemy Memory
+✅ Yes, free(game->enemies); is enough to free the allocated memory for enemies.
+🚨 You do NOT need free_list() because:
+free_list() is designed for freeing linked lists (t_map *map), but we are using an array (t_coord *enemies).
+An array only needs free(game->enemies); to release the allocated block.
+Since enemies is dynamically allocated with malloc(), a single free() is sufficient.
+
+📌 Enemy Implementation Summary for Documentation
+🔹 Why Use an Array for Enemies?
+We store enemy positions in a dynamically allocated array (t_coord *enemies) inside t_game.
+Since the number of enemies is fixed and known at game start (from the .ber map file), an array is the most efficient choice.
+
+✅ Advantages of Using an Array
+✔ Faster access: Each enemy’s position is accessed instantly using indexing (enemies[i]).
+✔ Less memory overhead: Unlike a linked list, an array does not require extra pointers for each element.
+✔ Easier to iterate: The for/while loop directly accesses elements, making movement simpler.
+
+❌ Disadvantages of Using an Array
+✖ Fixed size: The array size is determined at game start and cannot dynamically grow or shrink.
+✖ Memory allocation upfront: We must allocate memory for all enemies at once, even if some are removed later.
+
+🔹 Functions for Enemy Implementation
+📌 1. find_enemies()
+📍 Purpose: Finds all enemy ('X') positions in the map and stores them in game->enemies.
+
+📍 Breakdown:
+✅ Calls count_enemies(game); to count how many enemies exist.
+✅ Allocates memory for the enemies array (malloc(sizeof(t_coord) * enemy_count)).
+✅ Calls store_enemies(game); to save each enemy's (x, y) position in the array.
+
+📍 Why is this needed?
+
+Ensures all enemies are tracked in memory so they can move.
+Runs once at game start.
+📌 2. count_enemies()
+📍 Purpose: Scans the map and counts the total number of enemies ('X').
+
+📍 Breakdown:
+✅ Loops through game->array_map using while loops.
+✅ Increments game->enemy_count for every 'X' found.
+
+📍 Why is this needed?
+
+Determines how much memory to allocate for game->enemies.
+📌 3. store_enemies()
+📍 Purpose: Stores each enemy’s position in the game->enemies array.
+
+📍 Breakdown:
+✅ Iterates through game->array_map using while loops.
+✅ Saves (x, y) coordinates of each enemy in game->enemies[count].
+
+📍 Why is this needed?
+
+Ensures enemies remember their positions so they can move.
+📌 4. move_enemies()
+📍 Purpose: Moves each enemy left or right (if possible) every frame.
+
+📍 Breakdown:
+✅ Loops through game->enemies using while.
+✅ Checks if the left position is free (FLOOR), moves left if true.
+✅ If left is blocked, checks the right position (FLOOR) and moves right.
+✅ Calls update_enemy_pos(game, i, new_x, new_y); to update the enemy’s position.
+
+📍 Why is this needed?
+
+Moves enemies automatically every frame inside render_frame().
+If an enemy reaches the player, the game ends immediately.
+📌 5. update_enemy_pos()
+📍 Purpose: Updates enemy position in game->array_map and detects player collision.
+
+📍 Breakdown:
+✅ If the new position contains PJ, game over (close_handler()).
+✅ Updates game->array_map to move the enemy.
+✅ Updates game->enemies[i] with new (x, y).
+
+📍 Why is this needed?
+
+Keeps movement logic separate from decision-making (move_enemies()).
+Prevents map corruption by ensuring enemies update correctly.
+📌 6. Freeing Enemy Memory in close_window()
+📍 Purpose: Frees the dynamically allocated game->enemies array when the game exits.
+
+📍 Breakdown:
+✅ If game->enemies is not NULL, call free(game->enemies);.
+
+📍 Why is this needed?
+
+Prevents memory leaks when the game closes.
+🔹 How Everything Works Together
+Game Start (game_start())
+1️⃣ Find all enemies → find_enemies().
+2️⃣ Store their positions → store_enemies().
+3️⃣ Enemies are now tracked in game->enemies[].
+
+During the Game (render_frame())
+1️⃣ Enemies move every frame → move_enemies().
+2️⃣ Each enemy updates its position → update_enemy_pos().
+3️⃣ If an enemy reaches the player, the game ends.
+
+Game Exit
+1️⃣ Memory is freed → free(game->enemies);.
+
+🎯 Summary of Implementation
+✔ Enemies are stored in an array (t_coord *enemies).
+✔ They move left or right in move_enemies().
+✔ If they touch the player, game over.
+✔ Memory is properly freed at game exit.
+===========================================================================================================================
+
+I'll help you implement player animation with multiple sprites. First, let's look at how to organize the player sprites and then implement the animation system.
+
+First, update your game structure to handle multiple player sprites:
+C
+// In your header file (so_long.h)
+typedef struct s_player
+{
+    int x;
+    int y;
+    int frame;          // Current animation frame
+    int direction;      // Current facing direction
+    void *sprite_1;     // First sprite
+    void *sprite_2;     // Second sprite
+    int anim_counter;   // Counter for animation timing
+} t_player;
+
+// Animation constants
+#define ANIM_SPEED 10    // Lower number = faster animation
+#define SPRITE_1   0
+#define SPRITE_2   1
+Modified image loading function to handle multiple player sprites:
+C
+int load_game_images(t_game *game)
+{
+    int size_x;
+    int size_y;
+    
+    // Load regular images
+    game->imgs.wall.img = mlx_xpm_file_to_image(game->mlx, 
+        "textures/wall.xpm", &size_x, &size_y);
+    if (!game->imgs.wall.img || size_x != TILE_SIZE || size_y != TILE_SIZE)
+        return (error_handler(game, "Failed to load wall image"));
+    
+    // Load player sprites
+    game->player.sprite_1 = mlx_xpm_file_to_image(game->mlx,
+        "textures/player1.xpm", &size_x, &size_y);
+    if (!game->player.sprite_1 || size_x != TILE_SIZE || size_y != TILE_SIZE)
+        return (error_handler(game, "Failed to load player sprite 1"));
+        
+    game->player.sprite_2 = mlx_xpm_file_to_image(game->mlx,
+        "textures/player2.xpm", &size_x, &size_y);
+    if (!game->player.sprite_2 || size_x != TILE_SIZE || size_y != TILE_SIZE)
+        return (error_handler(game, "Failed to load player sprite 2"));
+    
+    // Initialize player animation state
+    game->player.frame = SPRITE_1;
+    game->player.anim_counter = 0;
+    
+    // ... load other game images ...
+    return (1);
+}
+Updated move_player function with animation:
+C
+int move_player(t_game *game, int dx, int dy)
+{
+    int new_x = game->player.x + dx;
+    int new_y = game->player.y + dy;
+    
+    // Check if new position is valid
+    if (game->array_map[new_y][new_x] == '1')
+        return (0);
+        
+    // Handle collectible
+    if (game->array_map[new_y][new_x] == 'C')
+    {
+        game->items--;
+        game->array_map[new_y][new_x] = '0';
+    }
+    
+    // Handle exit
+    if (game->array_map[new_y][new_x] == 'E')
+    {
+        if (game->items == 0)
+        {
+            ft_printf("Congratulations! Game completed in %d moves!\n", 
+                     game->moves + 1);
+            close_window(game);
+        }
+        return (0);
+    }
+    
+    // Update player position
+    game->array_map[game->player.y][game->player.x] = '0';
+    game->array_map[new_y][new_x] = 'P';
+    game->player.x = new_x;
+    game->player.y = new_y;
+    
+    // Update animation state
+    game->player.frame = (game->player.frame == SPRITE_1) ? SPRITE_2 : SPRITE_1;
+    game->moves++;
+    
+    return (1);
+}
+Add a render_player function for drawing the animated player:
+C
+void render_player(t_game *game)
+{
+    void *current_sprite;
+    
+    // Choose which sprite to display
+    if (game->player.frame == SPRITE_1)
+        current_sprite = game->player.sprite_1;
+    else
+        current_sprite = game->player.sprite_2;
+    
+    // Draw the player at their current position
+    mlx_put_image_to_window(game->mlx, game->win, current_sprite,
+        game->player.x * TILE_SIZE, game->player.y * TILE_SIZE);
+}
+
+/* // FUNCION RENDER PLAYER SI IMPLEMENTO SPRITES
+void	render_player(t_game *game)
+{
+	void *current_sprite;
+
+	// If you have animation implemented
+	if (game->player.frame == SPRITE_1)
+		current_sprite = game->player.sprite_1;
+	else
+		current_sprite = game->player.sprite_2;
+
+	// If no animation, just use single sprite
+	// current_sprite = game->imgs.player.img;
+
+	mlx_put_image_to_window(game->mlx, game->win, current_sprite,
+		game->player.x * TILE_SIZE, game->player.y * TILE_SIZE);
+}
+*/
+
+Update your render_frame function to handle animation:
+C
+int render_frame(t_game *game)
+{
+    // Clear window
+    mlx_clear_window(game->mlx, game->win);
+    
+    // Render map (walls, floor, etc.)
+    render_map(game);
+    
+    // Handle player animation timing
+    game->player.anim_counter++;
+    if (game->player.anim_counter >= ANIM_SPEED)
+    {
+        game->player.anim_counter = 0;
+        // Toggle animation frame when not moving
+        if (game->moves > 0)  // Only animate if player has moved
+            game->player.frame = (game->player.frame == SPRITE_1) ? 
+                                SPRITE_2 : SPRITE_1;
+    }
+    
+    // Render player with current animation frame
+    render_player(game);
+    
+    // Render other elements
+    render_collectibles(game);
+    render_exit(game);
+    
+    return (0);
+}
+Don't forget to update your cleanup function:
+C
+void cleanup_player_sprites(t_game *game)
+{
+    if (game->player.sprite_1)
+        mlx_destroy_image(game->mlx, game->player.sprite_1);
+    if (game->player.sprite_2)
+        mlx_destroy_image(game->mlx, game->player.sprite_2);
+}
+This implementation provides:
+
+Two-frame player animation
+Animation timing control
+Sprite alternation on movement
+Proper cleanup of resources
+You can adjust the ANIM_SPEED constant to make the animation faster or slower. A lower number means faster animation.
+
+Would you like me to explain any part in more detail or help you implement additional features like:
+
+Direction-specific sprites (different sprites for up/down/left/right)
+Smoother movement animation
+More complex animation patterns?

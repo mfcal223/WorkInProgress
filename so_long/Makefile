@@ -19,13 +19,16 @@ MLX_DIR = minilibx-linux
 
 #------------- SOURCE FILES -------------------------------#
 SRCS = $(SRC_DIR)/so_long.c \
-	$(SRC_DIR)/map_creation.c \
+	$(SRC_DIR)/enemies.c \
+	$(SRC_DIR)/map_creation1.c \
 	$(SRC_DIR)/map_creation2.c \
+	$(SRC_DIR)/map_creation3.c \
 	$(SRC_DIR)/map_validation1.c \
 	$(SRC_DIR)/map_validation2.c \
 	$(SRC_DIR)/free_outils.c \
-
-#$(SRC_DIR)/window_admin.c \
+	$(SRC_DIR)/mlx_load_render.c \
+	$(SRC_DIR)/moves.c \
+	$(SRC_DIR)/render_elements.c 
 
 #------------- OBJECT FILES -------------------------------#
 OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o) \

@@ -1,64 +1,94 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   map_creation2.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/03 10:36:20 by mcalciat          #+#    #+#             */
+/*   Updated: 2025/03/03 15:22:59 by mcalciat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "so_long.h"
 
-t_map	*add_line(char *line) /* duplicates the line and stores in a list node*/
+char	**duplicate_map(t_game *game)
 {
-	t_map	*new;
+	t_map	*tmp;
+	char	**duplicate;
+	int		i;
 
-	new = malloc(sizeof(t_map));
-	if (!new)
+	i = 0;
+	tmp = game->map;
+	duplicate = malloc(sizeof(char *) * (game->size.y + 1));
+	if (!duplicate)
 		return (NULL);
-	new->map = ft_strdup(line);
-	if (!new->map)
+	while (game->map)
 	{
-		free(new);
+		duplicate[i] = ft_strdup(game->map->map);
+		if (!duplicate[i])
+		{
+			free_duplicate(duplicate, i);
+			return (NULL);
+		}
+		i++;
+		game->map = game->map->next;
+	}
+	game->map = tmp;
+	duplicate[i] = NULL;
+	return (duplicate);
+}
+
+int	map_x_width(t_map *width, t_game *game)
+{
+	int	x;
+
+	x = 0;
+	while (width->map[x] && width->map[x] != '\n')
+		x++;
+	if (x > 27)
+	{
+		close_handler(game, "Map is too wide.\n");
+		return (-1);
+	}
+	return (x);
+}
+
+int	map_y_heigth(t_map *height, t_game *game)
+{
+	int	y;
+
+	y = 0;
+	while (height)
+	{
+		y++;
+		height = height->next;
+	}
+	if (y > 18)
+	{
+		close_handler(game, "Map has too many rows.\n");
+		return (-1);
+	}
+	return (y);
+}
+
+t_map	*create_map(t_game *game)
+{
+	char	*line;
+	int		fd;
+
+	fd = open(game->path, O_RDONLY);
+	if (fd < 0)
+	{
+		ft_printf("Map file is corrupt or does not exist.\n");
 		return (NULL);
 	}
-	new->next = NULL;
-	return (new);
-}
-
-void	append_line(t_game *game, t_map *new)/* appends new node to map list */
-{
-	t_map	*last;
-
-	last = game->map;
-	if (!last)
-		game->map = new;
-	else
+	line = get_next_line(fd);
+	while (line != NULL)
 	{
-		while (last->next)
-			last = last->next;//finds last node
-		last->next = new;//appends node to the list
+		create_array(game, line);
+		line = get_next_line(fd);
 	}
-}
-
-void	create_array(t_game *game, char *line)
-{
-	t_map	*new;
-
-	if (line[0] == '\n')
-	{
-		ft_printf("Map error: found empty line.\n");
-		free(line);//frees memory allocated by gnl
-		exit(1);
-	}
-	new = add_line(line);
-	append_line(game, new);
-	free(line);//frees memory allocated by gnl
-}
-
-/* MAP VALIDATION */
-int	check_extension(char *map)
-{
-	int len;
-
-	if (!map)
-		return (1);
-	len = ft_strlen(map);
-	if (len < 5 || map[0] == '.')
-		return (1);
-	if (map[len - 4] == '.' && map[len - 3] == 'b' && map[len - 2] == 'e'
-		&& map[len - 1] == 'r')
-		return (0);
-	return (1);
+	close(fd);
+	return (game->map);
 }
