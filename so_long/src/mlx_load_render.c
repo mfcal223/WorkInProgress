@@ -6,48 +6,17 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 10:53:21 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/05 14:17:49 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/05 15:51:10 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
 
-void init_positions(t_game *game)
-{
-    int i;
-    int x;
-    int y;
-
-    // Initialize player position
-    find_player_position(game->array_map, &x, &y);
-    game->player_pos.pos.x = x;
-    game->player_pos.pos.y = y;
-    game->player_pos.win_pos.x = x * TILE_SIZE;
-    game->player_pos.win_pos.y = y * TILE_SIZE;
-    game->player_pos.moving = 0;
-
-    // Initialize enemy positions
-    game->enemy_pos = malloc(sizeof(t_posit) * game->enemy_count);
-    if (!game->enemy_pos)
-        exit_error(game, "Failed to allocate enemy positions");
-
-    i = 0;
-    while (i < game->enemy_count)
-    {
-        find_enemy_position(game->array_map, &x, &y, i);
-        game->enemy_pos[i].pos.x = x;
-        game->enemy_pos[i].pos.y = y;
-        game->enemy_pos[i].win_pos.x = x * TILE_SIZE;
-        game->enemy_pos[i].win_pos.y = y * TILE_SIZE;
-        game->enemy_pos[i].moving = 0;
-        i++;
-    }
-}
-
 int	render_frame(t_game *game)
 {
 	char	*moves_str;
-
+    
+	//mlx_clear_window(game->mlx, game->win);  // Clears only ONCE per frame
 	move_enemies(game);
 	render_map(game);
 	render_exit(game);
@@ -130,6 +99,7 @@ void	my_mlx_init(t_game *game)
 		close_handler(game, "MLX initialization failed");
 		return ;
 	}
+	init_positions(game);
 	game->win = mlx_new_window(game->mlx, game->size.x * TILE_SIZE,
 			game->size.y * TILE_SIZE, "So_Long");
 	if (!game->win)

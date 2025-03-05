@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:09:23 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/05 14:50:17 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/05 15:43:55 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,9 +118,14 @@ typedef struct s_game
 	t_imgs	imgs;
 }			t_game;
 
+/* INIT POSITIONS */
+//void    init_player_position(t_game *game);
+//void    init_enemies(t_game *game);
+
 void    find_player_position(char **map, int *x, int *y);
 void    find_enemy_position(char **map, int *x, int *y, int index);
-void    exit_error(t_game *game, char *message);
+void	init_positions(t_game *game);
+
 
 /* ENEMIES_MOVE */
 //int			valid_move(char **array_map, int x, int y);
@@ -175,7 +180,6 @@ int			ft_check_borders(t_game *game);
 int			ft_check_failed(t_game *game, t_cell objects);
 
 /* MLX_LOAD */
-void		init_positions(t_game *game);
 int			render_frame(t_game *game);
 int			handle_keypress(int keycode, t_game *game);
 void		load_game_images(t_game *game);
@@ -187,11 +191,13 @@ int			move_to_exit(t_game *game);
 int			move_player(t_game *game, int dx, int dy);
 
 /* RENDER */
+
 void		render_map(t_game *game);
 void		render_collectibles(t_game *game);
 void		render_exit(t_game *game);
 void		render_player(t_game *game);
 void		render_enemies(t_game *game);
+
 
 /* SO LONG */
 int			close_handler(t_game *game, char *message);

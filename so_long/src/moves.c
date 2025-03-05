@@ -12,57 +12,6 @@
 
 #include "so_long.h"
 
-void    find_player_position(char **map, int *x, int *y)
-{
-    *y = 0;
-    while (map[*y])
-    {
-        *x = 0;
-        while (map[*y][*x])
-        {
-            if (map[*y][*x] == PJ)
-                return;
-            (*x)++;
-        }
-        (*y)++;
-    }
-}
-
-void    find_enemy_position(char **map, int *x, int *y, int index)
-{
-    int count;
-
-    count = 0;
-    *y = 0;
-    while (map[*y])
-    {
-        *x = 0;
-        while (map[*y][*x])
-        {
-            if (map[*y][*x] == ENEMY)
-            {
-                if (count == index)
-                    return;
-                count++;
-            }
-            (*x)++;
-        }
-        (*y)++;
-    }
-}
-
-void    exit_error(t_game *game, char *message)
-{
-    ft_printf("Error\n%s\n", message);
-    // Free any allocated memory
-    if (game)
-    {
-        // Add your cleanup code here
-        // free_game(game);
-    }
-    exit(1);
-}
-
 int	move_to_exit(t_game *game)
 {
 	if (game->items > 0)

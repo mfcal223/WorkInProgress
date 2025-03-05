@@ -15,7 +15,6 @@
 
 #include "so_long.h"
 
-
 void	count_enemies(t_game *game)
 {
 	int x;
@@ -68,6 +67,40 @@ void	store_enemies(t_game *game)
 
 void	find_enemies(t_game *game)
 {
+	if (game->enemy_pos)
+	{
+		ft_printf("DEBUG: Freeing previous enemy_pos memory\n");
+		free(game->enemy_pos);
+		game->enemy_pos = NULL;
+	}
+
+	count_enemies(game);
+	if (game->enemy_count == 0)
+	{
+		ft_printf("DEBUG: No enemies found, skipping allocation\n");
+        game->enemy_pos = NULL;
+        return;
+    }
+
+    game->enemy_pos = malloc(sizeof(t_posit) * game->enemy_count);
+    if (!game->enemy_pos)
+	{
+		close_handler(game, "Failed to allocate enemy positions");
+		return;
+	}
+	ft_printf("DEBUG: Allocated %d enemy positions at %p\n", game->enemy_count, game->enemy_pos);
+
+	store_enemies(game);
+}
+
+/*
+void	find_enemies(t_game *game)
+{
+	if (game->enemy_pos)
+	{
+		free(game->enemy_pos);
+		game->enemy_pos = NULL;
+	}
 	count_enemies(game);
 	if (game->enemy_count == 0)
 	{
@@ -76,18 +109,16 @@ void	find_enemies(t_game *game)
     }
     game->enemy_pos = malloc(sizeof(t_posit) * game->enemy_count);
     if (!game->enemy_pos)
-		return ;
+	{
+		close_handler(game, "Failed to allocate enemy positions");
+		return;
+	}
 	store_enemies(game);
 }
-/*int i;//debug
-ft_printf("Total enemies found: %d\n", game->enemy_count);//debug
-i = 0;//debug
-while (i < game->enemy_count)
-{
-ft_printf("Enemy %d at: (%d, %d)\n", i, game->enemies[i].x,
-	game->enemies[i].y);
-i++;
-}*/
+*/
+
+
+
 /*void	move_enemies(t_game *game)
 {
 	int	i;

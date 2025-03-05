@@ -142,6 +142,8 @@ void    render_enemies(t_game *game)
     }
 }
 
+/* ===================================================================*/
+
 /*void	render_player(t_game *game)
 {
 	if (game->imgs.player.img)

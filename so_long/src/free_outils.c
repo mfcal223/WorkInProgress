@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:15:07 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/05 14:38:00 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/05 15:57:10 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,51 @@ void	free_list(t_map **list)
 
 int	close_window(t_game *game)
 {
+	ft_printf("DEBUG: Closing game and freeing memory...\n");
+
 	if (game->enemy_pos)
+	{
+		ft_printf("DEBUG: Freeing enemy_pos memory at %p\n", game->enemy_pos);
 		free(game->enemy_pos);
+		game->enemy_pos = NULL;
+	}
+
+	if (game->imgs.wall.img || game->imgs.floor.img
+		|| game->imgs.player.img || game->imgs.collect.img
+		|| game->imgs.exit.img)
+	{
+		free_all_img(&game);
+	}
+
+	if (game->win)
+		mlx_destroy_window(game->mlx, game->win);
+
+	if (game->mlx)
+	{
+		mlx_destroy_display(game->mlx);
+		free(game->mlx);
+	}
+
+	if (game->array_map)
+		free_duplicate(game->array_map, game->size.y);
+	if (game->array_ff)
+		free_duplicate(game->array_ff, game->size.y);
+	if (game->map)
+		free_list(&game->map);
+
+	free(game);
+	ft_printf("DEBUG: Memory cleanup complete, exiting...\n");
+	exit(0);
+	return (0);
+}
+
+/*int	close_window(t_game *game)
+{
+	if (game->enemy_pos)
+	{
+		free(game->enemy_pos);
+		game->enemy_pos = NULL;
+	}
 	if (game->imgs.wall.img || game->imgs.floor.img
 		|| game->imgs.player.img || game->imgs.collect.img
 		|| game->imgs.exit.img)
@@ -90,11 +133,4 @@ int	close_window(t_game *game)
 	free(game);
 	exit(0);
 	return (0);
-}
-/*
-if (game->enemy_pos)
-{
-    free(game->enemy_pos);
-    game->enemy_pos = NULL;
-}
-*/
+}*/
