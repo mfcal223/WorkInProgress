@@ -80,6 +80,9 @@ void	render_player(t_game *game)
 	if (game->imgs.player.img)
 	{
 		mlx_put_image_to_window(game->mlx, game->win,
+			game->imgs.floor.img, game->player.x * TILE_SIZE,
+			game->player.y * TILE_SIZE);
+		mlx_put_image_to_window(game->mlx, game->win,
 			game->imgs.player.img,
 			game->player.x * TILE_SIZE,
 			game->player.y * TILE_SIZE);
@@ -97,6 +100,8 @@ void	render_enemies(t_game *game)
 	{
 		x = game->enemies[i].x * TILE_SIZE;
 		y = game->enemies[i].y * TILE_SIZE;
+		mlx_put_image_to_window(game->mlx, game->win,
+			game->imgs.floor.img, x * TILE_SIZE, y * TILE_SIZE);
 		mlx_put_image_to_window(game->mlx, game->win, game->imgs.enemy.img, x,
 			y);
 		i++;

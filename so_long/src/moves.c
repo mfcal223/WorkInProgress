@@ -24,11 +24,20 @@ int	move_to_exit(t_game *game)
 
 void	update_player_position(t_game *game, int new_x, int new_y)
 {
-	game->array_map[game->player.y][game->player.x] = FLOOR;
+	// 1️⃣ Erase old position
+	mlx_put_image_to_window(game->mlx, game->win,//added to stop flickering
+		game->imgs.floor.img, game->player.x * TILE_SIZE,
+		game->player.y * TILE_SIZE);
+	
+		game->array_map[game->player.y][game->player.x] = FLOOR;
 	game->array_map[new_y][new_x] = PJ;
 	game->player.x = new_x;
 	game->player.y = new_y;
 	game->moves++;
+
+	// 3️⃣ Draw new position immediately
+	render_player(game);//added to stop flickering
+
 	ft_printf("Moves: %d\n", game->moves);
 }
 

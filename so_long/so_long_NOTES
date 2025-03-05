@@ -552,7 +552,20 @@ Handles keyboard input through ft_key_press:
 - Move counter
 - Win/lose conditions
 
+TEST
+- ENEMIGOS no deben borrar collect or exit
+- player debe perder si toca un enemigo o si enemigo lo choca
+- solo puede irse si tiene todos os items
 
+
+🚀 CHANGES A FUTURO:
+📌 ENEMIES MOVEMENT:
+Would you like to add smarter enemy AI?
+For example:
+Making enemies chase the player instead of moving randomly?
+Making them patrol between two points?
+
+📌 collectibles appear 1 at the time after the previous one was picked up
 =========================================================
 
 WHY IS IT game AND NOT *game IN MAIN()
@@ -800,7 +813,31 @@ Game Exit
 ✔ They move left or right in move_enemies().
 ✔ If they touch the player, game over.
 ✔ Memory is properly freed at game exit.
-===========================================================================================================================
+=====================================================
+
+Understanding the Flickering Issue
+From what you described, the issue is likely happening because all images are being re-rendered on every frame without double buffering.
+📌 Possible causes of the flicker:
+
+mlx_clear_window() in render_frame() (in mlx_load_render.c)
+This clears everything before redrawing, which can cause a visible flicker.
+Lack of double buffering
+MiniLibX does not use double buffering by default.
+Each frame is drawn directly to the window, making rendering appear unstable.
+Inefficient Redrawing
+The game re-renders the entire screen even when only a small portion has changed.
+Solution: Enable Double Buffering
+How?
+Instead of drawing directly on the screen, draw everything to an "off-screen" image (buffer) first.
+Once the entire frame is ready, copy it to the window in one step.
+This avoids flickering caused by clearing and redrawing partial images.
+Implementation Plan
+Modify t_game to add a back buffer (an off-screen image).
+Render everything to the buffer instead of the window.
+Display the fully rendered buffer in one go.
+
+
+======================================================================
 
 I'll help you implement player animation with multiple sprites. First, let's look at how to organize the player sprites and then implement the animation system.
 

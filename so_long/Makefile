@@ -20,6 +20,7 @@ MLX_DIR = minilibx-linux
 #------------- SOURCE FILES -------------------------------#
 SRCS = $(SRC_DIR)/so_long.c \
 	$(SRC_DIR)/enemies.c \
+	$(SRC_DIR)/enemies_move.c \
 	$(SRC_DIR)/map_creation1.c \
 	$(SRC_DIR)/map_creation2.c \
 	$(SRC_DIR)/map_creation3.c \

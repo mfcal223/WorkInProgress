@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:09:23 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/03 15:08:38 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/05 10:53:34 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,9 +109,15 @@ typedef struct s_game
 	t_imgs	imgs;
 }			t_game;
 
-/* ENEMIES */
+/* ENEMIES_MOVE */
 void		update_enemy_pos(t_game *game, int i, int new_x, int new_y);
+int			valid_move(char **array_map, int x, int y);
+int			select_enemy_direction(t_game *game, int i, int attempts);
+void		choose_enemy_move(t_game *game, int *new_x, int *new_y, int i);
 void		move_enemies(t_game *game);
+
+/* ENEMIES */
+
 void		count_enemies(t_game *game);
 void		store_enemies(t_game *game);
 void		find_enemies(t_game *game);
@@ -158,7 +164,6 @@ int			ft_check_failed(t_game *game, t_cell objects);
 /* MLX_LOAD */
 int			render_frame(t_game *game);
 void		my_mlx_init(t_game *game);
-void		load_all_images( t_game *game);
 void		load_game_images(t_game *game);
 int			handle_keypress(int keycode, t_game *game);
 
