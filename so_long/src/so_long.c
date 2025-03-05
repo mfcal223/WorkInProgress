@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:09:08 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/03 15:13:53 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/05 14:15:26 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,8 @@ t_game	*initialize_game(t_game *game)
 	game->array_ff = NULL;
 	game->size.x = 0;
 	game->size.y = 0;
-	game->player.x = 0;
-	game->player.y = 0;
+	game->player_pos.pos.x= 0;
+	game->player_pos.pos.y = 0;
 	game->moves = 0;
 	game->items = 0;
 	game->flag = 0;

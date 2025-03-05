@@ -2,11 +2,11 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   enemies.c                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+        
+/*                                                    +:+ +:+
 	+:+     */
-/*   By: mcalciat <marvin@42.fr>                    +#+  +:+      
+/*   By: mcalciat <marvin@42.fr>                    +#+  +:+
 	+#+        */
-/*                                                +#+#+#+#+#+  
+/*                                                +#+#+#+#+#+
 	+#+           */
 /*   Created: 2025/03/03 10:21:13 by mcalciat          #+#    #+#             */
 /*   Updated: 2025/03/03 10:21:18 by mcalciat         ###   ########.fr       */
@@ -15,10 +15,11 @@
 
 #include "so_long.h"
 
+
 void	count_enemies(t_game *game)
 {
-	int	x;
-	int	y;
+	int x;
+	int y;
 
 	y = 0;
 	game->enemy_count = 0;
@@ -37,9 +38,9 @@ void	count_enemies(t_game *game)
 
 void	store_enemies(t_game *game)
 {
-	int	x;
-	int	y;
-	int	count;
+	int x;
+	int y;
+	int count;
 
 	y = 0;
 	count = 0;
@@ -50,8 +51,13 @@ void	store_enemies(t_game *game)
 		{
 			if (game->array_map[y][x] == ENEMY)
 			{
-				game->enemies[count].x = x;
-				game->enemies[count].y = y;
+				game->enemy_pos[count].pos.x = x;
+				game->enemy_pos[count].pos.y = y;
+				// Initialize window position
+				game->enemy_pos[count].win_pos.x = x * TILE_SIZE;
+				game->enemy_pos[count].win_pos.y = y * TILE_SIZE;
+				// Initialize movement state
+				game->enemy_pos[count].moving = 0;
 				count++;
 			}
 			x++;
@@ -65,11 +71,11 @@ void	find_enemies(t_game *game)
 	count_enemies(game);
 	if (game->enemy_count == 0)
 	{
-		game->enemies = NULL;
-		return ;
-	}
-	game->enemies = malloc(sizeof(t_coord) * game->enemy_count);
-	if (!game->enemies)
+        game->enemy_pos = NULL;
+        return;
+    }
+    game->enemy_pos = malloc(sizeof(t_posit) * game->enemy_count);
+    if (!game->enemy_pos)
 		return ;
 	store_enemies(game);
 }

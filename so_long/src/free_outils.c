@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:15:07 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/03 14:47:37 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/05 14:38:00 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,8 @@ void	free_list(t_map **list)
 
 int	close_window(t_game *game)
 {
-	if (game->enemies)
-		free(game->enemies);
+	if (game->enemy_pos)
+		free(game->enemy_pos);
 	if (game->imgs.wall.img || game->imgs.floor.img
 		|| game->imgs.player.img || game->imgs.collect.img
 		|| game->imgs.exit.img)
@@ -91,3 +91,10 @@ int	close_window(t_game *game)
 	exit(0);
 	return (0);
 }
+/*
+if (game->enemy_pos)
+{
+    free(game->enemy_pos);
+    game->enemy_pos = NULL;
+}
+*/

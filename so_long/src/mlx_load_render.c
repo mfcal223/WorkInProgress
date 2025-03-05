@@ -6,11 +6,43 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 10:53:21 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/05 11:35:08 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/05 14:17:49 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "so_long.h"
+
+void init_positions(t_game *game)
+{
+    int i;
+    int x;
+    int y;
+
+    // Initialize player position
+    find_player_position(game->array_map, &x, &y);
+    game->player_pos.pos.x = x;
+    game->player_pos.pos.y = y;
+    game->player_pos.win_pos.x = x * TILE_SIZE;
+    game->player_pos.win_pos.y = y * TILE_SIZE;
+    game->player_pos.moving = 0;
+
+    // Initialize enemy positions
+    game->enemy_pos = malloc(sizeof(t_posit) * game->enemy_count);
+    if (!game->enemy_pos)
+        exit_error(game, "Failed to allocate enemy positions");
+
+    i = 0;
+    while (i < game->enemy_count)
+    {
+        find_enemy_position(game->array_map, &x, &y, i);
+        game->enemy_pos[i].pos.x = x;
+        game->enemy_pos[i].pos.y = y;
+        game->enemy_pos[i].win_pos.x = x * TILE_SIZE;
+        game->enemy_pos[i].win_pos.y = y * TILE_SIZE;
+        game->enemy_pos[i].moving = 0;
+        i++;
+    }
+}
 
 int	render_frame(t_game *game)
 {
@@ -28,9 +60,7 @@ int	render_frame(t_game *game)
 	mlx_string_put(game->mlx, game->win, 10, 20, 0xFFFFFF, "Moves: ");
 	mlx_string_put(game->mlx, game->win, 60, 20, 0xFFFFFF, moves_str);
 	free(moves_str);
-
-	// 🔥 Force synchronization with the display
-	mlx_do_sync(game->mlx);
+	//mlx_do_sync(game->mlx);
 	return (0);
 }
 
@@ -110,6 +140,10 @@ void	my_mlx_init(t_game *game)
 	load_game_images(game);
 	mlx_hook(game->win, 17, 0, close_window, game);
 	mlx_key_hook(game->win, handle_keypress, game);
+	
+    // Add expose hook to handle window redraw events
+	mlx_expose_hook(game->win, render_frame, game);//flickering issue
+	
 	mlx_loop_hook(game->mlx, render_frame, game);
 	mlx_loop(game->mlx);
 }
