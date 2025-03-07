@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:09:23 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/05 15:43:55 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/07 14:57:40 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,19 +47,6 @@
 # define KEY_LEFT 65361		// left arrow key.
 # define KEY_RIGHT 65363	// right arrow key.
 
-typedef struct s_coord
-{
-	int		x;
-	int		y;
-}			t_coord;
-
-typedef struct s_posit 
-{
-    t_coord	pos;			// Grid position (like 1,1)
-    t_coord	win_pos;		// Actual pixel position on screen (like 32,32)
-    int		moving;			// Are we currently moving between tiles?
-}			t_posit;
-
 typedef struct s_cell
 {
 	int	player;
@@ -77,10 +64,16 @@ typedef struct s_map
 	struct s_map	*next;
 }					t_map;
 
+typedef struct s_coord
+{
+	int		x;
+	int		y;
+}			t_coord;
+
 typedef struct s_pixel
 {
-	void	*img;	// Image pointer (MiniLibX)
-	char	*addr; // Pixel data pointer
+	void	*img;
+	char	*addr;
 	int		bppix;
 	int		line_len;
 	int		endian;
@@ -105,37 +98,26 @@ typedef struct s_game
 	char	**array_map;	// 2D array for map representation (status_a)
 	char	**array_ff;		// 2D array for flood-fill validation (status_b)
 	t_coord	size;			// Map size (width & height)
+	t_coord	player;			// Player position (x, y)
+	t_coord	prev_player;	// previous player position (x, y)
 	t_cell	cell;			// Content of a cell (coordenate?)
 	int		moves;			// Number of player moves
 	int		items;			// Number of collectibles
 	int		flag;			// to use to allowed using the exit in the map
 	int		enemy_count;	//total amount of enemies
 	int		enemy_timer;	//control movement speed
-	//t_coord	player;			// Player position (x, y)
-	//t_coord	*enemies;		//track enemies position
-	t_posit player_pos;   // For tracking player position
-    t_posit *enemy_pos;   // Array for enemy positions
+	t_coord	*enemies;		//track enemies position
 	t_imgs	imgs;
 }			t_game;
 
-/* INIT POSITIONS */
-//void    init_player_position(t_game *game);
-//void    init_enemies(t_game *game);
-
-void    find_player_position(char **map, int *x, int *y);
-void    find_enemy_position(char **map, int *x, int *y, int index);
-void	init_positions(t_game *game);
-
-
-/* ENEMIES_MOVE */
-//int			valid_move(char **array_map, int x, int y);
-//int			select_enemy_direction(t_game *game, int i, int attempts);
+/* ENEMIES MOVES */
 void		choose_enemy_move(t_game *game, int *new_x, int *new_y, int i);
+int			select_enemy_direction(t_game *game, int i, int attempts);
+int			valid_move(char **array_map, int x, int y);
 void		update_enemy_pos(t_game *game, int i, int new_x, int new_y);
 void		move_enemies(t_game *game);
 
 /* ENEMIES */
-
 void		count_enemies(t_game *game);
 void		store_enemies(t_game *game);
 void		find_enemies(t_game *game);
@@ -175,33 +157,34 @@ t_game		*find_player(t_game *game);
 /* MAP VALIDATION 2 */
 int			compare_counts(t_cell checked, t_cell objects);
 int			check_min_count(t_cell objects);
-int			ft_check_form(t_game *game);
-int			ft_check_borders(t_game *game);
-int			ft_check_failed(t_game *game, t_cell objects);
+int			check_rectangle(t_game *game);
+int			check_borders(t_game *game);
+int			check_failed(t_game *game, t_cell objects);
 
 /* MLX_LOAD */
+int			dinamic_loop(t_game *game);
 int			render_frame(t_game *game);
-int			handle_keypress(int keycode, t_game *game);
-void		load_game_images(t_game *game);
 void		my_mlx_init(t_game *game);
+void		load_all_images( t_game *game);
+void		load_game_images(t_game *game);
 
 /* MOVES */
+int			handle_keypress(int keycode, t_game *game);
 void		update_player_position(t_game *game, int new_x, int new_y);
 int			move_to_exit(t_game *game);
 int			move_player(t_game *game, int dx, int dy);
 
-/* RENDER */
-
+/* RENDER_ELEMENTS */
 void		render_map(t_game *game);
 void		render_collectibles(t_game *game);
 void		render_exit(t_game *game);
 void		render_player(t_game *game);
 void		render_enemies(t_game *game);
 
-
 /* SO LONG */
 int			close_handler(t_game *game, char *message);
 t_game		*initialize_game(t_game *game);
+int			validate_map(t_game *game);
 int			game_start(char *map);
 
 #endif

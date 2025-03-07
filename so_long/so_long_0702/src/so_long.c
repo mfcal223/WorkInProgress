@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:09:08 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/05 14:15:26 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/07 14:58:06 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int	close_handler(t_game *game, char *message)
 {
-	ft_printf("%s\n", message);
+	ft_printf("%s", message);
 	if (!game)
 	{
 		return (1);
@@ -33,8 +33,10 @@ t_game	*initialize_game(t_game *game)
 	game->array_ff = NULL;
 	game->size.x = 0;
 	game->size.y = 0;
-	game->player_pos.pos.x= 0;
-	game->player_pos.pos.y = 0;
+	game->player.x = 0;
+	game->player.y = 0;
+	game->prev_player.x = 0;
+	game->prev_player.y = 0;
 	game->moves = 0;
 	game->items = 0;
 	game->flag = 0;
@@ -57,7 +59,7 @@ int	validate_map(t_game *game)
 		return (1);
 	}
 	game = map_validation(game);
-	if (ft_check_failed(game, count_objects(game->map)) == 1)
+	if (check_failed(game, count_objects(game->map)) == 1)
 	{
 		close_handler(game, "Map check failed.\n");
 		return (1);

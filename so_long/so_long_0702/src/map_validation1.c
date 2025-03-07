@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:09:28 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/05 14:44:27 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/03 14:52:18 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,16 +76,10 @@ t_game	**path_valid_ff(char **tab, t_coord size, t_coord curr, t_game **game)
 
 t_game	*map_validation(t_game *game)
 {
-	t_coord start_pos;
-	
 	game->cell.player = 0;
 	game->cell.item = 0;
 	game->cell.exit = 0;
-	
-	start_pos.x = game->player_pos.pos.x;
-    start_pos.y = game->player_pos.pos.y;
-	
-	game = *path_valid_ff(game->array_ff, game->size, start_pos, &game);
+	game = *path_valid_ff(game->array_ff, game->size, game->player, &game);
 	return (game);
 }
 
@@ -96,8 +90,8 @@ t_game	*find_player(t_game *game)
 	int	j;
 
 	j = 0;
-	game->player_pos.pos.x = 0;
-	game->player_pos.pos.y = 0;
+	game->player.x = 0;
+	game->player.y = 0;
 	while (j < game->size.y)
 	{
 		i = 0;
@@ -105,8 +99,8 @@ t_game	*find_player(t_game *game)
 		{
 			if (game->array_map[j][i] == 'P')
 			{
-				game->player_pos.pos.x = i;
-				game->player_pos.pos.y = j;
+				game->player.x = i;
+				game->player.y = j;
 				return (game);
 			}
 			i++;

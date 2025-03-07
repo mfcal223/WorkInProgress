@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:39:45 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/03 14:54:13 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/07 14:34:13 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int	check_min_count(t_cell objects)
 }
 
 /* checks it is a rectangle */
-int	ft_check_form(t_game *game)
+int	check_rectangle(t_game *game)
 {
 	int	i;
 	int	j;
@@ -64,7 +64,7 @@ int	ft_check_form(t_game *game)
 	return (0);
 }
 
-int	ft_check_borders(t_game *game)
+int	check_borders(t_game *game)
 {
 	int	i;
 	int	j;
@@ -94,7 +94,7 @@ int	ft_check_borders(t_game *game)
 /*j = rows / i = columns */
 
 /* cambiar nombre a map_check */
-int	ft_check_failed(t_game *game, t_cell objects)
+int	check_failed(t_game *game, t_cell objects)
 {
 	int	x;
 
@@ -103,9 +103,9 @@ int	ft_check_failed(t_game *game, t_cell objects)
 		x = 1;
 	if (compare_counts(game->cell, objects) == 1)
 		x = 1;
-	if (ft_check_form(game) == 1)
+	if (check_rectangle(game) == 1)
 		x = 1;
-	if (ft_check_borders(game) == 1)
+	if (check_borders(game) == 1)
 		x = 1;
 	if (x == 1)
 	{
