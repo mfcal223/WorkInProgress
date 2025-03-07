@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/26 14:39:45 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/07 14:34:13 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/07 16:47:46 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,25 @@ int	compare_counts(t_cell checked, t_cell objects)
 /* checks minimun quantities are fullfilled */
 int	check_min_count(t_cell objects)
 {
+	int	error;
+
+	error = 0;
 	if (objects.player != 1)
+	{
 		ft_printf("Error: there should be 1 player.\n");
+		error = 1;
+	}
 	if (objects.item < 1)
-		ft_printf("Error: there should be min 1 collectible.\n");
+	{
+		ft_printf("Error: there should be at least 1 collectible.\n");
+		error = 1;
+	}
 	if (objects.exit != 1)
+	{
 		ft_printf("Error: there should be 1 exit.\n");
-	return (0);
+		error = 1;
+	}
+	return (error);
 }
 
 /* checks it is a rectangle */
