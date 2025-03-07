@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   map_creation2.c                                    :+:      :+:    :+:   */
+/*   map_creation3.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mcalciat <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/03 10:42:11 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/03 10:42:15 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/07 16:56:14 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void	create_array(t_game *game, char *line)
 	{
 		ft_printf("Map error: found empty line.\n");
 		free(line);
-		exit(1);
+		close_handler(game, "Map creation failed.\n");
 	}
 	new = add_line(line);
 	if (!new)
