@@ -1,0 +1,719 @@
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣✅.🚫❗⭐ 😴😵🍴🤔 📥🚀🔥🎯 ❌ 🔹🔺📌🔍⚠💡🎮 🎉 🔰🏁🚩🔻🔶🔷🔴🔵⇶🙊 🍝
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+
+🍴🤔PHILOSOPHERS 😴😵
+=======================
+
+⭐ Philosophers Project Overview ⭐ 
+-----------------------------------
+The Philosophers project is a concurrency programming challenge that introduces the concepts of threads, mutexes, and synchronization. 
+The task is inspired by the classic "Dining Philosophers Problem" in computer science, which explores deadlocks, starvation, and race conditions.
+
+The simulation involves "n" number of philosophers sitting at a round table (ach of them brings a fork, that they place to their right or left), eating, thinking, and sleeping. Each philosopher requires two forks to eat (the one on his right and the one on his left), but there are limited forks, leading to potential conflicts in accessing shared resources.
+
+Here is what the subject says:
+🍴 One or more philosophers sit at a round table.
+There is a large bowl of spaghetti in the middle of the table.
+🍴 The philosophers alternatively eat, think, or sleep.
+    🍝 While they are eating, they are not thinking nor sleeping;
+    🤔 while thinking, they are not eating nor sleeping;
+    😴 while sleeping, they are not eating nor thinking.
+🍴 There are also forks on the table. There are as many forks as philosophers.
+🍴 Because serving and eating spaghetti with only one fork is very inconvenient, a philosopher takes their right and their left forks to eat, one in each hand.
+🍴 When a philosopher has finished eating, they put their forks back on the table and start sleeping. Once awake, they start thinking again. The simulation stops when a philosopher dies of starvation. 😵
+🍴 Every philosopher needs to eat and should never starve.
+🍴 Philosophers don’t speak with each other. 🙊
+🍴 Philosophers don’t know if another philosopher is about to die.
+🍴 No need to say that philosophers should avoid dying! 😵
+🍴 Each philosopher has a number ranging from 1 to number_of_philosophers.
+🍴 Philosopher number 1 sits next to philosopher number *number_of_philosophers*. Any other philosopher number N sits between philosopher number N - 1 and philosopher number N + 1.
+
+🔰 Threading & Synchronization:
+🔹 Each philosopher is represented as a separate thread.
+
+🔹 Forks are shared resources that need to be protected using mutexes.
+🔹 No global variables are allowed.
+
+🔰 Execution Arguments:
+
+>$ ./philo number_of_philosophers [time_to_die] [time_to_eat] [time_to_sleep] [[number_of_times_each_philosopher_must_eat]]
+
+🔺 number_of_philosophers: Total number of philosophers (and forks).
+🔺 time_to_die (in milliseconds): If a philosopher doesn’t eat within this time, (since the beginning of their last meal or the beginning of the sim-
+ulation) they die.
+🔺 time_to_eat (in milliseconds) : Time a philosopher takes to eat. During that time, they will need to hold two forks.
+🔺 time_to_sleep (in milliseconds): Time a philosopher takes to sleep.
+🔺 number_of_times_each_philosopher_must_eat (optional): If provided, the simulation stops when each philosopher has eaten this many times.
+
+🔰 Philosopher States & Logging:
+Actions must be logged as:
+
+❗timestamp_in_ms X has taken a fork
+❗timestamp_in_ms X is eating
+❗timestamp_in_ms X is sleeping
+❗timestamp_in_ms X is thinking
+❗timestamp_in_ms X died
+
+X = philosophers number.
+
+🔹 Logs should not overlap or mix with each other.
+🔹 A philosopher’s death message must be logged within 10ms of the actual death.
+
+🔰 No Data Races: The program must not have data races, meaning no two threads should access shared resources unsafely.
+
+🚀 Mandatory Part
+-------------------
+🔹 Directory: philo/ with Makefile, *.h, *.c, in the directory
+🔹 EXTERNAL FUNCTIONS: memset, printf, malloc, free, write, usleep, gettimeofday, pthread_create,
+pthread_detach, pthread_join, pthread_mutex_init, pthread_mutex_destroy, pthread_mutex_lock,
+pthread_mutex_unlock
+🔹 LIBFT is NOT authorized. 🚫
+🔹 Uses threads (pthread_create) and mutexes (pthread_mutex_) for managing concurrency.
+🔹 Each philosopher has access to two forks (mutexes) to eat.
+🔹 The simulation stops when:
+        1. A philosopher dies.
+        2. (If the optional argument is provided) All philosophers have eaten the required times.
+
+🚀 Bonus Part
+---------------------
+🔹Directory: philo_bonus/
+🔹Uses processes (fork()) and semaphores (sem_) instead of threads and mutexes.
+🔹All forks are placed in a shared resource (semaphore), rather than being individual mutexes.
+🔹Each philosopher is a separate process, not a thread.
+🔹The main process should not be a philosopher.
+🔹Bonus is evaluated ONLY if the mandatory part is perfect (no errors).
+
+🚀 Key Challenges
+===============
+1️⃣ Avoiding Deadlocks: If all philosophers pick up their left fork at the same time, no one can pick up the right fork, causing a deadlock.
+2️⃣  Avoiding Starvation: Ensuring that all philosophers get a chance to eat and don’t starve indefinitely.
+3️⃣  Thread Safety: Preventing data races when multiple threads access shared resources.
+
+🚀 First Steps
+=============
+🛠 Understand Threading, race conditions and Mutexes: Research pthread_create, pthread_mutex_lock, and pthread_mutex_unlock.
+🛠 Plan Your Synchronization Strategy: Decide how to control access to forks efficiently.
+🛠 Implement a Basic Structure 📂 :
+1️⃣ Initialize philosopher threads.
+2️⃣ Implement fork handling using mutexes.
+3️⃣ Manage state transitions (eating, thinking, sleeping).
+4️⃣ Handle termination conditions.
+🛠 Test for Race Conditions and Synchronization Issues.
+
+
+Functions allowed (other than the included in <pthread>): 🔴🔵
+🔵 int usleep(useconds_t usec);
+🔴 int gettimeofday(struct timeval *restrict tv, struct timezone *restrict tz);
+[The gettimeofday() function gets the system’s clock time. The current time is expressed in elapsed seconds and microseconds since 00:00:00, January 1, 1970 (Unix Epoch).]
+
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+
+⭐ THREADS / Synchronization / Mutex lock ⭐
+============================================
+
+📌 Concurrent Programming
+---------------------------
+For efficiency or by necessity, a program can be concurrent rather than sequential. Thanks to its concurrent programming, it will be able to perform multiple tasks simultaneously instead of having to wait for the result of one operation to move onto the next. 
+There are three ways to implement concurrency in our programs: processes, threads, and multiplexing.
+
+📌 What is a Thread? 
+------------------
+A thread is a single sequence stream within a process, that is automatically managed by the operating system’s kernel. Because threads have some of the properties of processes, they are sometimes called "lightweight processes".
+In contrast, a process is a "heavyweight" unit of kernel scheduling, as creating, destroying, and switching processes is relatively expensive. 
+
+In computer science, a thread of execution is the smallest sequence of programmed instructions that can be managed independently by a scheduler, which is typically a part of the operating system.
+
+❗ Each one of a process’s threads has its own context: its own ID, its own stack, its own instruction pointer, it’s own processor register. But since all of the threads are part of the same process, they share the same virtual memory address space: the same code, the same heap, the same shared libraries and the same open file descriptors.
+
+🏁 A thread’s context has a smaller footprint in terms of resources than the context of a process. Which means that it is much faster for the system to create a thread than it is to create a process. Switching from one thread to the other, compared to switching from one process to another is also quicker.
+
+🏁 Threads don’t have the strict parent-child hierarchy that processes do. Rather, they form a group of peers regardless of which thread created which other thread. The only distinction the “main” thread has is being the first one to exist at the beginning of the process. This means that within the same process, any thread can wait for any other thread to complete, or kill any other thread.
+
+🏁 Additionally, any thread can read and write to the same virtual memory, which makes communication between threads much easier than communication between processes. We will later examine the problems that can arise from this shared memory.
+
+💡 What are the differences between process and thread? 
+-------------------------------------------------------
+Threads are not independent from each other unlike processes. As a result, threads shares with other threads their code section, data section and OS resources like open files and signals. But, like processes, a thread has its own program counter (PC), a register set, and a stack space. 
+
+Why Multithreading? 
+Threads are popular way to improve application through parallelism. For example, in a browser, multiple tabs can be different threads. MS word uses multiple threads, one thread to format the text, other thread to process inputs, etc. 
+
+Advantages and disadvantages of threads vs processes include:
+---------------------------------------------------------------
+✅ Lower resource consumption of threads: using threads, an application can operate using fewer resources than it would need when using multiple processes.
+✅ Simplified sharing and communication of threads: unlike processes, which require a message passing or shared memory mechanism to perform inter-process communication (IPC), threads can communicate through data, code and files they already share.
+✅ Threads operate faster than processes due to following reasons: 
+    1️⃣ Thread creation is much faster. 
+    2️⃣ Context switching between threads is much faster. 
+    3️⃣ Threads can be terminated easily 
+    4️⃣ Communication between threads is faster.
+❌ Thread crashes a process: due to threads sharing the same address space, an illegal operation performed by a thread can crash the entire process; therefore, one misbehaving thread can disrupt the processing of all the other threads in the application.
+
+Multithreading (computer architecture)
+---------------------------------------
+In computer architecture, multithreading is the ability of a central processing unit (CPU) (or a single core in a multi-core processor) to provide multiple threads of execution.
+
+🏁 Advantages:
+🔺 If a thread gets a lot of cache misses, the other threads can continue taking advantage of the unused computing resources, which may lead to faster overall execution, as these resources would have been idle if only a single thread were executed. 
+🔺 If a thread cannot use all the computing resources of the CPU (because instructions depend on each other`s result), running another thread may prevent those resources from becoming idle.
+
+🚩 Disadvantages
+🔻 Multiple threads can interfere with each other when sharing hardware resources such as caches or translation lookaside buffers (TLBs). As a result, execution times of a single thread are not improved and can be degraded, even when only one thread is executing, due to lower frequencies or additional pipeline stages that are necessary to accommodate thread-switching hardware.
+
+📌 Using POSIX Threads
+====================
+The standard interface in C to manipulate threads is *POSIX* with its <pthread.h> library. 
+It contains around sixty functions to create and join threads, as well as to manage their shared memory. 
+In order to compile a program using this library, we can’t forget to link it with -pthread:
+
+⇶⇶ gcc -pthread main.c
+
+📌 Creating a Thread
+----------------------
+We can create a new thread from any other thread of the program with the pthread_create function. Its prototype is:
+
+⇶⇶ int pthread_create(pthread_t *restrict thread,
+                          const pthread_attr_t *restrict attr,
+                          void *(*start_routine)(void *),
+                          void *restrict arg);
+
+The arguments are:
+
+🔶 thread: a pointer towards a pthread_t type variable, to store the ID of the thread we will be creating.
+🔶 attr: an argument that allows us to change the default attributes of the new thread. This is beyond the scope of this article, and in general, passing NULL here suffices.
+🔶 start_routine: the function where the thread will start its execution. This function will have as its prototype: void *function_name(void *arg). When the thread reaches the end of this function, it will be done with its tasks.
+🔶 arg: a pointer towards an argument to pass to the thread’s start_routine function. If we’d like to pass several parameters to this function, we will need to give it a pointer to a data structure.
+
+When the pthread_create function ends, the thread variable we gave it should contain the newly created thread’s ID. The function itself returns 0 if the creation was successful, or en error code if not.
+
+📌 Joining or Detaching Threads
+----------------------------
+
+In order to block the execution of a thread until another thread finishes, we can use the *pthread_join function*:
+
+⇶⇶ int pthread_join(pthread_t thread, void **retval);
+
+Its parameters are as follows:
+🔹 thread: the ID of the thread that this thread should wait for. The specified thread must be joinable (meaning not detached - see below).
+🔹 retval: a pointer towards a variable that can contain the return value of the thread’s routine function (the start_routine function we supplied at its creation). Here, we will not need this value: a simple NULL will suffice.
+🔹The pthread_join function returns 0 for success, or an error code for failure.
+
+Let’s note that we can only wait for the termination of a specific thread. There is no way to wait for the first terminated thread without specifying an ID, as the wait function for child processes does.
+
+But in some cases, it is possible and preferable to not wait for the end of certain theads at all. In that case, we can detach the thread to tell the operating system that it can reclaim its resources right away when it finishes its execution. 
+❗For that, we use the *pthread_detach* function (usually right after that thread’s creation):
+
+⇶⇶ int pthread_detach(pthread_t thread);
+
+Here, all we have to supply if the thread’s ID. We get 0 in return if the operation was a success, or non-zero if there was an error. After detaching the thread, other threads will not be able to kill or wait for this thread with pthread_join.
+
+⭐ Managing Threads’ Shared Memory
+=================================
+One of the greatest qualities of threads is that they all share their process’s memory. Each thread does have its own stack, but the other threads can very easily gain access to it with a simple pointer. What’s more, *the heap and any open file descriptors are totally shared between threads*.
+
+This shared memory and the ease with which a thread can access another thread’s memory clearly also has its share of danger: it can cause nasty synchronization errors. 🔥
+
+📌 The Danger of Data Races/Race Conditions
+----------------------------------------------
+The problem is that 2 threads often access the same memory area at the same time.
+
+A *Race condition* it is a condition in which one or more threads are trying to access and modify a same variable at the same time, this can lead to an error in the final value of that variable.
+
+🚀 For a detailed explanation watch: https://www.youtube.com/watch?v=FY9livorrJI
+
+If we compile the program with the *-fsanitizer=thread* and *-g* options and then run it, like this:
+
+⇶⇶ gcc -fsanitize=thread -g threads.c && ./a.out
+
+We will get an alert: “WARNING: ThreadSanitizer: data race”.
+
+So is there a way to stop a thread from reading a value while another one modifies it? Yes, thanks to mutexes!
+
+📌 Mutex lock for Linux Thread Synchronization
+============================================
+Thread synchronization is defined as a mechanism which ensures that two or more concurrent processes or threads do not simultaneously execute some particular program segment known as a critical section. 
+
+Processes’ access to critical section is controlled by using synchronization techniques.
+
+When one thread starts executing the critical section (a serialized segment of the program) the other thread should wait until the first thread finishes. If proper synchronization techniques are not applied, it may cause a race condition where the values of variables may be unpredictable and vary depending on the timings of context switches of the processes or threads.
+
+The most popular way of achieving thread synchronization is by using Mutexes.
+
+🎯 Mutex
+----------
+A mutex (short for " mut ual ex clusion") is a synchronization primitive. It is essentially a lock that allows us to regulate access to data and prevent shared resources being used at the same time, and releases it after using it.
+When the lock is set, no other thread can access the locked region of code.
+
+So we see that even if thread_2 is scheduled while thread_1 was not done accessing the shared resource and the code is locked by thread_1 using mutexes then thread_2 cannot even access that region of code.
+So this ensures synchronized access of shared resources in the code.
+
+🔍 Working of a mutex:
+-----------------------
+Imagine multiple people (threads) trying to enter a locked room (a critical section of code). The key to the room is the mutex lock.
+
+One person (a thread) gets the key and enters the room, locking the door behind them.
+If the manager (scheduler) decides to switch turns and lets another person try, they reach the door but find it locked.
+That person has no choice but to wait (go to sleep) until the door is unlocked.
+This switching process might happen repeatedly, but no one else can enter the room until the first person finishes their work and unlocks the door.
+Once unlocked, another person can grab the key and enter.
+This ensures that only one thread at a time can execute that piece of code, preventing conflicts and keeping things in order.
+
+🙊 Declaring a Mutex
+----------------------
+Thanks to the <pthread.h> header, we can declare a mutex type variable like this:
+
+⇶⇶ pthread_mutex_t    mutex;
+
+Before we can use it, we first need to initialize it with the *pthread_mutex_init* function which has the following prototype:
+
+⇶⇶ int pthread_mutex_init(pthread_mutex_t *mutex,
+                        const pthread_mutexattr_t *mutexattr);
+                        
+There are two parameters to supply:
+🔹 mutex: the pointer to a variable of pthread_mutex_t type, the mutex we want to initialize.
+🔹 mutexattr: a pointer to specific attributes for the mutex. We will not worry about this parameter here, we can just say NULL.
+
+The pthread_mutex_init function only ever returns 0.
+
+🙊 Locking and Unlocking a Mutex
+------------------------------
+Then, in order to lock and unlock our mutex, we need two other functions. 
+Their prototypes are as follows:
+
+⇶⇶  int pthread_mutex_lock(pthread_mutex_t *mutex);
+⇶⇶  int pthread_mutex_unlock(pthread_mutex_t *mutex);
+
+If the mutex is unlocked, pthread_mutex_lock locks it and the calling thread becomes its owner. In this case, the function ends immediately. However, if the mutex is already locked by another thread, pthread_mutex_lock suspends the execution of the calling thread until the mutex is unlocked.
+
+The pthread_mutex_unlock function unlocks a mutex. The mutex to be unlocked is assumed to be locked by the calling thread, and the function only sets it to unlocked. 
+💡 Let’s be careful to note that this function does not check if the mutex is in fact locked and that the calling thread is actually its owner: a mutex could therefore be unlocked by a thread that did not lock it in the first place. We will need to be careful about arranging pthread_mutex_lock and pthread_mutex_unlock in our code, otherwise, we might get “lock order violation” errors.❗
+
+Both of these functions return 0 for success and an error code otherwise.
+
+🙊 Destroying a Mutex
+------------------
+When we no longer need a mutex, we should destroy it with the following pthread_mutex_destroy function:
+
+⇶⇶ int pthread_mutex_destroy(pthread_mutex_t *mutex);
+
+This function destroys an unlocked mutex, freeing whatever resources it might hold. In the LinuxThreads implementation of POSIX threads, no resources are associated with mutexes. In that case, pthread_mutex_destroy doesn’t do anything other than check that the mutex isn’t locked.
+
+Locking and Unlocking helps protect a critical area of the code against race conditions.
+🚀 For examples & extra information: https://www.youtube.com/watch?v=oq29KUy29iQ
+
+Excessive mutex locks can delay thread execution.
+
+pthread_join()
+
+VER EN LA EXPLICACION DEL CODIGO
+
+Why Is pthread_join() Needed?
+Threads are meant to work simultaneously, but when main() creates multiple threads:
+
+If main() exits before the threads finish, all threads are forcefully terminated.
+pthread_join() ensures main() doesn’t exit until all threads complete.
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.
+
+🎯 LINKS: 💡
+🍴 https://www.codequoi.com/en/threads-mutexes-and-concurrent-programming-in-c/
+🍴 https://en.wikipedia.org/wiki/Thread_(computing)
+🍴 https://en.wikipedia.org/wiki/Multithreading_(computer_architecture)
+🍴 https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
+🍴 https://www.geeksforgeeks.org/multithreading-in-c/
+🍴 https://en.wikipedia.org/wiki/Pthreads
+https://42-cursus.gitbook.io/guide/rank-03/philosophers/functions-used
+https://github.com/TommyJD93/Philosophers
+
+
+other links:
+https://www.geeksforgeeks.org/enumeration-enum-c/
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+
+⭐⭐ BUILDING THE Project ⭐⭐
+================================
+
+1️⃣ Create a data structure to store all required information about a philosopher
+    💡 Some variables have to be shared between all philosophers so take this into account when creating your data structures.
+2️⃣ Create the correct number of philosopher
+3️⃣ Create the correct number of threads
+4️⃣ Create a routine
+    💡 What each philosopher has to do ? In which order ?
+5️⃣ Initiate the threads with said routine
+
+6️⃣ Create a loop that runs until any of your philosophers die.
+(If you have to loop until any of your philosphers die, it might be a good idea to check in the routine if any of your philosopher has died.)
+📌 Your philosophers have to do the following things (in order) in the routine.
+ 🍝 Eat
+ 😴 Sleep
+ 🤔 Think
+ ❗ Repeat
+
+📂 Directory Structure
+
+philo/
+│── main.c
+│── validation.c
+│── philo.h
+│── Makefile
+│── README.md
+
+1️⃣ INPUT CHECKS
+-------------------
+✅ Correct number of arguments (must be 5 or 6).
+✅ All arguments are numeric (digits only).
+✅ Integer conversion is safe (handles overflows).
+✅ Values fall within acceptable ranges:
+🔹argv[1]: Number of philosophers (1 to 200).
+🔹argv[2]-argv[4]: Time values (must be greater than 0).
+🔹argv[5] (optional): Number of meals (must be greater than 0).
+
+Main
+└── validate_input()  
+    ├── check_numbers()  
+    │    ├── is_number()  →  (Ensures digits only)
+    │    ├── ft_atol()    →  (Converts to integer)
+    │    └── is_valid_number() →  (Checks range)
+    ├── Final Validation & Error Handling  
+    └── Return 1 (Success) / 0 (Failure)
+
+2️⃣ CREATE HEADER WITH STRUCTURES
+
+🔷 Header File (inc/philo.h)
+Defines structures, constants, and function prototypes.
+
+🔺 pthread_mutex_t and pthread_t are predefined structures in the POSIX Threads (pthreads)
+pthread_mutex_t is a mutex (mutual exclusion) object used for thread synchronization.
+It is initialized with pthread_mutex_init().
+It is locked/unlocked with pthread_mutex_lock() and pthread_mutex_unlock().
+
+🔺 pthread_t is a thread identifier used to manage individual threads.
+It is created using pthread_create().
+It is used to manage threads with pthread_join() or pthread_detach().
+
+🔺 What is uint64_t?
+uint64_t is a fixed-width unsigned integer type that is exactly 64 bits (8 bytes) in size. It is part of the C standard library and is defined in stdint.h.
+Properties of uint64_t:
+🔹 Represents only positive numbers (unsigned).
+🔹 Always 64 bits wide, regardless of the system architecture (32-bit or 64-bit).
+🔹 Useful for timestamps (e.g., storing milliseconds in a philosopher simulation).
+u_int64_t is used for time-related variables to ensure precision and 
+compatibility across different systems. This is important for accurately
+measuring time intervals in the simulation. The use of unsigned integers
+also ensures that time values are always positive, 64 bits provides a
+wide range of values to work with.
+
+🔺 Structures have Timestamping: The last_meal_time timestamp is used to implement a timeout 
+mechanism. If a philosopher has not eaten for a certain period, it can be 
+forced to release its forks to prevent deadlock.
+
+3️⃣ INITIALIZE STRUCTURES AND MUTEXES
+🔶 allocate the structures, 
+🔶 initialize all the mutexes,
+
+Main()
+├──validate_input()
+├─────────────────── init_admin()
+	├					├─ init_data()
+	├					├	└─ init_data_mutexes()
+	├					├─ init_philosophers()
+	├					├	└─ init_forks()
+	├						
+	└──if error --> close_adm()
+
+🚨🚨🚨Understanding Malaga Guy`s Fork Logic
+In Malaga Guy`s code, the forks are initialized in a separate function (ft_init_forks()). Instead of circular linking, he assigns fork mutexes directly from the forks array in t_data.
+Each philosopher`s left fork is assigned from data->forks[i].
+Each philosopher`s right fork is assigned from data->forks[i - 1].
+Philosopher 0 (first) takes the last fork as their right fork instead of looping back.
+
+🚨 INITIALIZING FORKS: forks as an array!!
+forks are stored in an array inside t_data, and each philosopher takes forks from this array without looping back.
+
+Example: 4 Philosophers (ID: 1, 2, 3, 4)
+[Philo 1] 🏛  Fork 0       Fork 3  🏛 [Philo 4]
+[Philo 2] 🏛  Fork 1       Fork 0  🏛 [Philo 1]
+[Philo 3] 🏛  Fork 2       Fork 1  🏛 [Philo 2]
+[Philo 4] 🏛  Fork 3       Fork 2  🏛 [Philo 3]
+Each fork is represented by data->forks[i].
+Each philosopher’s left fork is data->forks[i].
+Each philosopher’s right fork is data->forks[i - 1], except for Philosopher 1, who takes the last fork as their right fork (fork 3).
+
+🔶 Step-by-Step Fork Assignment (for data->philo[i]):
+Philosopher			Left Fork	Right Fork
+Philo 1 (index 0)	forks[0]	forks[3] (last fork)
+Philo 2 (index 1)	forks[1]	forks[0]
+Philo 3 (index 2)	forks[2]	forks[1]
+Philo 4 (index 3)	forks[3]	forks[2]
+ 📌Implementing init_forks()
+Since forks are just mutexes inside an array, init_forks() will:
+
+Initialize each fork mutex in data->forks[i].
+Assign each philosopher’s left and right fork using the rules above.
+(first philosopher is assign fork [0] and last fork (num_philos -1))
+
+
+4️⃣ THREAD CREATION & STARTING THE SIMULATION
+To start the threads we are going to use the function pthread_create.
+The first parameter of this function is the pointer to the tid variable (of 
+type pthread_t), the second one is nullable (as for pthread_mutex_init we do not 
+have to specify attributes in this project), the third parameter is the pointer to 
+the function that the thread is going to execute and the forth parameter is the 
+pointer to the datas that we give to the routine function.
+
+ Please note that the routine is always a "void *" function and the datas must be 
+ given to it through a pointer to the data that we are trying to pass.
+
+📌 Creation
+Each philosopher is a separate thread (pthread_create), 
+(?) and we also create a monitor thread to check for philosopher deaths.
+
+📌 Mark simulation start time: get_time_ms() 
+this function will use <sys/time.h> and struct timeval a predefined structure in <sys/time.h> that contains:
+
+struct timeval {
+    time_t      tv_sec;   // Seconds
+    suseconds_t tv_usec;  // Microseconds
+};
+
+🔺tv_sec → The number of whole seconds.
+🔺tv_usec → The number of microseconds (1,000,000 per second).
+It will store this information in the timeval variable tv and use the function 
+gettimeofday() to obtain current time. 
+
+📌 Why Do We Need pthread_join()?
+Ensures All Philosopher Threads Complete Before Exiting and helps synchronization: if main() finishes before philosophers,
+the program may terminate early.
+pthread_join() prevents this by waiting for each philosopher thread, preventing 🧟 Zombie Threads 🧟
+A "zombie thread" is a thread that has finished execution but has not been properly collected.
+Using pthread_join() properly cleans up finished threads.
+
+📢 Difference Between pthread_join() and pthread_mutex
+				pthread_join()												pthread_mutex_*()
+Purpose	→→→→→	Ensures a thread waits for another thread to finish.		Prevents multiple threads from modifying shared data at the same time.
+Used For→→→→→	Waiting for philosopher threads & monitor thread to 		Preventing data races (e.g., accessing forks, printing, checking 
+					finish before the main program exits.						philosopher death).
+Blocking?→→→	Yes, the calling thread pauses until the target .			Yes, if a mutex is locked, other threads must wait until it is unlocked.
+					thread finishes
+Key Functions	pthread_create(), pthread_join()							pthread_mutex_init(), pthread_mutex_lock(), pthread_mutex_unlock(), pthread_mutex_destroy()
+
+🚨 pthread_mutex
+Used inside each thread to control access to shared resources:
+Forks → pthread_mutex_lock(left_fork) ensures only one philosopher can take a fork.
+Printing → pthread_mutex_lock(print_lock) ensures that only one message prints at a time.
+Death checking → pthread_mutex_lock(death_lock) prevents race conditions in checking philosopher deaths.
+
+Concept	Behavior
+Threads Run Simultaneously?	✅ Yes, each thread runs independently after pthread_create().
+Does pthread_join() make them sequential?	❌ No, it only makes main() wait for them to finish.
+Is pthread_join() necessary?	✅ Yes, to avoid main() exiting early and killing all threads.
+====================================================================
+📢📕📗📘📙→🚨🔍⚠💡🎮 🎉 🔰🏁🚩🔻🔶🔷🔴🔵⇶🙊 🍝
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣✅.🚫❗⭐ 😴😵🍴🤔 📥🚀🔥🎯 ❌ 🔹🔺📌
+====================================================================
+
+5️⃣ Simulation & Thread Management
+
+🚀 Implementing philosopher_routine() and check_death()
+Now that thread creation and joining are working correctly, we need to implement:
+philosopher_routine() → Defines the main logic for each philosopher. 
+Implement eating, sleeping, and thinking logic.
+check_death() → Continuously checks if a philosopher has died.
+
+🎯 philosopher_routine()
+Each philosopher is a separate thread, running a loop that follows these rules:
+
+Take Forks 🍴 → Must acquire two mutexes (left & right fork).
+Eat 🍝 → Hold the forks, update last_meal_time, and wait time_to_eat milliseconds.
+Release Forks ➡️ → Unlock both fork mutexes.
+Sleep 😴 → Wait time_to_sleep milliseconds.
+Think 🤔 → Before attempting to take forks again.
+Check Death Condition 💀 → If current_time - last_meal_time > time_to_die, the philosopher dies, and simulation stops.
+
+
+Key points: 
+Ensure synchronization (mutex usage).
+Check for philosopher death conditions.
+
+🎯 check_death()
+The monitor thread constantly checks if any philosopher has died:
+
+Iterates through all philosophers.
+Compares current_time - last_meal_time to time_to_die.
+If a philosopher is dead, prints a death message and stops the simulation.
+Runs in a loop until the simulation ends.
+
+
+🚀 Function				🚀 Responsibility
+------------------------------------------------------------------------------
+philosopher_routine()	Main thread loop that controls philosopher actions.
+take_forks()			Locks both fork mutexes and prints status.
+eat()					Updates last_meal_time, eats, sleeps, and tracks meal count.
+release_forks()			Unlocks both fork mutexes.
+sleep_philo()			Sleeps and prints status.
+think()					Thinks and prints status.
+
+
+Fine-tune timing and synchronization.
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+
+
+*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*
+STOPPING THE SIMULATION WHEN ALL PHILOS HAVE EATEN THE X NUMBER OF MEALS 
+Purpose of data->finished
+eat_count tracks how many times a single philosopher has eaten.
+data->finished tracks how many philosophers have finished eating (i.e., reached meals_required).
+Why This Matters
+According to the project subject:
+
+If all philosophers have eaten at least number_of_times_each_philosopher_must_eat, the simulation stops.
+
+The problem is:
+
+eat_count is per philosopher.
+The simulation should stop when ALL philosophers have eaten enough.
+📌 Solution
+We increment data->finished each time a philosopher reaches meals_required.
+In check_death(), we stop the simulation when data->finished == num_philosophers.
+*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*
+
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+RESOURCES DE MALAGA GUY
+
+Threads in C: https://www.geeksforgeeks.org/multithreading-in-c/
+Mutex: https://www.geeksforgeeks.org/mutex-lock-for-linux-thread-synchronization/
+Semaphores: https://www.geeksforgeeks.org/semaphores-in-process-synchronization/
+POSIX implementation of semaphores in C: https://www.geeksforgeeks.org/use-posix-semaphores-c/
+
+Videos:
+
+    Programar en C con Hilos pthreads
+        https://youtu.be/NAKrOZCcJ4A?si=tmkTzTuVghDMLmVU
+    Como crear hilos en C usando Pthread (POSIX)
+        https://youtu.be/ROzCbSwrltA?si=-76wBcchhhMLSnPa
+    Paso de Argumentos a Hilos en C (POSIX)
+        https://youtu.be/Q6sJaVs0cbA?si=YtIht545Y16RqBXz
+        
+    Programar en C: Semaforos POSIX
+        https://youtu.be/YC61729PThw?si=NM9OBziBzhKDSBMT
+    Mutex. Sincronización de hilos. Programar en C, Linux
+        https://youtu.be/faZEhIHdJx8?si=8yKjMn-O9ZmuCHec
+    Aprende a sincronizar hilos en C con Mutex
+        https://youtu.be/q66qT0f60Ko?si=EjiU55i2v7Tqei6g
+    Cómo usar la función wait en C para el control de procesos:
+        https://youtu.be/vj3pXk6MoSY?si=bFkxCYg8U8CN2rF7
+
+    fork(). Parte I: ,Creación de un nuevo proceso, hijos, padres, zombies y huérfanos
+        https://youtu.be/VwjP-KFuZCM?si=xTRFUsnVnIrXGomU
+    fork(). Parte II. wait, fork , exit status, múltiples hijos
+        https://youtu.be/Dt9z_ohQWHI?si=p7djOpkspi2B9LlZ
+    
+    Philosophers, 42 School Project. Dining Philosophers Project. C Implementation
+        https://youtu.be/UGQsvVKwe90?si=vXA9UBqR8afEVb1b
+            https://github.com/Jamshidbek2000/philosophers_42
+
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+
+Based on the provided `philo_by_malaga_guy` code, I have structured the 
+**workflow of the philosophers program** into different functional categories:
+
+---
+
+### **1. Input Validation** // ESTO YA ESTA!!!!
+- **Files:** `ft_check.c`
+- **Key Functions:**
+  - `ft_check_args(c, v)`: Ensures the correct number of arguments (5 or 6).
+  - `ft_error_argv(argc, argv)`: Validates numerical constraints:
+    - **Number of philosophers:** Between `1` and `200`
+    - **Time to die, eat, and sleep:** At least `60ms`
+    - **Number of meals (optional):** At least `1`
+  - `ft_argv_num(argc, argv)`: Checks if all arguments are numeric.
+
+---
+
+### **2. Thread Creation**
+- **Files:** `ft_init.c`
+- **Key Functions:**
+  - `ft_init_threads(data)`: Creates all necessary threads:
+    - **Philosopher threads (`philo_ths`)** → Each philosopher runs `ft_the_core()`
+    - **Monitor thread (`monit_all_alive`)** → Runs `ft_are_you_dead()`
+    - **Monitor for meal count (`monit_all_full`)** → Runs `ft_the_watchdog()`
+  - `ft_init_philos(argc, argv)`: Calls all initialization functions and creates threads.
+
+---
+
+
+
+
+### **3. Routine Setting**
+- **Files:** `ft_philo.c`, `ft_eat_n_think.c`, `ft_sleep.c`
+- **Key Functions:**
+  - `ft_the_core(void *philo)`: **Main philosopher routine**, loops through:
+    1. `ft_eating(philo)`: Eats if forks are available.
+    2. `ft_thinking(philo)`: Waits before attempting to eat again.
+    3. `ft_sleeping(philo)`: Sleeps for a predefined time.
+    4. Checks if the philosopher has died (`ft_how_are_you() == DIE`).
+  - `ft_eating(philo)`: Handles eating:
+    - Locks both forks.
+    - Updates meal count.
+    - Waits for eating time.
+    - Releases forks.
+  - `ft_thinking(philo)`: Philosopher "thinks" before attempting to eat again.
+  - `ft_sleeping(philo)`: Philosopher "sleeps" after eating.
+  - `ft_get_fork_l(philo)` & `ft_get_fork_r(philo)`: Acquires forks safely.
+
+---
+
+### **4. Death Check**
+- **Files:** `ft_controller.c`, `ft_philo.c`
+- **Key Functions:**
+  - `ft_are_you_dead(void *data)`: Continuously checks if a philosopher has died.
+    - If a philosopher has not eaten in `time_to_die`, it stops the simulation.
+  - `ft_rip(philo)`: Checks if a philosopher should die.
+    - If `current_time - last_meal_time > time_to_die`, philosopher is marked as `DIE`.
+  - `ft_the_watchdog(void *phi_value)`: Monitors if all philosophers have finished eating.
+    - If `ft_has_eaten()` is `false`, the process continues.
+    - Otherwise, the simulation stops (`ft_keep_flag(value, false)`).
+
+---
+
+### **5. Freeing/Cleaning/Closing**
+- **Files:** `ft_free_tools.c`
+- **Key Functions:**
+  - `ft_free_all(data)`: Cleans up all dynamically allocated memory.
+  - `ft_malloc(data)`: Allocates memory for structures and mutexes.
+  - `ft_game_over(value)`: Stops the simulation when needed.
+
+---
+
+### **6. Printing of Messages**
+- **Files:** `ft_printing.c`
+- **Key Functions:**
+  - `ft_writing(data, id, src)`: Thread-safe logging.
+    - Uses `mut_print` mutex to prevent race conditions.
+    - Prints philosopher actions like:
+      - `"is eating 🤤"`
+      - `"is sleeping 😴"`
+      - `"is thinking 🤯"`
+      - `"has taken a fork 🍴"`
+      - `"is died 💀"`
+  - `ft_instruction()`: Displays program usage instructions when input is incorrect.
+
+---
+
+### **General Workflow Summary**
+1. **Input Validation** → Checks arguments and ensures correctness.
+2. **Thread Creation** → Initializes philosophers and monitoring threads.
+3. **Routine Execution** → Each philosopher loops through **eat → sleep → think**.
+4. **Death Monitoring** → Continuously checks if a philosopher should die.
+5. **Simulation Stopping** → If a philosopher dies or all have eaten, the simulation ends.
+6. **Cleanup** → Frees memory and destroys mutexes.
+
+---
+
+This structured breakdown maps out **how the functions interconnect and control program flow** in the `philo_by_malaga_guy` project. Let me know if you need further details! 🚀
+
