@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 11:23:09 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/17 15:49:33 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/17 17:02:26 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,14 @@
 int	sync_threads(t_data *data)
 {
 	int	i;
-    // ✅ Ensure `keep_iterating` is set to 0 before joining threads
+    // First mark simulation as ending
 	pthread_mutex_lock(&data->death_lock);//could this be replace with end_simulation()?
 	data->keep_iterating = 0;
 	pthread_mutex_unlock(&data->death_lock);
 
+	// Give threads a moment to notice the flag
+	usleep(1000);//added by claude
+	
 	// ✅ Wait for the death monitor to finish
 	if (pthread_join(data->death_monitor, NULL) != 0)
 		return (close_adm(data, "Error: Failed to join death monitor thread\n"), 1);
@@ -69,6 +72,5 @@ int	main(int ac, char **av)
 		close_adm(&data, "Program failed.\n");
 		return (ERR);
 	}
-	
 	return (0);
 }
