@@ -11,6 +11,22 @@
 /* ************************************************************************** */
 
 #include "philo.h"
+
+#include "philo.h"
+
+/**
+ * A precise delay function that ensures the thread wakes up at the right time.
+ */
+void	wait_until(uint64_t wait_time)
+{
+	uint64_t	start_time;
+
+	start_time = get_time_ms(); // Get the current time
+	while ((get_time_ms() - start_time) < wait_time)
+		usleep(500); // Sleep in small increments (500 μs) for better accuracy
+}
+
+
 /*
 Use a mutex (print_lock) to prevent multiple threads from printing simultaneously.
 Take three parameters:
@@ -64,3 +80,4 @@ uint64_t	get_time_ms(void)
 	ms = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 	return (ms);
 }
+

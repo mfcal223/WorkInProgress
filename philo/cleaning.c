@@ -11,70 +11,61 @@
 /* ************************************************************************** */
 
 #include "philo.h"
-/* if fork allocation fails mid-way */
-void	free_partial_forks(t_data *data, int failed_index)
+
+void	free_philo_mutexes(t_data *data)
 {
 	int	i;
 
-	i = 0;
-	while (i < failed_index)
-	{
-		free(data->philo[i].left_fork); // Free only the successfully allocated forks
-		i++;
-	}
-	close_adm(data, "Error: Fork memory allocation failed\n"); // ✅ Now 'data' is available!
-}
-/* Destroy all mutexes before freeing */
-void	destroy_mutexes(t_data *data)
-{
-	int	i;
-
-	pthread_mutex_destroy(&data->print_lock);
-	pthread_mutex_destroy(&data->death_lock);
 	i = 0;
 	while (i < data->num_philos)
 	{
-		// ✅ Ensure mutex is unlocked before destroying
-		pthread_mutex_lock(&data->death_lock);
-		if (data->simulation_running)
-		{
-            if (pthread_mutex_trylock(&data->philo[i].eating_lock) == 0)
-				pthread_mutex_unlock(&data->philo[i].eating_lock);
-			if (pthread_mutex_trylock(data->philo[i].left_fork) == 0)
-				pthread_mutex_unlock(data->philo[i].left_fork);
-		}
-		pthread_mutex_unlock(&data->death_lock);
-		pthread_mutex_destroy(&data->philo[i].eating_lock);
-		pthread_mutex_destroy(data->philo[i].left_fork);
-		free(data->philo[i].left_fork);  // Free each left fork
+		pthread_mutex_destroy(&data->forks[i]);
+		pthread_mutex_destroy(&data->philo[i].mut_num_meals);
+		pthread_mutex_destroy(&data->philo[i].mut_last_eat);
 		i++;
 	}
 }
 
-/* Free philosophers array */
-void	free_philosophers(t_data *data)
+void	free_global_mutexes(t_data *data)
 {
-	if (data->philo)
+	pthread_mutex_destroy(&data->mut_die_t);
+	pthread_mutex_destroy(&data->mut_eat_t);
+	pthread_mutex_destroy(&data->mut_sleep_t);
+	pthread_mutex_destroy(&data->print_lock);
+	pthread_mutex_destroy(&data->death_lock);
+}
+
+void	free_threads(t_data *data)
+{
+	int	i;
+
+	i = 0;
+	if (pthread_join(data->death_monitor, NULL) != 0)
+		printf("Warning: Failed to join death monitor thread.\n");
+	if (data->nb_meals > 0 && pthread_join(data->meal_monitor, NULL) != 0)
+		printf("Warning: Failed to join meal monitor thread.\n");
+	while (i < data->num_philos)
 	{
-		free(data->philo);
-		data->philo = NULL;
-	}
-	if (data->threads)
-	{
-		free(data->threads);
-		data->threads = NULL;
+		if (pthread_join(data->philo_ths[i], NULL) != 0)
+			printf("Warning: Failed to join philosopher thread %d.\n", i);
+		i++;
 	}
 }
 
 /* Master function to free all allocated memory */
 void	free_data(t_data *data)
 {
-	destroy_mutexes(data);
-	free_philosophers(data);
+	free_threads(data);
+	free_philo_mutexes(data);
+	free_global_mutexes(data);
+	free(data->philo_ths);
+	free(data->philo);
+	free(data->forks);
 }
 
 void	close_adm(t_data *data, char *str)
 {
-	printf("%s", str);
+	if (str)
+		printf("%s", str);
 	free_data(data);
 }

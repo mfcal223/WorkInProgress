@@ -6,7 +6,7 @@
 #    By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/03/12 13:04:22 by mcalciat          #+#    #+#              #
-#    Updated: 2025/03/14 15:31:17 by mcalciat         ###   ########.fr        #
+#    Updated: 2025/03/17 15:15:58 by mcalciat         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,8 +22,8 @@ RM = rm -f
 # ARFLAGS = rcs
 
 #------------- SOURCE FILES -------------------------------#
-SRCS = main.c validation.c tools.c cleaning.c initialization.c 
-	
+SRCS = main.c checks.c cleaning.c initialization.c \
+	monitors.c routine.c routine2.c tools.c  validation.c
 
 #------------- OBJECT FILES -------------------------------#
 OBJS = $(addprefix obj/, $(SRCS:.c=.o))

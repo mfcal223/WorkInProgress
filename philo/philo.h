@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 10:38:54 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/14 15:32:49 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/17 15:13:41 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,8 @@ typedef struct s_data
 	int				nb_meals; //meals_required;		// Number of meals each philosopher must eat
 	t_philo			*philo;
 	pthread_t       *philo_ths; //*threads;			// Array of philosopher threads
+	pthread_t       death_monitor; 		//  for `check_death()`
+	pthread_t       meal_monitor; 		//  for `check_meals()`
 	pthread_mutex_t	*forks;				//for modifying fork status
 	pthread_mutex_t	print_lock;
 	pthread_mutex_t	death_lock;			// for modifying the dead variable.
@@ -79,42 +81,51 @@ typedef struct s_data
 	pthread_mutex_t	mut_sleep_t;		// Mutex for time to sleep access
 
 }					t_data;
-/*
-Do You Need Both?
-Yes!
 
-death_lock is necessary to synchronize the dead variable so that only one thread stops the simulation.
-mut_die_t ensures that reading time_to_die doesn’t conflict with another thread modifying it.
-*/
+/* ------- CHECK_TIMES---------------------*/
+int			has_died(t_philo *philo);
+uint64_t	check_die_time(t_data *data);
+uint64_t	check_eat_time(t_data *data);
+uint64_t	ft_get_last_eat(t_philo *philo);
+int			check_keep_iterating(t_data *data);
+
 /* ------- CLEANING -----------------------*/
-//void		free_partial_forks(t_data *data, int failed_index);
-//void		destroy_mutexes(t_data *data);
-void		free_philosophers(t_data *data);
+
+void		free_philo_mutexes(t_data *data);
+void		free_global_mutexes(t_data *data);
+void		free_threads(t_data *data);
 void		free_data(t_data *data);
 void		close_adm(t_data *data, char *str);
 
 /* ------- INITIALIZATION -----------------*/
+int			init_threads(t_data *data);
 int			init_data_mutexes(t_data *data);
 int			init_data(t_data *data, int ac, char **av);
 int			init_forks(t_data *data);
 int			init_philosophers(t_data *data);
-int			init_admin(int ac, char **av);
-
 
 /* ------- MAIN ---------------------------*/
-//void		start_simulation(t_data *data);
-//int			create_threads(t_data *data, pthread_t *monitor);
+int			sync_threads(t_data *data);
+int			init_admin(int ac, char **av);
+
+/* ------- MONITORS -----------------------*/
+void		end_simulation(t_data *data);
+void		update_status(t_data *data, t_philo *philo, t_status new_status);
+void		*check_meals(void *arg);
+void		*check_death(void *arg);
 
 /* ------- ROUTINE ------------------------*/
-/*void		think_philo(t_philo *philo);
+void		drop_forks(t_philo *philo);
+int			eat_philo(t_philo *philo);
+int			take_forks(t_philo *philo);
+void		*philo_routine(void *arg);
+
+/* ------- ROUTINE2------------------------*/
+void		think_philo(t_philo *philo);
 void		sleep_philo(t_philo *philo);
-void		release_forks(t_philo *philo);
-void		eat_philo(t_philo *philo);
-void		take_forks(t_philo *philo);
-void		*philosopher_routine(void *arg);
-void		*check_death(void *arg);*/
 
 /*-------- TOOLS --------------------------*/
+void		wait_until(uint64_t wait_time);
 void		print_msg(t_philo *philo, const char *msg);
 long		ft_atol(const char *str);
 uint64_t	get_time_ms(void);
