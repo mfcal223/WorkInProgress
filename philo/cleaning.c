@@ -35,7 +35,7 @@ void	free_global_mutexes(t_data *data)
 	pthread_mutex_destroy(&data->death_lock);
 }
 
-void	free_threads(t_data *data)
+/*void	free_threads(t_data *data)
 {
 	int	i;
 
@@ -50,15 +50,16 @@ void	free_threads(t_data *data)
 			printf("Warning: Failed to join philosopher thread %d.\n", i);
 		i++;
 	}
-}
+}*/
 
 /* Master function to free all allocated memory */
 void	free_data(t_data *data)
 {
-	free_threads(data);
+	//free_threads(data);
 	free_philo_mutexes(data);
 	free_global_mutexes(data);
 	free(data->philo_ths);
+	data->philo_ths = NULL;
 	free(data->philo);
 	free(data->forks);
 }

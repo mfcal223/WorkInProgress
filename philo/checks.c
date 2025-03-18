@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:51:59 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 10:03:04 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 10:30:23 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 /**
  * Checks if a philosopher has exceeded their time to die.
+ * SETS THE DEAD FLAG = 1
  * @return 1 if the philosopher has died, 0 otherwise.
  */
 int	has_died(t_philo *philo)

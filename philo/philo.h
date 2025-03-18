@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 10:38:54 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 10:08:25 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 10:51:25 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ int			check_keep_iterating(t_data *data);
 
 void		free_philo_mutexes(t_data *data);
 void		free_global_mutexes(t_data *data);
-void		free_threads(t_data *data);
+//void		free_threads(t_data *data);
 void		free_data(t_data *data);
 void		close_adm(t_data *data, char *str);
 
