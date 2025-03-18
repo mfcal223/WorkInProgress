@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 12:01:40 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 10:32:24 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 11:24:09 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,13 @@ void	end_simulation(t_data *data)
 
 	i = 0;
 	pthread_mutex_lock(&data->death_lock);
-	data->dead = 1;//added by claude
+    if (!data->keep_iterating)  // If already ended, don't do it again
+    {
+        pthread_mutex_unlock(&data->death_lock);
+        return;
+    }
 	data->keep_iterating = 0;
+    data->dead = 1;
 	while (i < data->num_philos)
 	{
 		update_status(data, &data->philo[i], dead, 1);

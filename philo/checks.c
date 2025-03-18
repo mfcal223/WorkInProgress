@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:51:59 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 10:30:23 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 11:29:14 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,16 @@ int	has_died(t_philo *philo)
 	uint64_t	current_time;
 	uint64_t	time_since_last_meal;
 	int			result;
+	t_status    current_status;
 
 	current_time = get_time_ms();
-	// Lock last meal time for thread safety
 	pthread_mutex_lock(&philo->mut_last_eat);
 	time_since_last_meal = current_time - philo->last_eat;
+	current_status = philo->status;
 	pthread_mutex_unlock(&philo->mut_last_eat);
 	// If the philosopher exceeded time_to_die and is not eating, they die
 	result = 0;
-	if (time_since_last_meal > philo->time_to_die && philo->status != eat)
+	if (time_since_last_meal > philo->time_to_die && current_status != eat)
 	{
 		pthread_mutex_lock(&philo->data->death_lock);
 		if (philo->data->keep_iterating) 
@@ -98,3 +99,29 @@ int	check_keep_iterating(t_data *data)
 	pthread_mutex_unlock(&data->death_lock);
 	return (result);
 }
+/*int	has_died(t_philo *philo)
+{
+	uint64_t	current_time;
+	uint64_t	time_since_last_meal;
+	int			result;
+	t_status    current_status;
+
+	current_time = get_time_ms();
+	pthread_mutex_lock(&philo->mut_last_eat);
+	time_since_last_meal = current_time - philo->last_eat;
+	pthread_mutex_unlock(&philo->mut_last_eat);
+	// If the philosopher exceeded time_to_die and is not eating, they die
+	result = 0;
+	if (time_since_last_meal > philo->time_to_die && philo->status != eat)
+	{
+		pthread_mutex_lock(&philo->data->death_lock);
+		if (philo->data->keep_iterating) 
+		{
+			philo->data->dead = 1;
+			print_msg(philo, DIED);
+			result = 1;
+		}
+		pthread_mutex_unlock(&philo->data->death_lock);
+	}
+	return (result);
+}*/

@@ -26,7 +26,6 @@ void	wait_until(uint64_t wait_time)
 		usleep(500); // Sleep in small increments (500 μs) for better accuracy
 }
 
-
 /*
 Use a mutex (print_lock) to prevent multiple threads from printing simultaneously.
 Take three parameters:
@@ -40,7 +39,7 @@ void	print_msg(t_philo *philo, const char *msg)
 
 	pthread_mutex_lock(&philo->data->print_lock);
 	timestamp = get_time_ms() - philo->data->start_time;
-	if (philo->data->keep_iterating)  // ✅ Print only if simulation is running
+	if (check_keep_iterating(philo->data))
 		printf("%lu %d %s\n", timestamp, philo->id, msg);
 	pthread_mutex_unlock(&philo->data->print_lock);
 }
@@ -50,22 +49,14 @@ long	ft_atol(const char *str)
 {
 	int		i;
 	long	res;
-	//int		sign;
 
 	i = 0;
 	res = 0;
-	//sign = 1;
-	/*if (str[i] == '+' || str[i] == '-')
-	{
-		if (str[i] == '-')
-			return (-1);
-		i++;
-	}*/
 	while (str[i])
 	{
 		res = res * 10 + (str[i] - '0');
 		if (res > INT_MAX)
-			return (-1); // Overflow protection
+			return (-1);
 		i++;
 	}
 	return (res);
