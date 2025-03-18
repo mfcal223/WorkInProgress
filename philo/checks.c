@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:51:59 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/17 15:13:11 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/17 17:03:14 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,10 +90,10 @@ Finally, it returns the last meal time. */
 	
 int	check_keep_iterating(t_data *data)
 {
-	int keep;
+	int result;
 
 	pthread_mutex_lock(&data->death_lock);
-	keep = data->keep_iterating;
+	result = (data->keep_iterating && !data->dead);//data->keep_iterating;
 	pthread_mutex_unlock(&data->death_lock);
-	return (keep);
+	return (result);
 }
