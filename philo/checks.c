@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:51:59 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 11:29:14 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 14:14:20 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,9 @@ int	has_died(t_philo *philo)
 		pthread_mutex_lock(&philo->data->death_lock);
 		if (philo->data->keep_iterating) 
 		{
+			philo->data->keep_iterating = 0;  // Signal all threads to stop
+			printf("DEBUG: Philo %d dying. Time since last meal: %lu\n", 
+				philo->id, time_since_last_meal); // DEBUG
 			philo->data->dead = 1;
 			print_msg(philo, DIED);
 			result = 1;

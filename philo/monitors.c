@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 12:01:40 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 11:24:09 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 14:20:32 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,20 +22,25 @@ void	end_simulation(t_data *data)
 	int	i;
 
 	i = 0;
-	pthread_mutex_lock(&data->death_lock);
-    if (!data->keep_iterating)  // If already ended, don't do it again
+    printf("DEBUG: Entering end_simulation(). keep_iterating=%d, dead=%d\n", 
+        data->keep_iterating, data->dead); // DEBUG
+    pthread_mutex_lock(&data->death_lock);
+    if (!data->keep_iterating)
     {
+        printf("DEBUG: simulation already ending\n");  // Add this debug print
         pthread_mutex_unlock(&data->death_lock);
         return;
     }
 	data->keep_iterating = 0;
     data->dead = 1;
+    printf("DEBUG: Setting simulation end flags\n"); // DEBUG
 	while (i < data->num_philos)
 	{
 		update_status(data, &data->philo[i], dead, 1);
 		i++;
 	}
 	pthread_mutex_unlock(&data->death_lock);
+    printf("DEBUG: end_simulation finished\n");  // Add this debug print
 }
 
 void    update_status(t_data *data, t_philo *philo, t_status new_status, int already_locked)
@@ -106,20 +111,31 @@ void    *check_death(void *arg)
     int     should_end;
 
     data = (t_data *)arg;
+    printf("DEBUG: Death monitor started\n"); // DEBUG
     while (1)
     {
         should_end = 0;
         pthread_mutex_lock(&data->death_lock);
         if (!data->keep_iterating || data->dead)
+        if (!data->keep_iterating || data->dead)
+        {
+            printf("DEBUG: Death monitor ending because keep_iterating=%d, dead=%d\n", 
+                   data->keep_iterating, data->dead);//debug
             should_end = 1;
+        }
         pthread_mutex_unlock(&data->death_lock);
         if (should_end)
+        {
+            printf("DEBUG: Death monitor ending because keep_iterating=%d, dead=%d\n", 
+                   data->keep_iterating, data->dead); // DEBUG
             break;
+        }
         i = 0;
         while (i < data->num_philos)
         {
             if (has_died(&data->philo[i]))
             {
+                printf("DEBUG: Philosopher %d has died\n", i + 1); // DEBUG
                 end_simulation(data);  // Need to call this here when death is detected
                 return (NULL);
             }
@@ -127,6 +143,7 @@ void    *check_death(void *arg)
         }
         usleep(1000);
     }
+    printf("DEBUG: Death monitor thread ending\n");  // Add this debug print
     return (NULL);
 }
  

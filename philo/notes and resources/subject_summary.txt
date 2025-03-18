@@ -1,0 +1,58 @@
+Philosophers Project Overview
+The Philosophers project is a concurrency programming challenge that introduces the concepts of threads, mutexes, and synchronization. The task is inspired by the classic "Dining Philosophers Problem" in computer science, which explores deadlocks, starvation, and race conditions.
+
+The simulation involves philosophers sitting at a round table, eating, thinking, and sleeping. Each philosopher requires two forks to eat, but there are limited forks, leading to potential conflicts in accessing shared resources.
+
+General Guidelines
+Programming Language: The project must be implemented in C following the 42 Norminette rules.
+Threading & Synchronization:
+Each philosopher is represented as a separate thread.
+Forks are shared resources that need to be protected using mutexes.
+No global variables are allowed.
+
+Execution Arguments:
+
+./philo number_of_philosophers time_to_die time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]
+
+number_of_philosophers: Total number of philosophers (and forks).
+time_to_die: If a philosopher doesn’t eat within this time, they die.
+time_to_eat: Time a philosopher takes to eat.
+time_to_sleep: Time a philosopher takes to sleep.
+number_of_times_each_philosopher_must_eat (optional): If provided, the simulation stops when each philosopher has eaten this many times.
+Philosopher States & Logging:
+Actions must be logged as:
+
+timestamp_in_ms X has taken a fork
+timestamp_in_ms X is eating
+timestamp_in_ms X is sleeping
+timestamp_in_ms X is thinking
+timestamp_in_ms X died
+
+Logs should not overlap or mix with each other.
+A philosopher’s death message must be logged within 10ms of the actual death.
+No Data Races: The program must not have data races, meaning no two threads should access shared resources unsafely.
+
+Mandatory Part
+Directory: philo/
+Uses threads (pthread_create) and mutexes (pthread_mutex_) for managing concurrency.
+Each philosopher has access to two forks (mutexes) to eat.
+The simulation stops when:
+A philosopher dies.
+(If the optional argument is provided) All philosophers have eaten the required times.
+
+EXTERNAL FUNCTIONS: memset, printf, malloc, free, write, usleep, gettimeofday, pthread_create,
+pthread_detach, pthread_join, pthread_mutex_init, pthread_mutex_destroy, pthread_mutex_lock,
+pthread_mutex_unlock
+🔹 LIBFT is NOT authorized. 🚫
+🔹 Uses threads (pthread_create) and mutexes (pthread_mutex_) for managing concurrency.
+🔹 Each philosopher has access to two forks (mutexes) to eat.
+🔹 The simulation stops when:
+        1. A philosopher dies.
+        2. (If the optional argument is provided) All philosophers have eaten the required times.
+
+
+Key Challenges
+Avoiding Deadlocks: If all philosophers pick up their left fork at the same time, no one can pick up the right fork, causing a deadlock.
+Avoiding Starvation: Ensuring that all philosophers get a chance to eat and don’t starve indefinitely.
+Thread Safety: Preventing data races when multiple threads access shared resources.
+

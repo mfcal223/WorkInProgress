@@ -1,230 +1,31 @@
-c3r1s1% ./philo 1 300 300 300                         
-All inputs are valid!
-Creating philosopher thread 1
-0 1 is thinking 🤔
-Monitor thread started!
-0 1 is dead 😵
-Exiting simulation.
-c3r1s1% valgrind --tool=helgrind ./philo 1 300 300 300
-==17290== Helgrind, a thread error detector
-==17290== Copyright (C) 2007-2017, and GNU GPL'd, by OpenWorks LLP et al.
-==17290== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
-==17290== Command: ./philo 1 300 300 300
-==17290== 
-All inputs are valid!
-6 1 is thinking 🤔
-==17290== ---Thread-Announcement------------------------------------------
-==17290== 
-==17290== Thread #1 is the program's root thread
-==17290== 
-==17290== ---Thread-Announcement------------------------------------------
-==17290== 
-==17290== Thread #2 was created
-==17290==    at 0x499D9F3: clone (clone.S:76)
-==17290==    by 0x499E8EE: __clone_internal (clone-internal.c:83)
-==17290==    by 0x490C6D8: create_thread (pthread_create.c:295)
-==17290==    by 0x490D1FF: pthread_create@@GLIBC_2.34 (pthread_create.c:828)
-==17290==    by 0x4853767: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x40122E: create_threads (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4012F8: start_simulation (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x401406: main (in /home/mcalciat/Cursus/philo/philo)
-==17290== 
-==17290== ----------------------------------------------------------------
-==17290== 
-==17290== Possible data race during write of size 1 at 0x4AA4054 by thread #1
-==17290== Locks held: none
-==17290==    at 0x4859796: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x4903664: _IO_new_file_xsputn (fileops.c:1235)
-==17290==    by 0x4903664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48ED14C: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48ED14C: __vfprintf_internal (vfprintf-internal.c:1263)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x40126D: create_threads (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4012F8: start_simulation (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x401406: main (in /home/mcalciat/Cursus/philo/philo)
-==17290== 
-==17290== This conflicts with a previous write of size 1 by thread #2
-==17290== Locks held: none
-==17290==    at 0x4859796: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x4903664: _IO_new_file_xsputn (fileops.c:1235)
-==17290==    by 0x4903664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48EDFC9: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48EDFC9: __vfprintf_internal (vfprintf-internal.c:1593)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x4020CA: philosopher_routine (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x490CAC2: start_thread (pthread_create.c:442)
-==17290==    by 0x499DA03: clone (clone.S:100)
-==17290==  Address 0x4aa4054 is 20 bytes inside a block of size 1,024 alloc'd
-==17290==    at 0x484A919: malloc (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x48F6BA3: _IO_file_doallocate (filedoalloc.c:101)
-==17290==    by 0x4905CDF: _IO_doallocbuf (genops.c:347)
-==17290==    by 0x4904F5F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:744)
-==17290==    by 0x49036D4: _IO_new_file_xsputn (fileops.c:1243)
-==17290==    by 0x49036D4: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48ED14C: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48ED14C: __vfprintf_internal (vfprintf-internal.c:1263)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x4013AA: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Block was alloc'd by thread #1
-==17290== 
-Creating philosopher thread 1
-Monitor thread started!
-==17290== ---Thread-Announcement------------------------------------------
-==17290== 
-==17290== Thread #3 was created
-==17290==    at 0x499D9F3: clone (clone.S:76)
-==17290==    by 0x499E8EE: __clone_internal (clone-internal.c:83)
-==17290==    by 0x490C6D8: create_thread (pthread_create.c:295)
-==17290==    by 0x490D1FF: pthread_create@@GLIBC_2.34 (pthread_create.c:828)
-==17290==    by 0x4853767: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x401296: create_threads (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4012F8: start_simulation (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x401406: main (in /home/mcalciat/Cursus/philo/philo)
-==17290== 
-==17290== ----------------------------------------------------------------
-==17290== 
-==17290==  Lock at 0x1FFF0002B0 was first observed
-==17290==    at 0x4854BFE: pthread_mutex_init (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x401AE2: init_data (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4013BA: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Address 0x1fff0002b0 is on thread #1's stack
-==17290==  in frame #4, created by main (???:)
-==17290== 
-==17290== Possible data race during write of size 1 at 0x4AA4040 by thread #3
-==17290== Locks held: 1, at address 0x1FFF0002B0
-==17290==    at 0x48597B4: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x4903664: _IO_new_file_xsputn (fileops.c:1235)
-==17290==    by 0x4903664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48EDCA8: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48EDCA8: __vfprintf_internal (vfprintf-internal.c:1516)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x40227C: check_death (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x490CAC2: start_thread (pthread_create.c:442)
-==17290==    by 0x499DA03: clone (clone.S:100)
-==17290== 
-==17290== This conflicts with a previous write of size 1 by thread #1
-==17290== Locks held: none
-==17290==    at 0x4859796: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x4903664: _IO_new_file_xsputn (fileops.c:1235)
-==17290==    by 0x4903664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48ED14C: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48ED14C: __vfprintf_internal (vfprintf-internal.c:1263)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x40126D: create_threads (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4012F8: start_simulation (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x401406: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Address 0x4aa4040 is 0 bytes inside a block of size 1,024 alloc'd
-==17290==    at 0x484A919: malloc (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x48F6BA3: _IO_file_doallocate (filedoalloc.c:101)
-==17290==    by 0x4905CDF: _IO_doallocbuf (genops.c:347)
-==17290==    by 0x4904F5F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:744)
-==17290==    by 0x49036D4: _IO_new_file_xsputn (fileops.c:1243)
-==17290==    by 0x49036D4: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48ED14C: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48ED14C: __vfprintf_internal (vfprintf-internal.c:1263)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x4013AA: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Block was alloc'd by thread #1
-==17290== 
-==17290== ----------------------------------------------------------------
-==17290== 
-==17290==  Lock at 0x1FFF0002B0 was first observed
-==17290==    at 0x4854BFE: pthread_mutex_init (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x401AE2: init_data (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4013BA: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Address 0x1fff0002b0 is on thread #1's stack
-==17290==  in frame #4, created by main (???:)
-==17290== 
-==17290== Possible data race during write of size 1 at 0x4AA4042 by thread #3
-==17290== Locks held: 1, at address 0x1FFF0002B0
-==17290==    at 0x4859796: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x4903664: _IO_new_file_xsputn (fileops.c:1235)
-==17290==    by 0x4903664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48EDFC9: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48EDFC9: __vfprintf_internal (vfprintf-internal.c:1593)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x40227C: check_death (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x490CAC2: start_thread (pthread_create.c:442)
-==17290==    by 0x499DA03: clone (clone.S:100)
-==17290== 
-==17290== This conflicts with a previous write of size 1 by thread #1
-==17290== Locks held: none
-==17290==    at 0x4859796: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x4903664: _IO_new_file_xsputn (fileops.c:1235)
-==17290==    by 0x4903664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48ED14C: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48ED14C: __vfprintf_internal (vfprintf-internal.c:1263)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x40126D: create_threads (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4012F8: start_simulation (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x401406: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Address 0x4aa4042 is 2 bytes inside a block of size 1,024 alloc'd
-==17290==    at 0x484A919: malloc (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x48F6BA3: _IO_file_doallocate (filedoalloc.c:101)
-==17290==    by 0x4905CDF: _IO_doallocbuf (genops.c:347)
-==17290==    by 0x4904F5F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:744)
-==17290==    by 0x49036D4: _IO_new_file_xsputn (fileops.c:1243)
-==17290==    by 0x49036D4: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48ED14C: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48ED14C: __vfprintf_internal (vfprintf-internal.c:1263)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x4013AA: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Block was alloc'd by thread #1
-==17290== 
-==17290== ----------------------------------------------------------------
-==17290== 
-==17290==  Lock at 0x1FFF0002B0 was first observed
-==17290==    at 0x4854BFE: pthread_mutex_init (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x401AE2: init_data (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4013BA: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Address 0x1fff0002b0 is on thread #1's stack
-==17290==  in frame #4, created by main (???:)
-==17290== 
-==17290== Possible data race during write of size 1 at 0x4AA4050 by thread #3
-==17290== Locks held: 1, at address 0x1FFF0002B0
-==17290==    at 0x4859796: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x4903664: _IO_new_file_xsputn (fileops.c:1235)
-==17290==    by 0x4903664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48EF00B: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48EF00B: __vfprintf_internal (vfprintf-internal.c:1517)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x40227C: check_death (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x485396A: ??? (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x490CAC2: start_thread (pthread_create.c:442)
-==17290==    by 0x499DA03: clone (clone.S:100)
-==17290== 
-==17290== This conflicts with a previous write of size 1 by thread #1
-==17290== Locks held: none
-==17290==    at 0x4859796: mempcpy (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x4903664: _IO_new_file_xsputn (fileops.c:1235)
-==17290==    by 0x4903664: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48ED14C: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48ED14C: __vfprintf_internal (vfprintf-internal.c:1263)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x40126D: create_threads (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x4012F8: start_simulation (in /home/mcalciat/Cursus/philo/philo)
-==17290==    by 0x401406: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Address 0x4aa4050 is 16 bytes inside a block of size 1,024 alloc'd
-==17290==    at 0x484A919: malloc (in /usr/libexec/valgrind/vgpreload_helgrind-amd64-linux.so)
-==17290==    by 0x48F6BA3: _IO_file_doallocate (filedoalloc.c:101)
-==17290==    by 0x4905CDF: _IO_doallocbuf (genops.c:347)
-==17290==    by 0x4904F5F: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:744)
-==17290==    by 0x49036D4: _IO_new_file_xsputn (fileops.c:1243)
-==17290==    by 0x49036D4: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
-==17290==    by 0x48ED14C: outstring_func (vfprintf-internal.c:239)
-==17290==    by 0x48ED14C: __vfprintf_internal (vfprintf-internal.c:1263)
-==17290==    by 0x48D879E: printf (printf.c:33)
-==17290==    by 0x4013AA: main (in /home/mcalciat/Cursus/philo/philo)
-==17290==  Block was alloc'd by thread #1
-==17290== 
-10 1 is dead 😵
-Exiting simulation.
-==17290== 
-==17290== Use --history-level=approx or =none to gain increased speed, at
-==17290== the cost of reduced accuracy of conflicting-access information
-==17290== For lists of detected and suppressed errors, rerun with: -s
-==17290== ERROR SUMMARY: 60 errors from 4 contexts (suppressed: 39 from 28)
+please do not change the variable or function names randomly.
+If you want to change a variable name, please explain or clarify the reason. otherwise is confusing.
+
+1- modify print_msg():
+
+my struct has a "print_lock()" . why did you change it for death_lock in this function?
+
+Here is current version of print_msg()
+
+void	print_msg(t_philo *philo, const char *msg)
+{
+	uint64_t	timestamp;
+
+	pthread_mutex_lock(&philo->data->print_lock);
+	timestamp = get_time_ms() - philo->data->start_time;
+	if (philo->data->keep_iterating)
+		printf("%lu %d %s\n", timestamp, philo->id, msg);
+	pthread_mutex_unlock(&philo->data->print_lock);
+}
+
+could I replace "	if (philo->data->keep_iterating)" with a called to check_keep_iterating()?
+
+2- check_keep_iterating() looks as the code you are suggesting.
+
+3- in end_simulation()
+I`ve added the if{} in case the simulation already ended
+
+4- Check initialization: yes, both variables are initialized like that.
+5- I am not sure what should I check in philo_routine() but you hace current version in the repository
+
 

@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 11:23:09 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 10:22:39 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 13:55:21 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,10 @@ int	sync_threads(t_data *data)
 {
 	int	i;
 
-	end_simulation(data);// First mark simulation as ending
+	printf("DEBUG: sync_threads called\n");  // DEBUG
+	/*end_simulation(data);// First mark simulation as ending
 	// Give threads a moment to notice the flag
-	usleep(5000);
+	usleep(5000);*/
 	// ✅ Wait for the death monitor to finish
 	if (pthread_join(data->death_monitor, NULL) != 0)
 	{

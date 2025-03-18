@@ -1,5 +1,8 @@
-=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
-1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣✅.🚫❗⭐ 😴😵🍴🤔 📥🚀🔥🎯 ❌ 🔹🔺📌🔍⚠💡🎮 🎉 🔰🏁🚩🔻🔶🔷🔴🔵⇶🙊 🍝
+valgrind --tool=helgrind ./philo 1 300 300 300
+========================================================
+valgrind --leak-check=full --show-leak-kinds=all ./philo 1 300 300 300
+
+
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
 
 🍴🤔PHILOSOPHERS 😴😵
@@ -420,6 +423,7 @@ Main()
 	├					├	└─ init_data_mutexes()
 	├					├─ init_philosophers()
 	├					├	└─ init_forks()
+	├					├─ init_threads() // creates philo-ths, death_monitor, meal_monitor
 	├						
 	└──if error --> close_adm()
 
@@ -447,6 +451,7 @@ Philo 1 (index 0)	forks[0]	forks[3] (last fork)
 Philo 2 (index 1)	forks[1]	forks[0]
 Philo 3 (index 2)	forks[2]	forks[1]
 Philo 4 (index 3)	forks[3]	forks[2]
+
  📌Implementing init_forks()
 Since forks are just mutexes inside an array, init_forks() will:
 
@@ -454,9 +459,16 @@ Initialize each fork mutex in data->forks[i].
 Assign each philosopher’s left and right fork using the rules above.
 (first philosopher is assign fork [0] and last fork (num_philos -1))
 
+Each philosopher has two fork references:
+pthread_mutex_t	*left_fork;
+pthread_mutex_t	*right_fork;
+However, these are just pointers to data->forks[i]. The mutexes only exist in t_data.
 
-4️⃣ THREAD CREATION & STARTING THE SIMULATION
-To start the threads we are going to use the function pthread_create.
+🔹 There are NO redundant fork mutexes.
+🔹 All fork mutexes are necessary.
+
+🔶 THREAD CREATION 
+To create the threads we are going to use the function pthread_create.
 The first parameter of this function is the pointer to the tid variable (of 
 type pthread_t), the second one is nullable (as for pthread_mutex_init we do not 
 have to specify attributes in this project), the third parameter is the pointer to 
@@ -483,6 +495,7 @@ struct timeval {
 It will store this information in the timeval variable tv and use the function 
 gettimeofday() to obtain current time. 
 
+/*' NO SE SI ESTO LO VOY A ESTAR USANDO
 📌 Why Do We Need pthread_join()?
 Ensures All Philosopher Threads Complete Before Exiting and helps synchronization: if main() finishes before philosophers,
 the program may terminate early.
@@ -498,6 +511,7 @@ Used For→→→→→	Waiting for philosopher threads & monitor thread to 		Pr
 Blocking?→→→	Yes, the calling thread pauses until the target .			Yes, if a mutex is locked, other threads must wait until it is unlocked.
 					thread finishes
 Key Functions	pthread_create(), pthread_join()							pthread_mutex_init(), pthread_mutex_lock(), pthread_mutex_unlock(), pthread_mutex_destroy()
+' */
 
 🚨 pthread_mutex
 Used inside each thread to control access to shared resources:
@@ -516,26 +530,47 @@ Is pthread_join() necessary?	✅ Yes, to avoid main() exiting early and killing 
 
 5️⃣ Simulation & Thread Management
 
-🚀 Implementing philosopher_routine() and check_death()
-Now that thread creation and joining are working correctly, we need to implement:
-philosopher_routine() → Defines the main logic for each philosopher. 
-Implement eating, sleeping, and thinking logic.
-check_death() → Continuously checks if a philosopher has died.
+🚀 Implementing philosopher_routine() + check_death() + check_meal()
+This functions are called when creating the threads.
+
+🔺 philosopher_routine() → Defines the main logic for each philosopher. 
+Implements eating, sleeping, and thinking logic.
+
+🔺 check_death() → Continuously checks if a philosopher has died.
+
+🔺 check_meals() → Monitors the meal count in case nb_meals has been defined. 
 
 🎯 philosopher_routine()
 Each philosopher is a separate thread, running a loop that follows these rules:
 
-Take Forks 🍴 → Must acquire two mutexes (left & right fork).
-Eat 🍝 → Hold the forks, update last_meal_time, and wait time_to_eat milliseconds.
-Release Forks ➡️ → Unlock both fork mutexes.
-Sleep 😴 → Wait time_to_sleep milliseconds.
-Think 🤔 → Before attempting to take forks again.
-Check Death Condition 💀 → If current_time - last_meal_time > time_to_die, the philosopher dies, and simulation stops.
+✅ Step 1: Avoids Deadlocks
+Even-numbered philosophers wait 10ms before starting.
+This prevents multiple philosophers from grabbing the same forks at the same time.
+
+✅ Step 2: Loops Through the Routine
+Each philosopher tries to eat, sleep, and think in a loop:
+
+Takes forks (take_forks())
+	If unsuccessful, exits the loop.
+Eats (eat_philo())
+	Updates last_eat, waits time_to_eat.
+	Checks If Simulation Should Stop
+If keep_iterating == 0, stops immediately.
+Sleeps (sleep_philo())
+	Releases forks, waits time_to_sleep.
+Thinks (think_philo())
+	Simulates thinking before retrying to eat.
+
+✅ Step 3: Stops When Simulation Ends
+If a philosopher dies or all have eaten enough, the loop breaks.
 
 
-Key points: 
-Ensure synchronization (mutex usage).
-Check for philosopher death conditions.
+📢 why use "keep_iterating" instead of an aux function "how_are_you()"
+By using "keep_iterating == 0" means the simulation has ended.
+This eliminates the need for an extra function (ft_how_are_you()).
+It`s a cleaner way to stop all philosophers when one dies.
+✅ Either approach works, but keep_iterating is simpler because it stops all philosophers at 
+once without needing to check their individual states.
 
 🎯 check_death()
 The monitor thread constantly checks if any philosopher has died:
@@ -545,21 +580,42 @@ Compares current_time - last_meal_time to time_to_die.
 If a philosopher is dead, prints a death message and stops the simulation.
 Runs in a loop until the simulation ends.
 
-
-🚀 Function				🚀 Responsibility
-------------------------------------------------------------------------------
-philosopher_routine()	Main thread loop that controls philosopher actions.
-take_forks()			Locks both fork mutexes and prints status.
-eat()					Updates last_meal_time, eats, sleeps, and tracks meal count.
-release_forks()			Unlocks both fork mutexes.
-sleep_philo()			Sleeps and prints status.
-think()					Thinks and prints status.
+🚀 EATING & FORK Management
 
 
-Fine-tune timing and synchronization.
+🚀 SLEEPING && THINKING
+📌 What sleep_philo() and think_philo() Should Do
+✅ sleep_philo()
+Update the philosopher’s status to asleep (SLEEP).
+Print the message "X is sleeping".
+Wait for time_to_sleep using wait_until().
+✅ think_philo()
+Update the philosopher’s status to think (THINK).
+Print the message "X is thinking".
+Wait a small amount of time to simulate thinking before retrying to eat.
+
+🚀🚀 
+
+📌 1) What check_death() Should Do
+Continuously loops, checking each philosopher’s has_died() status.
+If a philosopher dies, it:
+Prints the death message.
+Stops the simulation (keep_iterating = 0).
+Returns immediately.
+Uses death_lock to prevent race conditions.
+
+📌 2) What check_meals() Should Do
+Monitors if all philosophers have eaten at least nb_meals times.
+If nb_meals > 0 and all philosophers have eaten enough, it:
+Stops the simulation (keep_iterating = 0).
+Exits the function.
+
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
-
+====================================================================
+📢📕📗📘📙→🚨🔍⚠💡🎮 🎉 🔰🏁🚩🔻🔶🔷🔴🔵⇶🙊 🍝
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣✅.🚫❗⭐ 😴😵🍴🤔 📥🚀🔥🎯 ❌ 🔹🔺📌
+====================================================================
 
 *-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*
 STOPPING THE SIMULATION WHEN ALL PHILOS HAVE EATEN THE X NUMBER OF MEALS 
@@ -579,6 +635,88 @@ The simulation should stop when ALL philosophers have eaten enough.
 We increment data->finished each time a philosopher reaches meals_required.
 In check_death(), we stop the simulation when data->finished == num_philosophers.
 *-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*
+Let me analyze how the simulation naturally ends in your current code:
+
+1. Death scenario:
+```c
+// In check_death()
+while (i < data->num_philos)
+{
+    if (has_died(&data->philo[i]))
+    {
+        end_simulation(data);  // ✅ Simulation ends when a philosopher dies
+        return (NULL);
+    }
+    i++;
+}
+```
+
+2. Meals completed scenario:
+Let me check the `check_meals()` function in your code:
+
+Looking at your code after searching through it, the natural end of simulation is indeed handled by two monitor threads:
+
+1. `check_death()` - calls `end_simulation()` when a philosopher dies
+2. `check_meals()` - calls `end_simulation()` when all philosophers have eaten enough meals
+
+However, your current `sync_threads()` function is calling `end_simulation()` prematurely:
+```c
+int    sync_threads(t_data *data)
+{
+    int    i;
+
+    end_simulation(data);  // <-- This needs to be removed
+    usleep(5000);         // <-- This can also be removed
+```
+
+The joining of threads should happen naturally when:
+1. Either a philosopher dies (detected by `check_death()`)
+2. Or all philosophers have eaten enough (detected by `check_meals()`)
+
+You should modify `sync_threads()` to just handle joining the threads:
+```c
+int    sync_threads(t_data *data)
+{
+    int    i;
+
+    // Wait for the death monitor to finish
+    if (pthread_join(data->death_monitor, NULL) != 0)
+    {
+        printf("Error: Failed to join death monitor thread\n");
+        return (ERR);
+    }    
+
+    // If `nb_meals` is set, wait for `check_meals()` to finish
+    if (data->nb_meals > 0)
+    {
+        if (pthread_join(data->meal_monitor, NULL) != 0)
+        {
+            printf("Error: Failed to join meal monitor thread\n");
+            return (ERR);
+        }    
+    }
+
+    // Wait for all philosopher threads
+    i = 0;
+    while (i < data->num_philos)
+    {
+        if (pthread_join(data->philo_ths[i], NULL) != 0)
+        {
+            printf("Error: Failed to join philosophers thread\n");
+            return (ERR);
+        }
+        i++;
+    }
+    return (0);
+}
+```
+
+This way:
+1. Monitor threads will detect when to end the simulation
+2. `sync_threads()` will wait for all threads to finish naturally
+3. The simulation will run until a real ending condition is met (death or enough meals)
+
+Try removing those two lines from `sync_threads()` and let me know if that helps!
 
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=

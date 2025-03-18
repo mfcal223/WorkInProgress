@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 09:39:56 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 10:08:54 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 14:15:35 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void	*philo_routine(void *arg)
 	t_philo	*philo;
 
 	philo = (t_philo *)arg;
-
+    printf("DEBUG: Philosopher %d starting routine\n", philo->id); // DEBUG
 	// If philosopher ID is even, delay to avoid deadlocks
 	if (philo->id % 2 == 0)
         wait_until(10);
@@ -101,7 +101,11 @@ void	*philo_routine(void *arg)
 	{
 		// ✅ Step 1: Check if simulation should stop before any action
 		if (!check_keep_iterating(philo->data))
-			break;
+        {
+            printf("DEBUG 1-pr: Philo %d breaking because keep_iterating is false\n", 
+                   philo->id); // DEBUG
+            break;
+        }
 		// ✅ Step 2: Check if philosopher already died before trying to eat
 		if (has_died(philo))
 			break;
@@ -112,14 +116,17 @@ void	*philo_routine(void *arg)
 			break;
 		// ✅ Step 4: Check again before sleeping
 		if (!check_keep_iterating(philo->data))
-			break;
-		//drop_forks(philo);//ADDED BY CLAUDE (\_u.u_/)
+        {
+            printf("DEBUG 2-pr: Philo %d breaking because keep_iterating is false\n", 
+                   philo->id); // DEBUG
+            break;
+        }
 		// ✅ Step 5: Sleep
 		sleep_philo(philo);
 		// ✅ Step 6: Think
 		think_philo(philo);
 	}
-	//drop_forks(philo);//ADDED BY CLAUDE (\_u.u_/)
+	printf("DEBUG: Philosopher %d ending routine\n", philo->id);
 	return (NULL);
 }
  
