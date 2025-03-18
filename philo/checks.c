@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:51:59 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 09:35:11 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 10:03:04 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,15 @@ int	has_died(t_philo *philo)
 {
 	uint64_t	current_time;
 	uint64_t	time_since_last_meal;
+	int			result;
 
 	current_time = get_time_ms();
-
 	// Lock last meal time for thread safety
 	pthread_mutex_lock(&philo->mut_last_eat);
 	time_since_last_meal = current_time - philo->last_eat;
 	pthread_mutex_unlock(&philo->mut_last_eat);
-
 	// If the philosopher exceeded time_to_die and is not eating, they die
+	result = 0;
 	if (time_since_last_meal > philo->time_to_die && philo->status != eat)
 	{
 		pthread_mutex_lock(&philo->data->death_lock);
@@ -36,11 +36,11 @@ int	has_died(t_philo *philo)
 		{
 			philo->data->dead = 1;
 			print_msg(philo, DIED);
+			result = 1;
 		}
 		pthread_mutex_unlock(&philo->data->death_lock);
-		return (1);
 	}
-	return (0);
+	return (result);
 }
 
 uint64_t	check_die_time(t_data *data)

@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 09:39:56 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/18 09:40:04 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 10:08:54 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int	eat_philo(t_philo *philo)
 		drop_forks(philo);
 		return (1);
 	}
-	update_status(philo->data, philo, eat);
+	update_status(philo->data, philo, eat, 0);
 	// Update last meal time safely
 	pthread_mutex_lock(&philo->mut_last_eat);
 	philo->last_eat = get_time_ms();
@@ -70,7 +70,7 @@ int	take_forks(t_philo *philo)
 	if (philo->data->num_philos == 1)//handling 1 philosopher
 	{
 		wait_until(philo->data->time_to_die);
-		update_status(philo->data, philo, dead);
+		update_status(philo->data, philo, dead, 0);
 		drop_forks(philo);
 		return (1);
 	}
@@ -113,11 +113,13 @@ void	*philo_routine(void *arg)
 		// ✅ Step 4: Check again before sleeping
 		if (!check_keep_iterating(philo->data))
 			break;
+		//drop_forks(philo);//ADDED BY CLAUDE (\_u.u_/)
 		// ✅ Step 5: Sleep
 		sleep_philo(philo);
 		// ✅ Step 6: Think
 		think_philo(philo);
 	}
+	//drop_forks(philo);//ADDED BY CLAUDE (\_u.u_/)
 	return (NULL);
 }
  

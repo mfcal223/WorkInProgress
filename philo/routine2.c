@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 13:55:19 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/17 14:05:54 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 10:09:17 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void	sleep_philo(t_philo *philo)
 {
 	// Update status safely
-	update_status(philo->data, philo, asleep);
+	update_status(philo->data, philo, asleep, 0);
 
 	// Print sleeping message
 	print_msg(philo, SLEEP);
@@ -27,7 +27,7 @@ void	sleep_philo(t_philo *philo)
 void	think_philo(t_philo *philo)
 {
 	// Update status safely
-	update_status(philo->data, philo, think);
+	update_status(philo->data, philo, think, 0);
 
 	// Print thinking message
 	print_msg(philo, THINK);

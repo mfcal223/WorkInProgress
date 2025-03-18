@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 10:38:54 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/17 15:13:41 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 10:08:25 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,8 @@ int			init_admin(int ac, char **av);
 
 /* ------- MONITORS -----------------------*/
 void		end_simulation(t_data *data);
-void		update_status(t_data *data, t_philo *philo, t_status new_status);
+void    update_status(t_data *data, t_philo *philo,
+	t_status new_status, int already_locked);
 void		*check_meals(void *arg);
 void		*check_death(void *arg);
 

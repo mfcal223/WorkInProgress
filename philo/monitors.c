@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/17 12:01:40 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/17 17:05:56 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 10:05:40 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,18 +27,20 @@ void	end_simulation(t_data *data)
 	data->keep_iterating = 0;
 	while (i < data->num_philos)
 	{
-		update_status(data, &data->philo[i], dead);
+		update_status(data, &data->philo[i], dead, 1);
 		i++;
 	}
 	pthread_mutex_unlock(&data->death_lock);
 }
 
-void	update_status(t_data *data, t_philo *philo, t_status new_status)
+void    update_status(t_data *data, t_philo *philo, t_status new_status, int already_locked)
 {
-	pthread_mutex_lock(&data->death_lock);
-	if (data->dead == 0) // Only update status if simulation is still running
-		philo->status = new_status;
-	pthread_mutex_unlock(&data->death_lock);
+    if (!already_locked)
+        pthread_mutex_lock(&data->death_lock);
+    if (data->dead == 0)
+        philo->status = new_status;
+    if (!already_locked)
+        pthread_mutex_unlock(&data->death_lock);
 }
 
 /**
@@ -105,3 +107,10 @@ void	*check_death(void *arg)
 	}
 	return (NULL);
 }
+/*void	update_status(t_data *data, t_philo *philo, t_status new_status)
+{
+	pthread_mutex_lock(&data->death_lock);
+	if (data->dead == 0) // Only update status if simulation is still running
+		philo->status = new_status;
+	pthread_mutex_unlock(&data->death_lock);
+}*/
