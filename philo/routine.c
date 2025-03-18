@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 09:39:56 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/17 15:55:18 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 09:40:04 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ void	*philo_routine(void *arg)
 	while (1)
 	{
 		// ✅ Step 1: Check if simulation should stop before any action
-		if (!philo->data->keep_iterating)
+		if (!check_keep_iterating(philo->data))
 			break;
 		// ✅ Step 2: Check if philosopher already died before trying to eat
 		if (has_died(philo))
@@ -111,7 +111,7 @@ void	*philo_routine(void *arg)
 		if (eat_philo(philo) != 0) 
 			break;
 		// ✅ Step 4: Check again before sleeping
-		if (!philo->data->keep_iterating)
+		if (!check_keep_iterating(philo->data))
 			break;
 		// ✅ Step 5: Sleep
 		sleep_philo(philo);

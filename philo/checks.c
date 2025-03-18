@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 15:51:59 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/17 17:03:14 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 09:35:11 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ int	check_keep_iterating(t_data *data)
 	int result;
 
 	pthread_mutex_lock(&data->death_lock);
-	result = (data->keep_iterating && !data->dead);//data->keep_iterating;
+	result = (data->keep_iterating && !data->dead);
 	pthread_mutex_unlock(&data->death_lock);
 	return (result);
 }

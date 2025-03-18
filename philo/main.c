@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 11:23:09 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/17 17:02:26 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/03/18 09:39:11 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,36 +16,38 @@
 int	sync_threads(t_data *data)
 {
 	int	i;
-    // First mark simulation as ending
-	pthread_mutex_lock(&data->death_lock);//could this be replace with end_simulation()?
-	data->keep_iterating = 0;
-	pthread_mutex_unlock(&data->death_lock);
 
+	end_simulation(data);// First mark simulation as ending
 	// Give threads a moment to notice the flag
-	usleep(1000);//added by claude
-	
+	usleep(1000);
 	// ✅ Wait for the death monitor to finish
 	if (pthread_join(data->death_monitor, NULL) != 0)
-		return (close_adm(data, "Error: Failed to join death monitor thread\n"), 1);
-
+	{
+		printf("Error: Failed to join death monitor thread\n");
+		return (ERR);
+	}	
 	// ✅ If `nb_meals` is set, wait for `check_meals()` to finish
 	if (data->nb_meals > 0)
 	{
 		if (pthread_join(data->meal_monitor, NULL) != 0)
-			return (close_adm(data, "Error: Failed to join meal monitor thread\n"), 1);
+		{
+			printf("Error: Failed to join meal  monitor thread\n");
+			return (ERR);
+		}	
 	}
-
 	// ✅ Wait for all philosopher threads
 	i = 0;
 	while (i < data->num_philos)
 	{
 		if (pthread_join(data->philo_ths[i], NULL) != 0)
-			return (close_adm(data, "Error: Failed to join philosopher thread\n"), 1);
+		{
+			printf("Error: Failed to join philosophers thread\n");
+			return (ERR);
+		}
 		i++;
 	}
 	return (0);
 }
-
 
 int	init_admin(int ac, char **av)
 {
@@ -53,9 +55,12 @@ int	init_admin(int ac, char **av)
 	
 	if (init_data(&data, ac, av) != 0)
 		return (ERR);
-	init_philosophers(&data);
-	init_threads(&data);
-	sync_threads(&data);
+	if (init_philosophers(&data))
+		return (ERR);
+	if (init_threads(&data))
+		return (ERR);
+	if (sync_threads(&data))
+		return (ERR);
 	close_adm(&data, "Exiting simulation.\n");
 	return (0);
 }
@@ -67,7 +72,7 @@ int	main(int ac, char **av)
 	if (!validate_input(ac, av))
 		return (1);
 	printf("All inputs are valid!\n");
-	if (init_admin(ac, av) != 0)//calling the managing function
+	if (init_admin(ac, av) != 0)
 	{
 		close_adm(&data, "Program failed.\n");
 		return (ERR);
