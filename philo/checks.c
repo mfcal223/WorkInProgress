@@ -41,8 +41,8 @@ int	has_died(t_philo *philo)
     // Check death condition
     if (time_since_last_meal > philo->time_to_die && current_status != eat)
     {
-        printf("DEBUG: Philo %d death condition detected. Time since last meal: %lu\n", 
-               philo->id, time_since_last_meal);
+        /*printf("DEBUG: Philo %d death condition detected. Time since last meal: %lu\n", 
+               philo->id, time_since_last_meal);*/
         return (1);
     }
 	return (0);

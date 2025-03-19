@@ -17,7 +17,7 @@ int	sync_threads(t_data *data)
 {
 	int	i;
 
-	printf("DEBUG: sync_threads called\n");  // DEBUG
+	//printf("DEBUG: sync_threads called\n");  // DEBUG
 	// ✅ Wait for the death monitor to finish
 	if (pthread_join(data->death_monitor, NULL) != 0)
 	{

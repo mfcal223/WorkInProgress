@@ -794,3 +794,104 @@ Based on the provided `philo_by_malaga_guy` code, I have structured the
 
 This structured breakdown maps out **how the functions interconnect and control program flow** in the `philo_by_malaga_guy` project. Let me know if you need further details! 🚀
 
+=============
+
+Based on the helgrind output, the lock order violation is happening in three different locations:
+
+1. In `end_simulation()` (Thread #5):
+```
+at 0x401F0B: end_simulation
+by 0x402134: check_death
+```
+This path shows the function is acquiring death_lock first, then print_lock.
+
+2. In `take_forks()` through `print_msg()` (Thread #2 and #3):
+```
+by 0x402903: print_msg
+by 0x4025F9: take_forks
+by 0x402737: philo_routine
+```
+This path shows it's acquiring print_lock first, then death_lock.
+
+Let me get the relevant functions to show you exactly what's happening.
+
+Let me check some specific files to find where these mutex interactions are happening:
+
+Based on the code search results, I can see that the lock ordering violation occurs between `print_lock` and `death_lock` in several places. Here are the key places:
+
+1. In `tools.c`, the `print_msg` function:
+```c
+void print_msg(t_philo *philo, const char *msg)
+{
+    uint64_t    timestamp;
+    int         should_print;
+
+    pthread_mutex_lock(&philo->data->print_lock);  // <-- Locks print_lock first
+    should_print = (ft_strcmp(msg, DIED) == 0 || check_keep_iterating(philo->data));
+    if (should_print)
+    {
+        timestamp = get_time_ms() - philo->data->start_time;
+        printf("%lu %d %s\n", timestamp, philo->id, msg);
+    }
+    pthread_mutex_unlock(&philo->data->print_lock);
+}
+```
+
+2. In `monitors.c`, the `end_simulation` function:
+```c
+void    end_simulation(t_data *data)
+{
+    int         dying_philo;
+
+    pthread_mutex_lock(&data->death_lock);  // <-- Locks death_lock first
+    if (!data->keep_iterating)
+    {
+        printf("DEBUG: Simulation already ending\n");
+        pthread_mutex_unlock(&data->death_lock);
+        return ;
+    }
+    data->keep_iterating = 0;
+    data->dead = 1;
+    dying_philo = find_dying_philo(data);
+    if (dying_philo >= 0)
+    {
+        print_msg(&data->philo[dying_philo], DIED);  // <-- Then calls print_msg
+    }
+    pthread_mutex_unlock(&data->death_lock);
+}
+```
+
+The issue is that different parts of the code acquire these locks in different orders:
+1. Some paths acquire print_lock first, then death_lock
+2. Other paths acquire death_lock first, then print_lock
+
+To fix this, we need to establish a consistent order. Looking at the logical flow, death_lock controls the simulation state, so it makes more sense to always acquire death_lock first. Here's how we should modify the code:
+
+1. Modify `print_msg` in `tools.c`:
+```c
+void print_msg(t_philo *philo, const char *msg)
+{
+    uint64_t    timestamp;
+    int         should_print;
+
+    pthread_mutex_lock(&philo->data->death_lock);  // Lock death_lock first
+    should_print = (ft_strcmp(msg, DIED) == 0 || check_keep_iterating(philo->data));
+    if (should_print)
+    {
+        pthread_mutex_lock(&philo->data->print_lock);  // Then print_lock
+        timestamp = get_time_ms() - philo->data->start_time;
+        printf("%lu %d %s\n", timestamp, philo->id, msg);
+        pthread_mutex_unlock(&philo->data->print_lock);
+    }
+    pthread_mutex_unlock(&philo->data->death_lock);
+}
+```
+
+2. `end_simulation` can stay as is since it already acquires death_lock first.
+
+The rule should be:
+1. Always acquire death_lock first if you need both locks
+2. Then acquire print_lock if needed
+3. Release in reverse order (print_lock then death_lock)
+
+This consistent ordering will resolve the helgrind lock order violations.
