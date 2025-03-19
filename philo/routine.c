@@ -19,26 +19,12 @@ Each philosopher follows a loop:
 4. Sleeps (usleep(time_to_sleep * 1000)).
 5 .Thinks before trying to eat again.
 */
-
 /** Releases both forks after eating or failing to acquire both. */
-void    drop_forks(t_philo *philo)
-{
-    if (philo->has_right_fork)
-    {
-        pthread_mutex_unlock(philo->right_fork);
-        philo->has_right_fork = 0;
-    }
-    if (philo->has_left_fork)
-    {
-        pthread_mutex_unlock(philo->left_fork);
-        philo->has_left_fork = 0;
-    }
-}
-/*void	drop_forks(t_philo *philo)
+void	drop_forks(t_philo *philo)
 {
 	pthread_mutex_unlock(philo->right_fork);
 	pthread_mutex_unlock(philo->left_fork);
-}*/
+}
 
 int	eat_philo(t_philo *philo)
 {
@@ -66,7 +52,6 @@ int	eat_philo(t_philo *philo)
 	return (0);
 }
 
-
 /**
  * Tries to take the right and left forks.
  * @return 0 if forks were successfully taken, 1 if simulation should stop.
@@ -83,14 +68,15 @@ int	take_forks(t_philo *philo)
 	if (philo->data->num_philos == 1)//handling 1 philosopher
 	{
 		wait_until(philo->data->time_to_die);
-		//update_status(philo->data, philo, dead, 0);// Instead of setting death here, wait for monitor to detect it
-		drop_forks(philo);
+		pthread_mutex_unlock(philo->right_fork);
+		//drop_forks(philo); //fix "Unlocking Not-Locked Mutex" 
 		return (1);
 	}
 	// Try to lock the left fork
 	if (pthread_mutex_lock(philo->left_fork) != 0)
 	{
-		drop_forks(philo);
+		//drop_forks(philo);//fix "Unlocking Not-Locked Mutex"
+		pthread_mutex_unlock(philo->right_fork);
 		return (1);
 	}
 	print_msg(philo, TAKE_FORKS);

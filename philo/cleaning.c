@@ -38,7 +38,7 @@ void	free_global_mutexes(t_data *data)
 /* Master function to free all allocated memory */
 void	free_data(t_data *data)
 {
-	//free_threads(data);
+	sync_threads(data);// Wait for all threads to finish
 	free_philo_mutexes(data);
 	free_global_mutexes(data);
 	free(data->philo_ths);

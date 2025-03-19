@@ -18,9 +18,6 @@ int	sync_threads(t_data *data)
 	int	i;
 
 	printf("DEBUG: sync_threads called\n");  // DEBUG
-	/*end_simulation(data);// First mark simulation as ending
-	// Give threads a moment to notice the flag
-	usleep(5000);*/
 	// ✅ Wait for the death monitor to finish
 	if (pthread_join(data->death_monitor, NULL) != 0)
 	{

@@ -46,7 +46,22 @@ timestamp_in_ms: Current timestamp in milliseconds
 philo_id: Philosopher's ID
 msg: Message (one of the macros like EAT, THINK, etc.)
 */
-void    print_msg(t_philo *philo, const char *msg)
+void print_msg(t_philo *philo, const char *msg)
+{
+    uint64_t	timestamp;
+    int			should_print;
+
+	pthread_mutex_lock(&philo->data->print_lock);
+	should_print = (ft_strcmp(msg, DIED) == 0 || check_keep_iterating(philo->data));
+	if (should_print)
+	{
+		timestamp = get_time_ms() - philo->data->start_time;
+		printf("%lu %d %s\n", timestamp, philo->id, msg);
+	}
+	pthread_mutex_unlock(&philo->data->print_lock);
+}
+
+/*void    print_msg(t_philo *philo, const char *msg)
 {
     uint64_t    timestamp;
     int         should_print;
@@ -62,7 +77,7 @@ void    print_msg(t_philo *philo, const char *msg)
         pthread_mutex_unlock(&philo->data->print_lock);
     }
     pthread_mutex_unlock(&philo->data->death_lock);
-}
+}*/
 
 /* Convert string to integer safely (without libft) */
 long	ft_atol(const char *str)
