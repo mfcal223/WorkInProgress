@@ -70,7 +70,7 @@ int	take_forks(t_philo *philo)
 	if (philo->data->num_philos == 1)//handling 1 philosopher
 	{
 		wait_until(philo->data->time_to_die);
-		update_status(philo->data, philo, dead, 0);
+		//update_status(philo->data, philo, dead, 0);// Instead of setting death here, wait for monitor to detect it
 		drop_forks(philo);
 		return (1);
 	}

@@ -36,11 +36,13 @@ void	end_simulation(t_data *data)
     printf("DEBUG: Setting simulation end flags\n"); // DEBUG
 	while (i < data->num_philos)
 	{
+        printf("DEBUG: Marking philosopher %d as dead\n", i + 1);//debug
 		update_status(data, &data->philo[i], dead, 1);
 		i++;
 	}
+    print_msg(&data->philo[i], DIED);  // Add death message here instead of has_died
 	pthread_mutex_unlock(&data->death_lock);
-    printf("DEBUG: end_simulation finished\n");  // Add this debug print
+    printf("DEBUG: end_simulation finished\n");  //debug 
 }
 
 void    update_status(t_data *data, t_philo *philo, t_status new_status, int already_locked)
@@ -117,7 +119,6 @@ void    *check_death(void *arg)
         should_end = 0;
         pthread_mutex_lock(&data->death_lock);
         if (!data->keep_iterating || data->dead)
-        if (!data->keep_iterating || data->dead)
         {
             printf("DEBUG: Death monitor ending because keep_iterating=%d, dead=%d\n", 
                    data->keep_iterating, data->dead);//debug
@@ -135,8 +136,9 @@ void    *check_death(void *arg)
         {
             if (has_died(&data->philo[i]))
             {
-                printf("DEBUG: Philosopher %d has died\n", i + 1); // DEBUG
+                printf("DEBUG: Philosopher %d death detected by monitor\n", i + 1);
                 end_simulation(data);  // Need to call this here when death is detected
+                printf("DEBUG: Returned from end_simulation\n");//debug
                 return (NULL);
             }
             i++;

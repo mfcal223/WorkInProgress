@@ -15,37 +15,37 @@
 /**
  * Checks if a philosopher has exceeded their time to die.
  * SETS THE DEAD FLAG = 1
- * @return 1 if the philosopher has died, 0 otherwise.
+ * return 1 if the philosopher has died, 0 otherwise.
  */
 int	has_died(t_philo *philo)
 {
 	uint64_t	current_time;
 	uint64_t	time_since_last_meal;
-	int			result;
+	int			is_dead;
 	t_status    current_status;
 
+    // First check if simulation is already stopping
+	pthread_mutex_lock(&philo->data->death_lock);
+	is_dead = philo->data->dead;
+	current_status = philo->status;
+	pthread_mutex_unlock(&philo->data->death_lock);
+	if (is_dead)
+		return (1);
+	// Check time since last meal and status
 	current_time = get_time_ms();
 	pthread_mutex_lock(&philo->mut_last_eat);
 	time_since_last_meal = current_time - philo->last_eat;
-	current_status = philo->status;
 	pthread_mutex_unlock(&philo->mut_last_eat);
+	
 	// If the philosopher exceeded time_to_die and is not eating, they die
-	result = 0;
-	if (time_since_last_meal > philo->time_to_die && current_status != eat)
-	{
-		pthread_mutex_lock(&philo->data->death_lock);
-		if (philo->data->keep_iterating) 
-		{
-			philo->data->keep_iterating = 0;  // Signal all threads to stop
-			printf("DEBUG: Philo %d dying. Time since last meal: %lu\n", 
-				philo->id, time_since_last_meal); // DEBUG
-			philo->data->dead = 1;
-			print_msg(philo, DIED);
-			result = 1;
-		}
-		pthread_mutex_unlock(&philo->data->death_lock);
-	}
-	return (result);
+    // Check death condition
+    if (time_since_last_meal > philo->time_to_die && current_status != eat)
+    {
+        printf("DEBUG: Philo %d death condition detected. Time since last meal: %lu\n", 
+               philo->id, time_since_last_meal);
+        return (1);
+    }
+	return (0);
 }
 
 uint64_t	check_die_time(t_data *data)
