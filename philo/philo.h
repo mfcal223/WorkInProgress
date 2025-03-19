@@ -22,7 +22,7 @@
 # include <limits.h>
 
 # define EAT "is eating 🍝"
-# define DIED "is dead 😵"
+# define DIED "died 😵"
 # define SLEEP "is sleeping 😴"
 # define TAKE_FORKS "has taken a fork 🍴"
 # define THINK "is thinking 🤔"

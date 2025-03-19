@@ -21,11 +21,24 @@ Each philosopher follows a loop:
 */
 
 /** Releases both forks after eating or failing to acquire both. */
-void	drop_forks(t_philo *philo)
+void    drop_forks(t_philo *philo)
+{
+    if (philo->has_right_fork)
+    {
+        pthread_mutex_unlock(philo->right_fork);
+        philo->has_right_fork = 0;
+    }
+    if (philo->has_left_fork)
+    {
+        pthread_mutex_unlock(philo->left_fork);
+        philo->has_left_fork = 0;
+    }
+}
+/*void	drop_forks(t_philo *philo)
 {
 	pthread_mutex_unlock(philo->right_fork);
 	pthread_mutex_unlock(philo->left_fork);
-}
+}*/
 
 int	eat_philo(t_philo *philo)
 {

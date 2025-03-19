@@ -40,10 +40,36 @@ static int	find_dying_philo(t_data *data)
     return (dying_philo);
 }
 
+/* modificado para el print / usar version vieja print_msg
+void    end_simulation(t_data *data)
+{
+    int         dying_philo;
+    uint64_t    current_time;
+
+    printf("DEBUG: Entering end_simulation(). keep_iterating=%d, dead=0\n", 
+        data->keep_iterating);
+    pthread_mutex_lock(&data->death_lock);
+    if (!data->keep_iterating)
+    {
+        printf("DEBUG: Simulation already ending\n");
+        pthread_mutex_unlock(&data->death_lock);
+        return ;
+    }
+    dying_philo = find_dying_philo(data);
+    if (dying_philo >= 0)
+        print_msg(&data->philo[dying_philo], DIED);
+    data->keep_iterating = 0;
+    data->dead = 1;
+    printf("DEBUG: Setting simulation end flags\n");
+    pthread_mutex_unlock(&data->death_lock);
+    printf("DEBUG: end_simulation finished\n");
+}*/
+
+//usar version nueva de print_msg
 void	end_simulation(t_data *data)
 {
     int			dying_philo;
-    uint64_t	current_time;
+    //uint64_t	current_time;
 
     printf("DEBUG: Entering end_simulation(). keep_iterating=%d, dead=0\n", 
         data->keep_iterating);
@@ -60,8 +86,9 @@ void	end_simulation(t_data *data)
     dying_philo = find_dying_philo(data);
     if (dying_philo >= 0)
     {
-        current_time = get_time_ms() - data->start_time;
-        printf("%lu %d died\n", current_time, dying_philo + 1);
+        //current_time = get_time_ms() - data->start_time;
+        print_msg(&data->philo[dying_philo], DIED);
+        //printf("%lu %d died\n", current_time, dying_philo + 1);
     }
     pthread_mutex_unlock(&data->death_lock);
     printf("DEBUG: end_simulation finished\n");

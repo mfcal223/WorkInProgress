@@ -35,23 +35,6 @@ void	free_global_mutexes(t_data *data)
 	pthread_mutex_destroy(&data->death_lock);
 }
 
-/*void	free_threads(t_data *data)
-{
-	int	i;
-
-	i = 0;
-	if (pthread_join(data->death_monitor, NULL) != 0)
-		printf("Warning: Failed to join death monitor thread.\n");
-	if (data->nb_meals > 0 && pthread_join(data->meal_monitor, NULL) != 0)
-		printf("Warning: Failed to join meal monitor thread.\n");
-	while (i < data->num_philos)
-	{
-		if (pthread_join(data->philo_ths[i], NULL) != 0)
-			printf("Warning: Failed to join philosopher thread %d.\n", i);
-		i++;
-	}
-}*/
-
 /* Master function to free all allocated memory */
 void	free_data(t_data *data)
 {

@@ -618,105 +618,44 @@ Exits the function.
 ====================================================================
 
 *-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*
-STOPPING THE SIMULATION WHEN ALL PHILOS HAVE EATEN THE X NUMBER OF MEALS 
-Purpose of data->finished
-eat_count tracks how many times a single philosopher has eaten.
-data->finished tracks how many philosophers have finished eating (i.e., reached meals_required).
-Why This Matters
-According to the project subject:
+The original code was likely trying to handle two scenarios:
 
-If all philosophers have eaten at least number_of_times_each_philosopher_must_eat, the simulation stops.
+When death is detected by the monitor thread (which then calls end_simulation())
+When a philosopher thread detects its own death (and needs to set the flags immediately)
+However, this creates a race condition because both has_died() and end_simulation() are modifying the same flags (keep_iterating and dead). This could lead to:
 
-The problem is:
+Duplicate death messages
+Inconsistent state
+Some threads not receiving the death signal
 
-eat_count is per philosopher.
-The simulation should stop when ALL philosophers have eaten enough.
-📌 Solution
-We increment data->finished each time a philosopher reaches meals_required.
-In check_death(), we stop the simulation when data->finished == num_philosophers.
-*-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-**-*-*-*
-Let me analyze how the simulation naturally ends in your current code:
+The original version of has_died() was trying to handle both scenarios:
 
-1. Death scenario:
-```c
-// In check_death()
-while (i < data->num_philos)
-{
-    if (has_died(&data->philo[i]))
-    {
-        end_simulation(data);  // ✅ Simulation ends when a philosopher dies
-        return (NULL);
-    }
-    i++;
-}
-```
+When called from the philosopher¨s routine - to check if they should stop
+When called from the monitor - to detect and set the death state
+This dual responsibility can lead to race conditions because:
 
-2. Meals completed scenario:
-Let me check the `check_meals()` function in your code:
+A philosopher thread might detect its own death and try to set flags
+The monitor thread might detect the same death and try to set flags
+Both might try to print the death message
+The better approach (what we changed it to) is:
 
-Looking at your code after searching through it, the natural end of simulation is indeed handled by two monitor threads:
+has_died() only checks the death condition
+The monitor thread is solely responsible for detecting death and calling end_simulation()
+end_simulation() is solely responsible for setting flags and updating state
+This creates a clear chain of responsibility:
 
-1. `check_death()` - calls `end_simulation()` when a philosopher dies
-2. `check_meals()` - calls `end_simulation()` when all philosophers have eaten enough meals
+Philosopher threads only check if they should stop
+Monitor thread detects death
+end_simulation() handles the state changes
+So yes, you were right! The original version had overlapping responsibilities because it was being called from different parts of the program. The new version makes the code more maintainable and less prone to race conditions by clearly separating these responsibilities.
 
-However, your current `sync_threads()` function is calling `end_simulation()` prematurely:
-```c
-int    sync_threads(t_data *data)
-{
-    int    i;
+ changes ensure:
 
-    end_simulation(data);  // <-- This needs to be removed
-    usleep(5000);         // <-- This can also be removed
-```
-
-The joining of threads should happen naturally when:
-1. Either a philosopher dies (detected by `check_death()`)
-2. Or all philosophers have eaten enough (detected by `check_meals()`)
-
-You should modify `sync_threads()` to just handle joining the threads:
-```c
-int    sync_threads(t_data *data)
-{
-    int    i;
-
-    // Wait for the death monitor to finish
-    if (pthread_join(data->death_monitor, NULL) != 0)
-    {
-        printf("Error: Failed to join death monitor thread\n");
-        return (ERR);
-    }    
-
-    // If `nb_meals` is set, wait for `check_meals()` to finish
-    if (data->nb_meals > 0)
-    {
-        if (pthread_join(data->meal_monitor, NULL) != 0)
-        {
-            printf("Error: Failed to join meal monitor thread\n");
-            return (ERR);
-        }    
-    }
-
-    // Wait for all philosopher threads
-    i = 0;
-    while (i < data->num_philos)
-    {
-        if (pthread_join(data->philo_ths[i], NULL) != 0)
-        {
-            printf("Error: Failed to join philosophers thread\n");
-            return (ERR);
-        }
-        i++;
-    }
-    return (0);
-}
-```
-
-This way:
-1. Monitor threads will detect when to end the simulation
-2. `sync_threads()` will wait for all threads to finish naturally
-3. The simulation will run until a real ending condition is met (death or enough meals)
-
-Try removing those two lines from `sync_threads()` and let me know if that helps!
+Death detection is only done by checking conditions
+State changes are centralized in end_simulation()
+Death monitoring and state updates are handled by the monitor thread
+Philosopher threads only check if they should stop
+Clear debug messages to track the program flow
 
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=

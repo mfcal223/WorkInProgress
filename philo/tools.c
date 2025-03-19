@@ -25,7 +25,20 @@ void	wait_until(uint64_t wait_time)
 	while ((get_time_ms() - start_time) < wait_time)
 		usleep(500); // Sleep in small increments (500 μs) for better accuracy
 }
+static int	ft_strcmp(const char *s1, const char *s2)
+{
+	unsigned int	i;
 
+	i = 0;
+	while (s1[i] != '\0' && s2[i] != '\0')
+	{
+		if (s1[i] != s2[i])
+			return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+		else
+			i++;
+	}
+	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+}
 /*
 Use a mutex (print_lock) to prevent multiple threads from printing simultaneously.
 Take three parameters:
@@ -33,15 +46,22 @@ timestamp_in_ms: Current timestamp in milliseconds
 philo_id: Philosopher's ID
 msg: Message (one of the macros like EAT, THINK, etc.)
 */
-void	print_msg(t_philo *philo, const char *msg)
+void    print_msg(t_philo *philo, const char *msg)
 {
-	uint64_t	timestamp;
+    uint64_t    timestamp;
+    int         should_print;
 
-	pthread_mutex_lock(&philo->data->print_lock);
-	timestamp = get_time_ms() - philo->data->start_time;
-	if (check_keep_iterating(philo->data))
-		printf("%lu %d %s\n", timestamp, philo->id, msg);
-	pthread_mutex_unlock(&philo->data->print_lock);
+    pthread_mutex_lock(&philo->data->death_lock);    // Lock death_lock first
+    should_print = (ft_strcmp(msg, DIED) == 0
+		|| check_keep_iterating(philo->data));
+    if (should_print)
+    {
+        pthread_mutex_lock(&philo->data->print_lock); // Then print_lock
+        timestamp = get_time_ms() - philo->data->start_time;
+        printf("%lu %d %s\n", timestamp, philo->id, msg);
+        pthread_mutex_unlock(&philo->data->print_lock);
+    }
+    pthread_mutex_unlock(&philo->data->death_lock);
 }
 
 /* Convert string to integer safely (without libft) */
