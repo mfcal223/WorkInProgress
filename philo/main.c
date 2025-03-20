@@ -11,35 +11,33 @@
 /* ************************************************************************** */
 
 #include "philo.h"
-/*Handles argument parsing, initialization, and starting the simulation. */
 
+/**
+ * uses pthread_join to ensure threads are in sync
+ * ✅ Wait for the death monitor to finish
+ * ✅ If `num_meal` is set, wait for `check_meals()` to finish
+ * ✅ Wait for all philosopher threads
+ */
 int	sync_threads(t_data *data)
 {
 	int	i;
 
-	//printf("DEBUG: sync_threads called\n");  // DEBUG
-	// ✅ Wait for the death monitor to finish
 	if (pthread_join(data->death_monitor, NULL) != 0)
 	{
-		printf("Error: Failed to join death monitor thread\n");
 		return (ERR);
-	}	
-	// ✅ If `nb_meals` is set, wait for `check_meals()` to finish
-	if (data->nb_meals > 0)
+	}
+	if (data->num_meal > 0)
 	{
 		if (pthread_join(data->meal_monitor, NULL) != 0)
 		{
-			printf("Error: Failed to join meal  monitor thread\n");
 			return (ERR);
-		}	
+		}
 	}
-	// ✅ Wait for all philosopher threads
 	i = 0;
 	while (i < data->num_philos)
 	{
 		if (pthread_join(data->philo_ths[i], NULL) != 0)
 		{
-			printf("Error: Failed to join philosophers thread\n");
 			return (ERR);
 		}
 		i++;
@@ -47,10 +45,15 @@ int	sync_threads(t_data *data)
 	return (0);
 }
 
+/**
+ * initializes structures, mutexes and threads.
+ * coordinates that with sync_threads
+ * executes the closing functions if all works ok 
+ */
 int	init_admin(int ac, char **av)
 {
 	t_data	data;
-	
+
 	if (init_data(&data, ac, av) != 0)
 		return (ERR);
 	if (init_philosophers(&data))
@@ -58,11 +61,18 @@ int	init_admin(int ac, char **av)
 	if (init_threads(&data))
 		return (ERR);
 	if (sync_threads(&data))
+	{
+		printf("Error: Failed to join threads\n");
 		return (ERR);
+	}
 	close_adm(&data, "Exiting simulation.\n");
 	return (0);
 }
 
+/** 
+ * Handles argument parsing and initialization
+ * executes closing functions if there is an error
+*/
 int	main(int ac, char **av)
 {
 	t_data	data;

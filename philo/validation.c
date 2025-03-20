@@ -15,14 +15,14 @@
 /* Function to check if a string is empty or contains other than digits */
 int	is_number(char *str)
 {
-	int i;
+	int	i;
 
 	i = 0;
-	if (!str[i]) // Check for empty string
+	if (!str[i])
 		return (0);
 	while (str[i])
 	{
-		if (str[i] < '0' || str[i] > '9') // Inlined ft_isdigit()
+		if (str[i] < '0' || str[i] > '9')
 			return (0);
 		i++;
 	}

@@ -22,8 +22,9 @@ RM = rm -f
 # ARFLAGS = rcs
 
 #------------- SOURCE FILES -------------------------------#
-SRCS = main.c checks.c cleaning.c initialization.c \
-	monitors.c routine.c routine2.c tools.c  validation.c
+SRCS = cleaning.c initialization.c main.c monitor_death.c \
+	monitor_meal.c routine.c routine2.c simulation.c tools.c \
+	validation.c
 
 #------------- OBJECT FILES -------------------------------#
 OBJS = $(addprefix obj/, $(SRCS:.c=.o))
@@ -36,16 +37,17 @@ OBJS = $(addprefix obj/, $(SRCS:.c=.o))
 # Default rule
 all: $(NAME)
 
-# Compilation
-$(NAME): obj_dir $(OBJS)
+# Object file compilation (Fixed to prevent relinking)
+$(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
 
-# Ensure obj directory exists
+# Ensure obj directory exists (Order-only dependency prevents relinking)
 obj_dir:
-	mkdir -p obj
+	@mkdir -p obj 
+# `@` prevents printing "mkdir -p obj" on every make
 
 # Object file compilation
-obj/%.o: %.c philo.h
+obj/%.o: %.c philo.h | obj_dir
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean object files

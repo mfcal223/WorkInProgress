@@ -45,7 +45,7 @@ tracking, timing values, and mutexes. */
 typedef struct s_philo
 {
 	int				id;
-	t_status        status;
+	t_status		status;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
 	pthread_mutex_t	mut_last_eat; //eating_lock; //protects last_eat
@@ -61,39 +61,27 @@ timing info, mutexes for thread sync, stop conditions */
 typedef struct s_data
 {
 	int				num_philos;			// Total number of philosophers
-    uint64_t        start_time;			// Simulation start time
-	int				keep_iterating; //simulation_running;	// Flag to control simulation stopping
-	int             dead;				// 1 if a philosopher died, 0 otherwise
-    int             nb_full_p; //finished;			// Number of philosophers who finished eating
-	uint64_t        time_to_die;		// Time limit before death
-    uint64_t        time_to_eat;		// Time it takes to eat
-    uint64_t        time_to_sleep;		// Time spent sleeping
-	int				nb_meals; //meals_required;		// Number of meals each philosopher must eat
+	uint64_t		start_time;			// Simulation start time
+	int				keep_iterating;		// Flag to control simulation stopping
+	int				dead;				// 1 if a philosopher died, 0 otherwise
+	int				finished;			// Numb_philos who finished eating
+	uint64_t		time_to_die;		// Time limit before death
+	uint64_t		time_to_eat;		// Time it takes to eat
+	uint64_t		time_to_sleep;		// Time spent sleeping
+	int				num_meal;			// Numb_meals each philosopher must eat
 	t_philo			*philo;
-	pthread_t       *philo_ths; //*threads;			// Array of philosopher threads
-	pthread_t       death_monitor; 		//  for `check_death()`
-	pthread_t       meal_monitor; 		//  for `check_meals()`
-	pthread_mutex_t	*forks;				//for modifying fork status
+	pthread_t		*philo_ths;			// Array of philosopher threads
+	pthread_t		death_monitor;		// for `check_death()`
+	pthread_t		meal_monitor;		// for `check_meals()`
+	pthread_mutex_t	*forks;				// for modifying fork status
 	pthread_mutex_t	print_lock;
 	pthread_mutex_t	death_lock;			// for modifying the dead variable.
-	pthread_mutex_t	mut_eat_t;			// Mutex for time to eat access
-	pthread_mutex_t	mut_die_t;			// for reading time_to_die. - Mutex for time to die access
-	pthread_mutex_t	mut_sleep_t;		// Mutex for time to sleep access
-
+	pthread_mutex_t	mut_die_t;			// Mutex for time to die access
 }					t_data;
 
-/* ------- CHECK_TIMES---------------------*/
-int			has_died(t_philo *philo);
-uint64_t	check_die_time(t_data *data);
-uint64_t	check_eat_time(t_data *data);
-uint64_t	ft_get_last_eat(t_philo *philo);
-int			check_keep_iterating(t_data *data);
-
 /* ------- CLEANING -----------------------*/
-
 void		free_philo_mutexes(t_data *data);
 void		free_global_mutexes(t_data *data);
-//void		free_threads(t_data *data);
 void		free_data(t_data *data);
 void		close_adm(t_data *data, char *str);
 
@@ -108,22 +96,36 @@ int			init_philosophers(t_data *data);
 int			sync_threads(t_data *data);
 int			init_admin(int ac, char **av);
 
-/* ------- MONITORS -----------------------*/
-void		end_simulation(t_data *data);
-void    update_status(t_data *data, t_philo *philo,
-	t_status new_status, int already_locked);
-void		*check_meals(void *arg);
+/* ------- MONITOR_DEATH-------------------*/
+int			should_stop_monitoring(t_data *data);
+int			monitor_philosopher_death(t_data *data);
 void		*check_death(void *arg);
 
+/* ------- MONITOR_DEATH-------------------*/
+int			should_stop_meal_monitoring(t_data *data);
+int			count_full_philosophers(t_data *data);
+void		*check_meals(void *arg);
+
 /* ------- ROUTINE ------------------------*/
-void		drop_forks(t_philo *philo);
 int			eat_philo(t_philo *philo);
+int			handle_single_philo(t_philo *philo);
+int			lock_forks(t_philo *philo, int left_index, int right_index);
 int			take_forks(t_philo *philo);
 void		*philo_routine(void *arg);
 
 /* ------- ROUTINE2------------------------*/
+void		update_status(t_data *data, t_philo *philo,
+				t_status new_status, int already_locked);
+void		drop_forks(t_philo *philo);
 void		think_philo(t_philo *philo);
 void		sleep_philo(t_philo *philo);
+
+/* ------- SIMULATION -----------------------*/
+//static int	find_dying_philo(t_data *data);
+void		end_simulation(t_data *data);
+int			has_died(t_philo *philo);
+uint64_t	get_die_time(t_data *data);
+int			check_keep_iterating(t_data *data);
 
 /*-------- TOOLS --------------------------*/
 void		wait_until(uint64_t wait_time);

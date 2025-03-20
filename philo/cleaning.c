@@ -29,8 +29,6 @@ void	free_philo_mutexes(t_data *data)
 void	free_global_mutexes(t_data *data)
 {
 	pthread_mutex_destroy(&data->mut_die_t);
-	pthread_mutex_destroy(&data->mut_eat_t);
-	pthread_mutex_destroy(&data->mut_sleep_t);
 	pthread_mutex_destroy(&data->print_lock);
 	pthread_mutex_destroy(&data->death_lock);
 }
@@ -38,7 +36,6 @@ void	free_global_mutexes(t_data *data)
 /* Master function to free all allocated memory */
 void	free_data(t_data *data)
 {
-	//sync_threads(data);// Wait for all threads to finish
 	free_philo_mutexes(data);
 	free_global_mutexes(data);
 	free(data->philo_ths);

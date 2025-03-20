@@ -109,6 +109,34 @@ Functions allowed (other than the included in <pthread>): 🔴🔵
 🔵 int usleep(useconds_t usec);
 🔴 int gettimeofday(struct timeval *restrict tv, struct timezone *restrict tz);
 [The gettimeofday() function gets the system’s clock time. The current time is expressed in elapsed seconds and microseconds since 00:00:00, January 1, 1970 (Unix Epoch).]
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+
+EVALUATION:
+
+1) check if there is any global variables : norminette will flag them. 
+
+2) check there is 1 thread per philosopher: 
+- Each philosopher is assigned a thread within the loop in init_threads(), ensuring one thread per philosopher.
+- (memory allocation is also determine by the number of philosophers , in init_data())
+
+3) check there is only one fork per philosopher: 
+- in init_data(): data->forks gets as much memory as number of philos
+- in init_forks(): left fork is assign according to number of philo (its index). Then the other one that will be assign will belong to the "neighbour" philosopher.
+
+4) check if here is a mutex per fork and that it´s used to check the fork and/or change it:
+- in init_data_mutexes() , while loop asigns 1 fork_mutex per fork
+
+5) check the outputs are never mixed up:
+- print_msg() uses print_lock. The print_lock mutex prevents mixed-up output by enforcing exclusive access during message printing
+
+6) check how the death of a philosopher is verified and if there is a mutex to prevent a philosopher from dying and starting to eat at the same time:
+- philo_routine() checks for simulation status and chcks for dead-flag ON before eating. 
+- take_forks() also checks for death before calculating which fork to take.
+- eat_philos() ALSO has a check before doing anything else. 
+they all use has_died() 
+- has_died() function in simulation.c . It uses a mutex to safely access the dead flag before allowing further actions. The death_lock mutex ensures consistency, preventing a philosopher from eating after being marked as dead.
+
 
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
@@ -294,6 +322,8 @@ The pthread_mutex_unlock function unlocks a mutex. The mutex to be unlocked is a
 💡 Let’s be careful to note that this function does not check if the mutex is in fact locked and that the calling thread is actually its owner: a mutex could therefore be unlocked by a thread that did not lock it in the first place. We will need to be careful about arranging pthread_mutex_lock and pthread_mutex_unlock in our code, otherwise, we might get “lock order violation” errors.❗
 
 Both of these functions return 0 for success and an error code otherwise.
+
+It is very important to be consistent with the order of locking and unlocking to prevent lock order violations.
 
 🙊 Destroying a Mutex
 ------------------
@@ -538,7 +568,7 @@ Implements eating, sleeping, and thinking logic.
 
 🔺 check_death() → Continuously checks if a philosopher has died.
 
-🔺 check_meals() → Monitors the meal count in case nb_meals has been defined. 
+🔺 check_meals() → Monitors the meal count in case num_meal has been defined. 
 
 🎯 philosopher_routine()
 Each philosopher is a separate thread, running a loop that follows these rules:
@@ -605,8 +635,8 @@ Returns immediately.
 Uses death_lock to prevent race conditions.
 
 📌 2) What check_meals() Should Do
-Monitors if all philosophers have eaten at least nb_meals times.
-If nb_meals > 0 and all philosophers have eaten enough, it:
+Monitors if all philosophers have eaten at least num_meal times.
+If num_meal > 0 and all philosophers have eaten enough, it:
 Stops the simulation (keep_iterating = 0).
 Exits the function.
 
@@ -695,203 +725,284 @@ Videos:
 
 =.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
 
-Based on the provided `philo_by_malaga_guy` code, I have structured the 
-**workflow of the philosophers program** into different functional categories:
+
+Workflow of the Philosophers Program
+====================================
+
+1. Input Validation
+Ensures that the program receives valid arguments before initializing the simulation..
+
+validate_input(ac, av) → Checks the number and validity of arguments.
+check_numbers(ac, av) → Iterates through arguments and verifies they are valid numbers.
+is_number(str) → Ensures the string contains only numeric characters.
+is_valid_number(num, index) → Checks if the number falls within the valid range.
+
+📄 File: validation.c
+
+2. Structures Initialization & Thread/Mutex Creation
+Initializes core data structures, mutexes, and threads.
+
+init_admin(ac, av) → Oversees data initialization and thread creation.
+init_data(data, ac, av) → Allocates memory and initializes program parameters.
+init_data_mutexes(data) → Initializes global mutexes (e.g., print_lock, death_lock).
+init_forks(data) → Assigns a fork mutex to each philosopher.
+init_philosophers(data) → Sets initial values for each philosopher.
+init_threads(data) → Creates threads for philosophers and monitoring.
+📌 Prepares all necessary data structures before starting the simulation.
+📄 File: initialization.c​
+
+3. Routine Setting
+Defines philosopher actions (eating, sleeping, thinking).
+
+philo_routine(philo) → Main routine executed by each philosopher thread.
+take_forks(philo) → Locks both forks before eating.
+lock_forks(philo, left_index, right_index) → Ensures proper fork locking order.
+eat_philo(philo) → Philosopher eats, updates time, and increments meal count.
+sleep_philo(philo) → Philosopher sleeps for time_to_sleep.
+think_philo(philo) → Philosopher enters thinking state.
+drop_forks(philo) → Releases both forks after eating.
+📌 Defines the behavior of each philosopher during the simulation.
+📄 Files: routine.c​routine, routine2.c​routine2
+
+4. Death Check
+Monitors if a philosopher has died.
+
+check_death(data) → Thread responsible for detecting deaths.
+monitor_philosopher_death(data) → Iterates through philosophers to check if any have died.
+has_died(philo) → Determines if a philosopher has exceeded time_to_die.
+should_stop_monitoring(data) → Checks if the simulation should stop.
+📌 Ensures a philosopher’s death is detected immediately.
+📄 Files: monitor_death.c​monitor_death, simulation.c​simulation
+
+5. Printing of Messages
+Handles the output of messages to prevent race conditions.
+
+print_msg(philo, msg) → Displays philosopher actions (eating, sleeping, thinking, taking forks, dying).
+get_time_ms() → Returns the current timestamp in milliseconds.
+📌 Ensures that messages are printed correctly without overlapping.
+📄 File: tools.c​tools
+
+6. Freeing/Cleaning/Closing
+Properly releases allocated memory and destroys mutexes.
+
+free_philo_mutexes(data) → Destroys individual mutexes for philosophers.
+free_global_mutexes(data) → Destroys global mutexes (print, death locks).
+free_data(data) → Frees all allocated memory.
+close_adm(data, str) → Calls cleanup functions and prints exit message.
+📌 Prevents memory leaks and ensures proper cleanup at program termination.
+📄 File: cleaning.c​cleaning
+
+7. General Workflow Summary
+Validate input.
+Initialize structures, forks, and threads.
+Start philosopher threads.
+Each philosopher alternates between eating, sleeping, and thinking.
+Monitoring threads check if a philosopher has died or if all have eaten enough.
+If a philosopher dies, the simulation stops immediately.
+Clean up resources before exiting.
+📌 Manages the overall flow of execution to ensure proper simulation behavior.
+📄 File: main.c​
+
+Philosophers Project - Checklist
+
+1. Compilation & Code Structure
+
+✅ Program compiles without warnings using gcc and -Wall -Wextra -Werror.
+✅ All functions adhere to 42 Norminette rules.
+✅ No memory leaks (test with valgrind --leak-check=full ./philo).
+✅ Code is modular (separate files for validation, initialization, routines, monitoring, printing, and cleanup).
+✅ No global variables (verified using norminette --checkForbidden).
+
+2. Argument Parsing and Validation
+
+✅ Check if the argument count is between 5 and 6.
+✅ Validate that arguments are positive integers.
+✅ Handle invalid input gracefully (error message and proper return).
+✅ Edge Cases: Zero or negative numbers should return an error.
+
+3. Initialization of Data Structures
+
+✅ Allocate memory for philosophers and forks.
+✅ Initialize mutexes (forks, print_lock, death_lock, mut_die_t).
+✅ Initialize philosopher’s attributes:
+
+id
+
+meals_eaten
+
+last_meal_time
+
+left_fork and right_fork
+
+Reference to t_data structure.
+✅ Set dead flag to 0 (not dead).
+
+4. Threads and Actions
+
+✅ Create one thread per philosopher.
+✅ Handle one-philosopher case: He should die after picking up a fork.
+✅ Implement philosophers’ actions:
+
+Thinking
+
+Picking up forks
+
+Eating
+
+Sleeping
+✅ Implement a monitor thread:
+
+Check philosopher deaths.
+
+Verify if all philosophers have eaten enough.
+
+Ensure proper synchronization.
+✅ Time Management:
+
+Track timestamps using gettimeofday().
+
+Use usleep() for simulating actions.
+✅ Cleanup:
+
+Destroy all mutexes.
+
+Free allocated memory.
+
+5. Input Handling & Error Management
+
+✅ Handle invalid arguments correctly.
+✅ Handle invalid argument count gracefully.
+✅ Handle memory allocation failures.
+✅ Check for deadlocks: Ensure correct mutex locking/unlocking.
+✅ Ensure no out-of-bounds memory access.
+
+6. Debugging & Performance
+
+✅ Valgrind: No memory leaks (valgrind --leak-check=full ./philo).
+✅ Helgrind: No thread errors (valgrind --tool=helgrind ./philo).
+✅ Test with different numbers of philosophers.
+✅ Edge Cases:
+
+One philosopher (should die after taking a fork).
+
+Philosophers reach meal goal and stop.
+✅ Test extreme time constraints:
+
+Very short or very long time values.
+✅ No segmentation faults or crashes.
+✅ Check thread synchronization.
+
+Here is the complete **list of test cases**, now clearly separated into **mandatory** (`./philo`) and **bonus** (`./philo_bonus`).  
 
 ---
 
-### **1. Input Validation** // ESTO YA ESTA!!!!
-- **Files:** `ft_check.c`
-- **Key Functions:**
-  - `ft_check_args(c, v)`: Ensures the correct number of arguments (5 or 6).
-  - `ft_error_argv(argc, argv)`: Validates numerical constraints:
-    - **Number of philosophers:** Between `1` and `200`
-    - **Time to die, eat, and sleep:** At least `60ms`
-    - **Number of meals (optional):** At least `1`
-  - `ft_argv_num(argc, argv)`: Checks if all arguments are numeric.
+## **Mandatory Part Test Cases (`./philo`)**
 
----
-
-### **2. Thread Creation**
-- **Files:** `ft_init.c`
-- **Key Functions:**
-  - `ft_init_threads(data)`: Creates all necessary threads:
-    - **Philosopher threads (`philo_ths`)** → Each philosopher runs `ft_the_core()`
-    - **Monitor thread (`monit_all_alive`)** → Runs `ft_are_you_dead()`
-    - **Monitor for meal count (`monit_all_full`)** → Runs `ft_the_watchdog()`
-  - `ft_init_philos(argc, argv)`: Calls all initialization functions and creates threads.
-
----
-
-
-
-
-### **3. Routine Setting**
-- **Files:** `ft_philo.c`, `ft_eat_n_think.c`, `ft_sleep.c`
-- **Key Functions:**
-  - `ft_the_core(void *philo)`: **Main philosopher routine**, loops through:
-    1. `ft_eating(philo)`: Eats if forks are available.
-    2. `ft_thinking(philo)`: Waits before attempting to eat again.
-    3. `ft_sleeping(philo)`: Sleeps for a predefined time.
-    4. Checks if the philosopher has died (`ft_how_are_you() == DIE`).
-  - `ft_eating(philo)`: Handles eating:
-    - Locks both forks.
-    - Updates meal count.
-    - Waits for eating time.
-    - Releases forks.
-  - `ft_thinking(philo)`: Philosopher "thinks" before attempting to eat again.
-  - `ft_sleeping(philo)`: Philosopher "sleeps" after eating.
-  - `ft_get_fork_l(philo)` & `ft_get_fork_r(philo)`: Acquires forks safely.
-
----
-
-### **4. Death Check**
-- **Files:** `ft_controller.c`, `ft_philo.c`
-- **Key Functions:**
-  - `ft_are_you_dead(void *data)`: Continuously checks if a philosopher has died.
-    - If a philosopher has not eaten in `time_to_die`, it stops the simulation.
-  - `ft_rip(philo)`: Checks if a philosopher should die.
-    - If `current_time - last_meal_time > time_to_die`, philosopher is marked as `DIE`.
-  - `ft_the_watchdog(void *phi_value)`: Monitors if all philosophers have finished eating.
-    - If `ft_has_eaten()` is `false`, the process continues.
-    - Otherwise, the simulation stops (`ft_keep_flag(value, false)`).
-
----
-
-### **5. Freeing/Cleaning/Closing**
-- **Files:** `ft_free_tools.c`
-- **Key Functions:**
-  - `ft_free_all(data)`: Cleans up all dynamically allocated memory.
-  - `ft_malloc(data)`: Allocates memory for structures and mutexes.
-  - `ft_game_over(value)`: Stops the simulation when needed.
-
----
-
-### **6. Printing of Messages**
-- **Files:** `ft_printing.c`
-- **Key Functions:**
-  - `ft_writing(data, id, src)`: Thread-safe logging.
-    - Uses `mut_print` mutex to prevent race conditions.
-    - Prints philosopher actions like:
-      - `"is eating 🤤"`
-      - `"is sleeping 😴"`
-      - `"is thinking 🤯"`
-      - `"has taken a fork 🍴"`
-      - `"is died 💀"`
-  - `ft_instruction()`: Displays program usage instructions when input is incorrect.
-
----
-
-### **General Workflow Summary**
-1. **Input Validation** → Checks arguments and ensures correctness.
-2. **Thread Creation** → Initializes philosophers and monitoring threads.
-3. **Routine Execution** → Each philosopher loops through **eat → sleep → think**.
-4. **Death Monitoring** → Continuously checks if a philosopher should die.
-5. **Simulation Stopping** → If a philosopher dies or all have eaten, the simulation ends.
-6. **Cleanup** → Frees memory and destroys mutexes.
-
----
-
-This structured breakdown maps out **how the functions interconnect and control program flow** in the `philo_by_malaga_guy` project. Let me know if you need further details! 🚀
-
-=============
-
-Based on the helgrind output, the lock order violation is happening in three different locations:
-
-1. In `end_simulation()` (Thread #5):
+### **Basic Cases (No Philosopher Should Die)**
 ```
-at 0x401F0B: end_simulation
-by 0x402134: check_death
-```
-This path shows the function is acquiring death_lock first, then print_lock.
-
-2. In `take_forks()` through `print_msg()` (Thread #2 and #3):
-```
-by 0x402903: print_msg
-by 0x4025F9: take_forks
-by 0x402737: philo_routine
-```
-This path shows it's acquiring print_lock first, then death_lock.
-
-Let me get the relevant functions to show you exactly what's happening.
-
-Let me check some specific files to find where these mutex interactions are happening:
-
-Based on the code search results, I can see that the lock ordering violation occurs between `print_lock` and `death_lock` in several places. Here are the key places:
-
-1. In `tools.c`, the `print_msg` function:
-```c
-void print_msg(t_philo *philo, const char *msg)
-{
-    uint64_t    timestamp;
-    int         should_print;
-
-    pthread_mutex_lock(&philo->data->print_lock);  // <-- Locks print_lock first
-    should_print = (ft_strcmp(msg, DIED) == 0 || check_keep_iterating(philo->data));
-    if (should_print)
-    {
-        timestamp = get_time_ms() - philo->data->start_time;
-        printf("%lu %d %s\n", timestamp, philo->id, msg);
-    }
-    pthread_mutex_unlock(&philo->data->print_lock);
-}
-```
-
-2. In `monitors.c`, the `end_simulation` function:
-```c
-void    end_simulation(t_data *data)
-{
-    int         dying_philo;
-
-    pthread_mutex_lock(&data->death_lock);  // <-- Locks death_lock first
-    if (!data->keep_iterating)
-    {
-        printf("DEBUG: Simulation already ending\n");
-        pthread_mutex_unlock(&data->death_lock);
-        return ;
-    }
-    data->keep_iterating = 0;
-    data->dead = 1;
-    dying_philo = find_dying_philo(data);
-    if (dying_philo >= 0)
-    {
-        print_msg(&data->philo[dying_philo], DIED);  // <-- Then calls print_msg
-    }
-    pthread_mutex_unlock(&data->death_lock);
-}
-```
-
-The issue is that different parts of the code acquire these locks in different orders:
-1. Some paths acquire print_lock first, then death_lock
-2. Other paths acquire death_lock first, then print_lock
-
-To fix this, we need to establish a consistent order. Looking at the logical flow, death_lock controls the simulation state, so it makes more sense to always acquire death_lock first. Here's how we should modify the code:
-
-1. Modify `print_msg` in `tools.c`:
-```c
-void print_msg(t_philo *philo, const char *msg)
-{
-    uint64_t    timestamp;
-    int         should_print;
-
-    pthread_mutex_lock(&philo->data->death_lock);  // Lock death_lock first
-    should_print = (ft_strcmp(msg, DIED) == 0 || check_keep_iterating(philo->data));
-    if (should_print)
-    {
-        pthread_mutex_lock(&philo->data->print_lock);  // Then print_lock
-        timestamp = get_time_ms() - philo->data->start_time;
-        printf("%lu %d %s\n", timestamp, philo->id, msg);
-        pthread_mutex_unlock(&philo->data->print_lock);
-    }
-    pthread_mutex_unlock(&philo->data->death_lock);
-}
+./philo 5 800 200 200
+./philo 7 800 200 350
+./philo 4 600 200 200
+./philo 2 1000 200 400
+./philo 5 600 150 150
+./philo 4 410 200 200
+./philo 100 800 200 200
+./philo 105 800 200 200
+./philo 200 800 200 200
 ```
 
-2. `end_simulation` can stay as is since it already acquires death_lock first.
+### **Simulation Should Stop After Eating N Meals**
+```
+./philo 4 410 200 200 5
+./philo 2 500 200 200 10
+./philo 6 1000 400 400 2
+./philo 3 800 200 200 2
+./philo 5 800 200 200 7
+./philo 4 410 200 200 10
+```
 
-The rule should be:
-1. Always acquire death_lock first if you need both locks
-2. Then acquire print_lock if needed
-3. Release in reverse order (print_lock then death_lock)
+### **Edge Cases**
+#### **Single Philosopher (Should Die)**
+```
+./philo 1 800 200 200
+```
 
-This consistent ordering will resolve the helgrind lock order violations.
+#### **Philosophers Die Quickly (time_to_die < time_to_eat + time_to_sleep)**
+```
+./philo 5 200 200 200
+./philo 5 200 100 100
+./philo 6 100 70 50
+./philo 4 310 200 100
+./philo 4 200 205 200
+```
+
+#### **High Number of Philosophers**
+```
+./philo 200 800 200 200
+```
+
+#### **Error Cases**
+```
+./philo                # No input
+./philo 5 200 100 100 5 42  # Too many arguments
+./philo five 200 100 100  # Invalid input
+./philo 5 -200 100 100  # Negative values
+./philo 0 800 200 200  # Zero values
+./philo 5 800 200 200 0  # 0 meals should be invalid
+```
+
+#### **Memory and Thread Testing**
+```
+valgrind ./philo 5 200 100 100  # Memory leak check
+valgrind --tool=helgrind ./philo 4 410 200 200 5  # Race condition check
+```
+
+---
+
+## **Bonus Part Test Cases (`./philo_bonus`)**
+
+### **Basic Cases (No Philosopher Should Die)**
+```
+./philo_bonus 5 800 200 200
+./philo_bonus 7 800 200 350
+./philo_bonus 4 600 200 200
+./philo_bonus 2 1000 200 400
+./philo_bonus 5 600 150 150
+./philo_bonus 4 410 200 200
+./philo_bonus 100 800 200 200
+./philo_bonus 105 800 200 200
+./philo_bonus 200 800 200 200
+```
+
+### **Simulation Should Stop After Eating N Meals**
+```
+./philo_bonus 4 410 200 200 5
+./philo_bonus 2 500 200 200 10
+./philo_bonus 6 1000 400 400 2
+./philo_bonus 3 800 200 200 2
+./philo_bonus 5 800 200 200 7
+./philo_bonus 4 410 200 200 10
+```
+
+### **Edge Cases**
+#### **Single Philosopher (Should Die)**
+```
+./philo_bonus 1 800 200 200
+```
+
+#### **Philosophers Die Quickly (time_to_die < time_to_eat + time_to_sleep)**
+```
+./philo_bonus 5 200 200 200
+./philo_bonus 5 200 100 100
+./philo_bonus 6 100 70 50
+./philo_bonus 4 310 200 100
+./philo_bonus 4 200 205 200
+```
+
+#### **Memory and Thread Testing**
+```
+valgrind ./philo_bonus 5 200 100 100  # Memory leak check
+valgrind --trace-children=yes ./philo_bonus 4 410 200 200 5  # Race condition check
+```
+
+---
