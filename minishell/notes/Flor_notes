@@ -1,0 +1,317 @@
+Minishell
+├── OBJECTIVES
+│	├──Core Concepts
+│	[...]
+│	
+├──	Understanding key concepts
+│	├──	Shell
+│	├──	Built-in commands
+│	├──	External commands 
+│	├──	File Manipulation
+│	├──	System Utilities
+│	├──	Networking Commands
+│	├──	Compilation & Execution
+│	├──	Operators and special features
+│	└──	Allowed external functions 
+│		
+├──	ENVIRONMENTAL VARIABLES ( ENVIRON())
+│
+├──	SIGNALS (signal_handler_notes)
+│	├──	Ctrl+D (EOF - End Of File)
+│	├──	Ctrl+C (SIGINT).
+│	├──	Ctrl+\ (SIGQUIT)
+│	├──	Special Case: Child Process & Signals
+│	└──	Signals Handling Task Checklist 
+│
+├── BUILTIN COMMANDS
+│	├──	echo
+│	├──	
+│	├──	
+│	└──	
+================================================================================================
+🎯 Objectives
+============
+
+🧠 Core Concepts
+-------------------
+1. Process Management
+Use system calls like fork(), execve(), and waitpid() to manage child processes and execute commands.
+2. File Descriptors
+Work with low-level file I/O, including redirection and piping, using open(), dup2(), and pipe().
+3. Signals
+Properly handle SIGINT, SIGQUIT, and EOF (Ctrl+C, Ctrl+\ and Ctrl+D).
+4. Memory Management
+Ensure all dynamically allocated memory is freed — no memory leaks allowed.
+5. Read and parse input
+Handle command-line inputs, split them into arguments and process quotes and special characters correctly. 
+6. Execute commands
+Run external programs (like /bin/ls or /bin/cat) and implement built-in commands like cd, echo, export, etc. 
+7. Manage environment variables
+Store, modify and expand $VARIABLES
+8. Implement redirections (<, >, >>)
+Redirect input/output correctly.
+9. Implement pipes
+Allow chaining of commands.
+10. Manage process control
+Execute commands using fork( ), execve( ), waitpid( ), etc. 
+Managing child processes, exit codes, and signals properly.
+11. Handling edge cases
+
+
+🖥️ User Interface
+-------------------
+Display a working prompt in interactive mode.
+
+Maintain command history (via readline and add_history).
+
+🧩 Parsing
+---------------
+Read user input and parse commands correctly, including:
+
+Quotes: Single ' and double " quotes with correct behavior.
+
+Variables: Expand $VARIABLE, handle $? for last exit status.
+
+Tokenization: Split command line into tokens, manage syntax rules.
+
+⚙️ Execution
+--------------
+Search and execute external commands using execve(), with proper path resolution (via PATH).
+
+Handle absolute and relative paths.
+
+Execute built-in commands directly without execve().
+
+🧱 Built-in Commands
+--------------------
+Implement these builtins with their specific constraints:
+
+        echo [-n]
+
+        cd [path]
+
+        pwd
+
+        export
+
+        unset
+
+        env
+
+        exit
+
+📂 Redirections
+--------------------
+< : Redirect input.
+
+> : Redirect output (overwrite).
+
+>> : Redirect output (append).
+
+<< : Here-document, read input until a defined delimiter.
+
+🧵 Pipes
+--------------------
+Implement | to allow command chaining, where the output of one command becomes the input of the next.
+
+📡 Signals
+--------------------
+In interactive mode:
+
+        Ctrl+C (SIGINT): Print a new prompt.
+
+        Ctrl+D (EOF): Exit the shell.
+
+        Ctrl+\ (SIGQUIT): Do nothing.
+
+Only one global variable (to store signal number) is allowed and must not expose structures or data.
+
+🚫 Constraints
+--------------------
+Must use only allowed functions 
+
+Must not have any memory leaks, segmentation faults, or undefined behavior.
+
+Must not interpret characters like [\] or [;].
+
+
+💡 Understanding key concepts 
+==================================
+
+📕 Shell
+----------
+
+📌 A shell is a command-line interface (CLI) program that allows users to interact with the operating system by entering commands. It acts as an intermediary between the user and the operating system, interpreting the commands the user inputs and passing them to the system for execution. Essentially, it provides a way for users to control the computer's functions and run programs.
+
+📌 Key features:
+1️⃣ Command Interpretation: The shell takes the commands entered by the user, interprets them, and runs the corresponding program or system function.
+2️⃣ Job Control: Shells allow users to run processes in the background, foreground, or as part of a pipeline, making multitasking easier. You can suspend a command, run it in the background, or bring it back to the foreground.
+3️⃣ Input/Output Redirection: The shell can redirect the standard input, output, and error of commands. For example:
+    🔹 Input Redirection: command < file.txt takes input from a file.
+    🔹 Output Redirection: command > file.txt sends the output to a file.
+    🔹 Append Output: command >> file.txt appends the output to a file.
+4️⃣ Pipes: The shell supports pipes, which allow the output of one command to be passed as input to another. For example, command1 | command2 sends the output of command1 to command2.
+5️⃣ Environment Variables: Shells support environment variables, which store system-wide or user-specific settings (e.g., PATH, HOME).
+6️⃣ Scripting: Shells allow users to write scripts (a series of commands saved in a file) to automate tasks. For example, a shell script can perform backups, manage files, or deploy applications.
+7️⃣ Built-in Commands: Most shells provide a set of built-in commands (like cd, echo, exit) that are part of the shell program itself and don't require external programs.
+
+📌 Interaction with the Operating System
+The shell runs commands that interact with the operating system’s kernel. When you type a command, the shell might invoke system calls (like fork(), exec(), open()) to create processes, execute programs, and handle file operations.
+The shell often provides feedback to the user, including the results of commands or any error messages.
+
+
+📗 Built-in commands
+----------------------
+These commands should be executed inside minishell, without calling execve( ). 
+🔸 echo
+    Prints arguments to the terminal.
+    Supports the -n flag (prevent a newline).
+    Example:
+    echo Hello World  # Output: Hello World\n
+    echo -n Hello     # Output: Hello
+🔸	cd
+Changes the current working directory.
+    Should handle:
+        - absolute paths (cd /home/user).
+        - relative paths (cd ../folder).
+        - no argument (cd  = should go to $HOME).
+        - cd - should switch to the previous directory. 
+    Example:
+        cd /usr/bin
+        cd ..
+        cd -  # Switch back
+🔸 pwd
+    Prints the current working directory.
+    Example:
+        pwd  # Output: /home/user
+🔸 export
+    Adds or modifies an environment variable. 
+    Without arguments, it prints all exported variables. 
+    Example:
+        export VAR=value
+        export PATH="/usr/local/bin:$PATH"
+🔸 unset
+    Removes an environment variable. 
+    Example:
+        unset VAR
+🔸 env
+    Prints all environment variables. 
+    Example:
+        env
+🔸 exit
+    Exits the shell.
+    Supports an optional exit code (exit 42).
+    Example:
+        exit 0
+
+External commands 
+----------------------
+Minishell should search for the binary in $PATH and execute it using execve().
+Basic Commands (Available in /bin/)
+ls – List files and directories.
+cat – Print file contents.
+grep – Search for text in a file.
+head – Show first few lines of a file.
+tail – Show last few lines of a file.
+wc – Count words, lines, and bytes in a file.
+cp – Copy files.
+mv – Move or rename files.
+rm – Remove files.
+mkdir – Create a new directory.
+rmdir – Remove empty directories.
+
+File Manipulation
+----------------------
+touch – Create an empty file.
+chmod – Change file permissions.
+chown – Change file ownership.
+
+System Utilities
+----------------------
+whoami – Display the current user.
+uname – Show system information.
+hostname – Show the system hostname.
+clear – Clear the terminal screen.
+
+Networking Commands
+----------------------
+ping – Check network connectivity.
+curl – Fetch data from a URL.
+wget – Download files from the web.
+
+Compilation & Execution
+----------------------
+gcc – Compile C programs.
+make – Run Makefile commands.
+./a.out – Execute a compiled program.
+
+
+Operators and special features
+----------------------------------
+Minishell should correctly handle:
+	- Redirections
+	- Input Redirection (<) – Read input from a file instead of stdin.
+			- Example: cat < file.txt
+	- Output Redirection (>) – Write output to a file (overwrite).
+			- Example: ls > output.txt
+	- Append Redirection (>>) – Append output to a file.
+			- Example: echo "hello" >> output.txt
+	- Pipes (|)
+			- Connect multiple commands together.
+			- Example: ls | grep .c | wc -l
+	- Environment Variable Expansion ($VAR)
+			- Replace $VAR with its value in commands.(expansion)
+			- Example: echo $HOME  # Output: /home/user
+	- Signal Handling
+		- Ctrl+C – Interrupts the current command but does not exit the shell.
+		- Ctrl+D – Exits the shell (EOF).
+		- Ctrl+\ – Should be ignored. (it interrupts the "child" process)
+
+Allowed external functions 
+---------------------------> ACTUALIZAR 
+
+
+===================================================================================
+===================================================================================
+
+ENVIRONMENTAL VARIABLES ( ENVIRON())
+
+https://man7.org/linux/man-pages/man7/environ.7.html
+
+The variable environ points to an array of pointers to strings
+       called the "environment".  The last pointer in this array has the
+       value NULL.  
+This array of strings is made available to the
+       process by the execve(2) call when a new program is started.  When
+       a child process is created via fork(2), it inherits a copy of its
+       parent's environment.
+       
+By convention, the strings in environ have the form "name=value".
+       The name is:
+       	case-sensitive 
+       	cannot contain the character "=" or embedded null byte ('\0')
+       	can be anything that can be represented as a string.
+
+Environment variables may be placed in the shell's environment by
+       the export command in sh(1), or by the setenv command if you use
+       csh(1).
+===========================================================================================
+
+
+
+
+
+---
+
+📢📕📗📘📙→🚨🔍⚠💡🎮 🎉 🔰🏁🚩🛟🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💀🔊📡 
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔 📦 🗑📥🚀🔥🎯 ❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔❎✅
+
+pendientes: 
+
+🚩🚩🚩🚩🚩for signals:
+
+Let me know when you're ready to:
+
+Add signal forwarding for pipelines
+Block signals during heredoc
+Or integrate with your global state (like g_exit_status) in a Norm-compliant way.
