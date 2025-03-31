@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mpiantan <marvin@42.fr>                    +#+  +:+       +#+         #
+#    By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/27 11:40:56 by mpiantan          #+#    #+#              #
-#    Updated: 2025/03/24 14:56:02 by mpiantan         ###   ########.fr        #
+#    Updated: 2025/03/31 16:48:35 by mcalciat         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,20 @@ INC_DIR = includes
 LIB_DIR = libft
 
 SRC_FILES = $(SRC_DIR)/minishell.c \
-	$(SRC_DIR)/signal_handler.c \
+	$(SRC_DIR)/signals/signal_handler.c \
+	$(SRC_DIR)/executor/exec_builtins.c \
+	$(SRC_DIR)/utils/utils_envpath.c \
+	$(SRC_DIR)/builtins/builtin_cd.c \
+	$(SRC_DIR)/builtins/builtin_echo.c \
+	$(SRC_DIR)/builtins/builtin_env.c \
+	$(SRC_DIR)/builtins/builtin_export.c \
+	$(SRC_DIR)/builtins/builtin_pwd.c \
+	$(SRC_DIR)/builtins/builtin_unset.c \
+	$(SRC_DIR)/env_utils/env_utils1.c \
+	$(SRC_DIR)/env_utils/env_utils2.c \
+	$(SRC_DIR)/env_utils/free_env_list.c 
+
+# $(SRC_DIR)/executor/exec_commands.c \
 
 OBJ_FILES = $(SRC_FILES:$(SRC_DIR)/%.c=$(SRC_DIR)/%.o)
 
@@ -31,7 +44,6 @@ LIBFT = $(LIB_DIR)/libft.a
 
 NAME = minishell
 BONUS_NAME = minishell_bonus
-
 
 all: $(LIBFT) $(NAME)
 

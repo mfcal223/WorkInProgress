@@ -1,0 +1,614 @@
+BUILTINS COMMANDS
+├── echo
+├── pwd
+├── env
+├── cd
+├── unset
+│ 
+└──
+
+🛠️ BUILTINS COMMANDS
+------------------------
+We were asked to remake the following builtins:
+
+🔸 echo with option ’-n’
+🔸 cd with only a relative or absolute path
+🔸 pwd without any options
+🔸 export without any options
+🔸 unset without any options
+🔸 env without any options and any arguments
+🔸 exit without any options
+
+--------------------------------------------
+📌 `echo`
+--------------------------------------------
+
+**File**: `builtin_echo.c`  
+**Behavior**:
+- [❎] Prints arguments to `stdout`, separated by spaces, followed by a newline. - [❎] It writes all the non-flag tokens to the standard input in order, separated by spaces, followed by a linebreak (\n)
+- [❎] If the `-n` option is given, suppresses the newline.
+- [❎] Handle multiple `-n` (like `echo -n -n hi` should suppress newline).
+- [❓] Should be interruptible by `Ctrl+C` before execution starts.
+
+**Example**:
+INPUT                                   SHELL
+> echo hello world                      echo hello world
+> echo -n hello world                   hello world.%
+> echo -nnnn asdasdasd                  asdasdasd%
+> echo -n -n asdasdasd                  asdasdasd%
+> echo -n           asdasdasd           asdasdasd%
+> echo asdasdasdasd -n                  asdasdasdasd -n
+> echo -nnnnn -nnnnnnnn asdasdasd       asdasdasd% 
+
+💡 Should you replicate that % in your minishell?
+No, you shouldn't print % manually.
+	🟠 Instead, your minishell should:
+	🔸 respect the -n flag (i.e., not print \n)
+	🔸 wait for and display the prompt correctly after command execution
+	🟠 The % will appear naturally if:
+	🔸 the previous command didn’t print a newline
+	🔸 your shell uses % as the PS1 prompt character (common in zsh)
+
+--------------------------------------------
+📌 `pwd`
+--------------------------------------------
+
+**File**: `builtin_pwd.c`  
+**Behavior**:
+- [❎]Print the absolute pathname of the current working directory.
+- The return status is zero unless an error is encountered while determining the name of the current directory or an invalid option is supplied.
+.
+**Considerations**:
+- [❎] Use `getcwd()`. (https://man7.org/linux/man-pages/man3/getcwd.3.html)
+(Use getcwd(NULL, 0) so it handles memory allocation)
+- [ ] If it fails, call perror("pwd") and return
+		- Very simple, but must still handle error if `getcwd()` fails (e.g., permission issues).🚨
+
+			$ mkdir tmp && cd tmp
+			$ rm -rf ../tmp
+			$ ./minishell
+			minishell$ pwd
+			pwd: No such file or directory
+
+
+- [❎] If success, print the path and free it
+minishell
+		c3r9s3% ./test_echo 
+		PWD OUTPUT:
+		/home/mcalciat/Cursus/minishell/tester_area
+shell
+		c3r9s3% pwd
+		/home/mcalciat/Cursus/minishell/tester_area
+
+- [❎]No options needed.
+	> pwd [-LP]
+		If the -P option is supplied, the pathname printed will not contain symbolic links. If the -L option is supplied, the pathname printed may contain symbolic links. 
+
+💡 What is getcwd()?
+----------------------
+getcwd() = "get current working directory".
+🧠 Prototype:
+	char *getcwd(char *buf, size_t size);
+It returns a pointer to a string containing the absolute path of the current directory.
+If buf is NULL, getcwd() will allocate memory for the string using malloc().
+You must free it afterward if you use it this way.
+
+--------------------------------------------
+📌  `env`
+--------------------------------------------
+**File**: `builtin_env.c`  
+**Behavior**:
+- Prints the current environment variables.
+- No arguments or options supported.
+
+Task:
+- [✅] create a t_env structure 
+- [✅] function to initialize t_env from envp
+- [✅] function to print the environment (for env)
+- [✅] function to get a variable's value by key (for cd, export, etc.)
+- [✅] function to set or update a variable (for cd, export)
+- [ ?? ] create a placeholder for the builtin_env() function 
+
+**Example**:
+> env
+
+**Considerations**:
+- [ ] Should not print anything if environment is empty.
+- [ ] Ignore invalid arguments (i.e., do not implement argument parsing).
+
+--------------------------------------------
+📌 `cd` 
+--------------------------------------------
+**File**: `builtin_cd.c` 
+
+Subject prompt says: "cd with only a relative or absolute path"
+
+manual command prototype:
+> cd [-L|[-P [-e]] [-@] [directory]]
+
+🔒 Limited scope:
+*****************
+✅ Accepts one argument: a relative or absolute path -->getcwd(NULL, 0) — to get the new absolute path
+✅ Uses chdir() to change directories
+✅ Should update PWD and OLDPWD if successful (environment management system)
+✅ Should default to $HOME if no argument is given --> getenv("HOME")
+❌ No need to handle flags like -L, -P, -@, etc.
+❌ No need to normalize paths like . or .. manually — let the shell + OS handle that
+
+🚨 What is NOT required:
+************************
+❌ You don’t need to:
+	🔺 Parse multiple arguments (cd a b)
+	🔺 Handle options like -L, -P
+	🔺 Manually resolve /a/b/../c (leave that to the OS)
+	🔺 Print the new working directory (some shells do this, but bash doesn’t unless cd -)
+
+🧭 Summary: What cd should do
+Case			Behavior
+------------------------------------------------------------------------------
+cd				Go to $HOME. If $HOME is not set → print error.
+cd folder		Go to relative path folder.
+cd /abs/path	Go to absolute path.
+cd nonexistent	Print error to stderr: cd: no such file or directory: nonexistent
+✅ Success		Update OLDPWD to old PWD, then update PWD to new path.
+
+
+**Behavior**: 
+- [✅]  Changes the current working directory to [directory].
+- [✅]  Without args (directory is not supplied) → go to `$HOME`.
+- [✅]  If directory doesn’t exist, print error to stderr.
+- [?? ] If `$HOME` is unset, print error to stderr.
+	[ ] check the error ????? WHERE????
+- [✅]  return status = zero if the directory is successfully changed, non-zero otherwise.
+- [ ] Handle memory: free any malloc’ed strings.
+
+**Considerations**:
+- [✅]  Update `PWD` and `OLDPWD` environment variables.
+		If the directory change is successful, cd sets the value of the PWD environment variable to the new directory name, and sets the OLDPWD environment variable to the value of the current working directory before
+		the change.
+- [✅]  Use `chdir()` and `getcwd()` properly.
+- [✅]  Update PWD and OLDPWD
+- [✅] Errors like "no such file or directory" or "HOME missing" should be handled gracefully.
+	- [✅] TEST WITH HOME UNSET
+	- [✅]  TEST WITH inexistent directory
+
+**Example**:
+> cd
+> cd ../folder
+
+💡 What is chdir() ?
+---------------------------
+chdir() is the system call that does all the heavy lifting.
+It knows how to:
+🔺 Resolve "..", ".", "./folder"
+🔺 Navigate from your current working directory (relative paths)
+🔺 Jump to a root location (absolute paths)
+
+🧪 Test cases for builtin_cd():
+-----------------------------
+- [✅] cd ./           # should stay in same dir
+- [✅] cd ../dir		  # Goes one dir up then down
+- [✅] cd ../          # go up one dir
+- [✅] cd ..          # go up one dir
+- [❌] cd /tmp         # go to absolute /tmp
+- [✅] cd folder/sub   # relative deeper path
+- [✅] cd ../../       # go up two levels
+- [✅]cd  (with HOME set)
+- [✅] cd  (with HOME unset) #prints msg "home is not set"
+- [✅] env to verify PWD and OLDPWD changes
+- [ ??  ] unset PWD, cd, then env to test fallback logic
+- [✅] cd <non_existent_path> #shows error message
+	
+🚨 i dont know if this is included in subject prompt: 
+- If ‘..’ appears in directory, it is processed by removing the immediately preceding pathname component, back to a slash or the beginning of directory.
+
+- [ ] cd with argument - (which changes to the previous directory):
+cd with argument - - retrieves the value from the environment variable OLDPWD and uses it as the argument for the chdir(char *path) function
+
+If the cd function is followed by a pipe:
+
+- [ ] We will use the opendir function to check for errors, since it has similar validations as chdir. The only difference I found was that the permissions needed to open a directory are not the same as actually changing directories (I believe opening a directory is the read permission and changing directories inside is the executing permission). To check for this permission we use the function stat (path, &statbuf). It works similarly to the tcgetattr in the sense that it loads all information from the path given as argument into the statbuf struct. And then, to change and access the information inside, we need to use bit operations. In this case we just check the bits corresponsing to the execution permission of the path (statbuf.st_mode & S_IXUSR, which will be positive if the user has execution permission and zero if it doesn't).
+-----------------------------------------------------
+
+Builtin_cd() explanation:
+/**
+ * Arguments: av = arguments from the shell, where av[0] is "cd" and av[1] 
+ * (optional  * is the directory to change to. env: your linked list of 
+ * environment variables.
+ * 
+ * Saves the current working directory before changing it.
+ * getcwd(NULL, 0) allocates memory and returns the full path.
+ * 
+ * If no argument, fall back to $HOME. (ft_getenv(env, "HOME");)
+ *  - If $HOME is not set, it becomes NULL — HOW ?????????????????????
+ * 
+ * CALLS chdir: changes the current directory.
+ * 
+ * 		If no valid path or chdir() fails: 
+ *  		- Error message printed to stderr (fd 2).
+ *  		- Frees old_pwd to avoid leaks.
+ * 			- Returns 1 to signal failure.
+ * 		If success: 
+ * 			- get new path and update env
+ * 			- Updates environment variables accordingly.
+ * 
+ * Avoids memory leaks.
+ */
+
+--------------------------------------------
+📌 `unset`
+--------------------------------------------
+
+Manual prototype: 
+> unset [-fnv] [name]
+
+**File**: `builtin_unset.c`  
+**Behavior**:
+- Removes variables from the environment.
+
+📢 NOTE 🚨: unset in bash can also remove local shell variables. As the project ask to mimic unset without handling any options, the only variables it will handle are environmental. 
+
+🧠 In real bash, unset can do more:
+..................................
+unset VAR           # Removes a shell or environment variable
+unset -f myfunc     # Removes a shell function
+But this project doesn't require support for -f, -n, -v or shell functions, the code is sticking to environment variable removal only.
+
+**Example**:
+> unset PATH
+
+**Considerations**:
+✅ Must Do
+- [✅] this project does not requires to handle any options.
+- [✅] Validate identifier before removing.
+		unset VAR123       # ✅ correct
+		unset VAR=123      # ❌ invalid identifier
+		unset $VAR         # ❌ you're passing the value, not the name
+
+- [✅] Silent if variable does not exist (no error printed).
+- [✅] Remove variables from your t_env linked list
+- [✅] Handle multiple arguments (unset VAR1 VAR2)
+		example: > unset PATH USER PWD OLDPWD
+- [✅] Return 0 on success
+
+❌ Not Required
+🔸 Handle -f, -n, or -v options
+🔸 Print errors if variable doesn't exist
+🔸 Check for readonly vars
+🔸 Support unsetting shell functions
+🔸 Support unset $VAR, unset VAR=123
+
+🔍 MANUAL INFORMATION
+......................
+
+🔸 Remove each variable or function specified by name. 
+🔸 If the -v option is given, each name refers to a shell variable and that variable is removed. 
+🔸 If the -f option is given, the names refer to shell functions, and the function definition is removed. 
+🔸 If the -n option is supplied, and name is a variable with the nameref attribute, name will be unset rather than the variable it references. -n has no effect if the -f option is supplied. 
+🔸 If no options are supplied, each name refers to a variable; if there is no variable by that name, a function with that name, if any, is unset. 
+🔸 Unsetting a variable or function that was not previously set shall not be considered an error and does not cause the shell to abort.
+🔸 Some shell variables lose their special behavior if they are unset; such behavior is noted in the description of the individual variables. 
+🔸 The return status is zero unless a name is readonly or may not be unset.
+
+🚨 Note that: 
+						VARIABLE=
+is not equivalent to an unset of VARIABLE; in the example, VARIABLE is set to "". Also, the variables that can be unset should not be misinterpreted to include the special parameters (see ANEX I)
+
+
+unset_env_var() : Function explanation
+----------------------------------------
+🧠 Parameters:
+t_env **env: A pointer to the head pointer of your linked list (t_env *). This allows you to modify the head node itself, which is necessary when the first node needs to be deleted.
+char *key: The name of the environment variable to unset (e.g., "PWD").
+🛠️ WorkFlow: 
+1. Check for null input
+2.  Initialize traversal pointers 
+	curr is the current node you're looking at.
+	prev tracks the previous node, which is needed to re-link the list if curr gets deleted.
+3. Traverse the linked list (while (curr))
+4. Check if current node matches the key. If it matches, you're ready to remove it.
+5. Remove the node:
+if (prev) //If you're not at the head_list, link the previous node to the one after curr.
+	prev->next = curr->next;
+else //If you're removing the head (first node), update the head pointer with *env = curr->next.
+	*env = curr->next; 
+
+	If you're deleting in the middle → just skip curr by linking prev → curr->next
+	If you're deleting the first node → move the head itself forward
+6. Free the node
+
+
+--------------------------------------------
+📌 `export`
+--------------------------------------------
+
+**File**: `builtin_export.c`  
+
+Manual prototype: 
+> export [-fn] [-p] [name[=value]]
+
+**Behavior**:
+- Without arguments: prints the environment variables sorted alphabetically.
+- With arguments: sets or updates environment variables.
+
+**Example**:
+> export VAR=value
+> export PATH=/usr/local/bin
+
+**Considerations**:
+- [ ] Validate identifier (e.g., no starting with `=` or numbers).
+- [ ] When printing  🖨️ , format as `declare -x VAR="value"` like Bash does.
+- [ ] Must not duplicate or overwrite unless correctly defined.
+- [ ] No need to actually track "exported" status — your whole env list is the environment
+- [ ] You only need to manage key=value pairs in your list
+- [ ] Identifiers must start with a letter or underscore, then alphanumeric or _
+
+---
+📄 Based on the subject prompt and bash behavior:
+Feature					Required?		Description
+export VAR=value		✅ Yes		Add/update VAR with the given value in your t_env list
+export VAR (no =)		✅ Yes		Declare VAR as exported with an empty value if not set
+export (no args)		✅ Yes		List all environment variables in declare -x VAR="value" format
+export VAR=VAL=BAD		✅ Yes		Keep first = as split point: key=VAR, value=VAL=BAD
+export VAR+ or 
+export VAR$				❌ No		You don’t need to handle these invalid identifiers strictly
+export VAR1 VAR2 VAR3	✅ Yes		Must handle multiple arguments
+export VAR=value VAR2	✅ Yes		Mix of assign + plain declare is fine
+export 1VAR=bad			❌ Optional	You can skip identifier validation or just ignore bad ones silently
+
+✅ Behavior Summary
+Command				*	Result in your t_env list
+************************************************
+export VAR=value	*	Adds or updates VAR with value
+export VAR			*	Adds VAR with NULL value if not present
+export				*	Prints all env variables in declare -x format
+
+
+
+/* TEXTO NO EDITADO */ 
+export with multiple arguments shall follow this pattern:
+In this case we will need to add the arguments to the array of environment variables. Because we saved a duplicate in a linked list of strings we can do this simply with a ft_lstadd_front function.
+
+The input needs to follow the following pattern:
+
+assigned environment variable - export GREETING=HELLO
+assigned environment variable - export GREETING=
+unassigned environment variable - export GREETING
+You will also need to add some input validations like making sure that the environment variable doesn't have a digit, and display the correct error messages.
+
+
+Mark each name to be passed to child processes in the environment. If the -f option is supplied, the names refer to shell functions; otherwise the names refer to shell variables. The -n option means to no longer mark each name for export. If no names are supplied, or if the -p option is given, a list of names of all exported variables is displayed. The -p option displays output in a form that may be reused as input. If a variable name is followed by =value, the value of the variable is set to value.
+
+The return status is zero unless an invalid option is supplied, one of the names is not a valid shell variable name, or -f is supplied with a name that is not a shell function.
+---
+export without options can have 2 functionalities:
+
+If no arguments are provided it will print all assigned and unnassigned environment variables (I will show the difference in a bit). The printing message should follow the following pattern:
+assigned environment variable 1 declare -x VAR="2"
+
+assigned environment variable 1 declare -x VAR=""
+
+unassigned environment variable - export GREETING declare -x VAR
+
+Notice that the value (2) must be in-between quotes so it is important to make the distinction between
+
+Not only that but the environment variables shall be in alphabetical order (or in ASCII order in this case). We can achieve this with a ft_lst_sort_str function.
+
+export with multiple arguments shall follow this pattern:
+In this case we will need to add the arguments to the array of environment variables. Because we saved a duplicate in a linked list of strings we can do this simply with a ft_lstadd_front function.
+
+The input needs to follow the following pattern:
+
+assigned environment variable - export GREETING=HELLO
+assigned environment variable - export GREETING=
+unassigned environment variable - export GREETING
+You will also need to add some input validations like making sure that the environment variable doesn't have a digit, and display the correct error messages.
+/* -------------------------------------------------------------------------*/'
+
+
+Want help writing tests or a builtin_export_bonus() that prints an error for invalid identifiers?
+
+
+---------------------------
+📌 7. `exit`
+**File**: `builtin_exit.c`  
+**Behavior**:
+- Exits the shell.
+- Accepts an optional numeric argument (exit code).
+
+**Example**:
+```bash
+exit          # exits with previous return value
+exit 42       # exits with code 42
+exit 42 43    # print error: "too many arguments", no exit
+exit abc      # print error: numeric argument required, exit with 255
+```
+
+**Considerations**:
+- If called inside a pipeline, it should only exit the child, not the shell.
+- Only exit the whole shell if it's a standalone command.
+- Must properly clean up memory.
+
+
+exit with no arguments was easy to replicate. In this case we would only need to print exit\n to the program and use our quit_program function to exit the program with no memory leaks.
+
+But we were asked to replicate the behaviour of the special shell variable $?. This variable will save the exit status from the last executed function. In our case we can check this behaviour by typing:
+
+bash
+bash
+
+exit 45
+echo $?
+45
+By typing bash twice we would enter a bash inside our bash (bash-ception) By tiping exit 45 we would set the exit status from the seconds bash to 45. So when we type echo $? we will see the value from that environment variable (45)
+
+But exit will behave differentely depending on the following arguments:
+
+if there are no arguments exit
+
+We will quit the program with the exit status from the last executed function.
+if first argument is non-digit exit sad
+
+We will need to print numeric argument required\n and exit with exit status 2 (EXIT_GENERAL_ERROR)
+if there are multiple arguments exit 1 2
+
+We print error message for too many argumentsand don't quit the program.
+If there is only one numeric argument exit 45
+
+We will quit the program with the exit status of the argument, which is what happens in our example:
+bash
+bash
+
+exit 45
+echo $?
+45
+If there are multiple commands (ls | exit 45) then we will not quit the program but simply set the exit status global variable g_msh.exit_status to the same exit status as if there was only one command:
+
+ls | exit - The g_msh.exit_status will be set to ls exit status (probably 0 EXIT_SUCCESS)
+ls | exit ls- The g_msh.exit_status will be set to 2 (EXIT_GENERAL_ERROR)
+ls | exit 5- The g_msh.exit_status will be set to 5 (the argument number)
+ls | exit 5 6- The g_msh.exit_status will be set to 1 (EXIT_FAILURE)
+
+
+---
+
+## 🚩 Additional Builtin-Related Info (from subject and Bash behavior)
+
+### Interruptibility:
+- All builtins must respond correctly to `Ctrl+C` (SIGINT) in **interactive mode**.
+- `env` or `exit` (when forking) must restore default signal handlers in the child process.
+
+### Redirections and Pipelines:
+- Builtins like `echo`, `env`, and `pwd` may be used in pipelines and redirections:
+  
+  echo hello | cat
+  pwd > file.txt
+  
+  For that, the execution mechanism must detect whether to run in parent or forked child depending on context.
+
+### Execution in Parent Shell:
+- Only `cd`, `export`, `unset`, and `exit` (when alone) must **NOT fork** because they modify the shell’s state.
+
+### SIGINT, SIGQUIT:
+- You're already handling Ctrl+C with `setup_signals_interactive()` (good).
+- Ensure child processes get `setup_signals_child()` (restore default behavior).
+
+---
+ ✅ Final Builtin List (from subject):
+
+| Command   | Forked? 			| Args/Options? 			| File |
+|--------   |--------			|--------------				|------|
+| `cd`      | No 				| [path] 					| `builtin_cd.c` |
+| `echo` 	| Yes 				| `[-n] [args...]` 			| `builtin_echo.c` |
+| `env` 	| Yes 				| (no args) 				| `builtin_env.c` |
+| `exit` 	| No (when alone) 	| `[n]` 					| `builtin_exit.c` |
+| `export` 	| No 				| `[VAR=value]` or none 	| `builtin_export.c` |
+| `unset` 	| No 				| `[VAR]` 					| `builtin_unset.c` |
+| `pwd` 	| Yes 				| (no args) 				| `builtin_pwd.c` |
+
+======================================================================================
+
+
+=================================================================================
+
+ENVIRONMENTAL VARIABLES ( ENVIRON())
+========================================
+
+How the Environment and Environmental Variables Work
+----------------------------------------------------
+When interacting with your server through a shell session, there are many pieces of information that your shell compiles to determine its behavior and access to resources. Some of these settings are contained within configuration settings and others are determined by user input.
+
+One way that the shell keeps track of all of these settings and details is through an area it maintains called the environment. The environment is an area that the shell builds every time that it starts a session that contains variables that define system properties.
+Every time a shell session spawns, a process takes place to gather and compile information that should be available to the shell process and its child processes. It obtains the data for these settings from a variety of different files and settings on the system.
+
+The environment is implemented as strings that represent key-value pairs. If multiple values are passed, they are typically separated by colon (:) characters. Each pair will generally look something like this:
+
+KEY=value1:value2:...
+
+What does the manual says? (https://man7.org/linux/man-pages/man7/environ.7.html)
+
+The variable environ points to an array of pointers to strings
+       called the "environment".  The last pointer in this array has the
+       value NULL.  
+This array of strings is made available to the
+       process by the execve(2) call when a new program is started.  When
+       a child process is created via fork(2), it inherits a copy of its
+       parent`s environment.
+       
+By convention, the strings in environ have the form "name=value".
+       The name is:
+       	case-sensitive 
+       	cannot contain the character "=" or embedded null byte ('\0')
+       	can be anything that can be represented as a string.
+
+Environment variables may be placed in the shell`s environment by
+       the export command in sh(1), or by the setenv command if you use
+       csh(1).
+
+In order to implement certain elements of this project, like some of the builtin commands, the program will need to use a a structure to store and manage environment variables.
+
+envp is an array of strings:
+
+> envp = { "PATH=/bin:/usr/bin", "PWD=/home/user", ... NULL }
+
+But you need to modify environment variables (like PWD, OLDPWD, SHLVL, etc.)
+The C standard char **envp is not writable in a portable/safe way
+That`s why you’ll copy it into a custom data structure (usually a linked list), which you’ll manage yourself.
+
+Most students define something like:
+
+typedef struct s_env
+{
+	char			*key;
+	char			*value;
+	struct s_env	*next;
+}	t_env;
+
+Field	Type		Description
+----------------------------------------------------------------
+key		char *		The name of the variable (e.g., "PATH")
+value	char *		he value of the variable (e.g., "/bin:/usr/bin")
+next	t_env *		Pointer to the next node in the list
+
+This forms a linked list where each node holds a key=value pair from envp.
+
+Then write helper functions to be able to do the following actions:
+
+🔸 init_env(char **envp) → convert envp to t_env *
+🔸 get_env_value(t_env *env, const char *key)
+🔸 set_env_value(t_env *env, const char *key, const char *value)
+🔸 unset_env(t_env **env, const char *key)
+🔸 print_env(t_env *env) → for the env builtin
+
+
+==============================================================================
+************
+** ANEX I **
+************
+========================
+💡 SPECIAL PARAMETERS 💡
+========================
+Listed below are the special parameters and the values to which they shall expand. Only the values of the special parameters are listed; see Word Expansions for a detailed summary of all the stages involved in expanding words.
+
+@
+Expands to the positional parameters, starting from one. When the expansion occurs within double-quotes, and where field splitting (see Field Splitting) is performed, each positional parameter shall expand as a separate field, with the provision that the expansion of the first parameter shall still be joined with the beginning part of the original word (assuming that the expanded parameter was embedded within a word), and the expansion of the last parameter shall still be joined with the last part of the original word. If there are no positional parameters, the expansion of '@' shall generate zero fields, even when '@' is double-quoted.
+*
+Expands to the positional parameters, starting from one. When the expansion occurs within a double-quoted string (see Double-Quotes), it shall expand to a single field with the value of each parameter separated by the first character of the IFS variable, or by a <space> if IFS is unset. If IFS is set to a null string, this is not equivalent to unsetting it; its first character does not exist, so the parameter values are concatenated.
+#
+Expands to the decimal number of positional parameters. The command name (parameter 0) shall not be counted in the number given by '#' because it is a special parameter, not a positional parameter.
+?
+Expands to the decimal exit status of the most recent pipeline (see Pipelines).
+-
+(Hyphen.) Expands to the current option flags (the single-letter option names concatenated into a string) as specified on invocation, by the set special built-in command, or implicitly by the shell.
+$
+Expands to the decimal process ID of the invoked shell. In a subshell (see Shell Execution Environment ), '$' shall expand to the same value as that of the current shell.
+!
+Expands to the decimal process ID of the most recent background command (see Lists) executed from the current shell. (For example, background commands executed from subshells do not affect the value of "$!" in the current shell environment.) For a pipeline, the process ID is that of the last command in the pipeline.
+0
+(Zero.) Expands to the name of the shell or shell script. See sh for a detailed description of how this name is derived.
+(source: https://pubs.opengroup.org/onlinepubs/009696699/utilities/xcu_chap02.html#tag_02_05_02)
+
+📢📕📗📘📙→📢🚨🔍🧱⚠💡🎮 🎉 🔰🏁🚩🛟🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💀🔊📡  🖨️
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔 📦 🗑📥🚀🔥🎯 ❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔✅❎
+
+
