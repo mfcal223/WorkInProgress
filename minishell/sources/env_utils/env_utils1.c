@@ -6,12 +6,11 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 12:06:15 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/31 16:59:55 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/01 10:22:10 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
-
 #include <stdlib.h>
 
 /**
@@ -34,6 +33,7 @@ int	ft_strcmp(const char *s1, const char *s2)
 	}
 	return (0);
 }
+
 /**
  * @brief Retrieves the value of a variable from the env list.
  *
@@ -50,31 +50,6 @@ char	*get_env_value(t_env *env, const char *key)
 		env = env->next;
 	}
 	return (NULL);
-}
-
-/**
- * @brief Sets or updates the value of an existing env variable.
- *
- * @param env Linked list of environment variables.
- * @param key Variable name to update.
- * @param value New value string (will be duplicated).
- */
-void	set_env_value(t_env *env, const char *key, const char *value)
-{
-	while (env)
-	{
-		if (ft_strcmp(env->key, key) == 0)
-		{
-			free(env->value);
-			if (value)
-				env->value = ft_strdup(value);
-			else
-				env->value = NULL;
-			return;
-		}
-		env = env->next;
-	}
-	// If not found, you might add a new node (optional for later)
 }
 
 /**
@@ -133,20 +108,3 @@ t_env	*init_env(char **envp)
 	}
 	return (head);
 }
-
-/*
-void	set_env_value(t_env *env, const char *key, const char *value)
-{
-	while (env)
-	{
-		if (ft_strcmp(env->key, key) == 0)
-		{
-			free(env->value);
-			env->value = ft_strdup(value);
-			return;
-		}
-		env = env->next;
-	}
-	// If not found, you might add a new node (optional for later)
-}
-*/

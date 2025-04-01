@@ -194,9 +194,6 @@ int	main(int ac, char **av, char **envp)
 🧠 Note: readline() already handles Ctrl+C line-killing for you. Later you’ll override its behavior with custom signal handlers.
 
 🔹 Includes
-c
-Copiar
-Editar
 #include "minishell.h"
 #include <readline/readline.h>
 #include <readline/history.h>

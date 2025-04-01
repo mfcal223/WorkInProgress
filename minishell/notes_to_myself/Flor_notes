@@ -509,3 +509,44 @@ Let me know when you're ready to:
 Add signal forwarding for pipelines
 Block signals during heredoc
 Or integrate with your global state (like g_exit_status) in a Norm-compliant way.
+
+--------------------
+
+Git useful commands
+Clone repo	
+git clone <repo_name>
+Check status
+git status
+Create a branch
+git checkout -b <branch_name>
+Push to remote
+git push -u origin <branch_name>
+Change branch 
+git checkout <branch_name>
+Commit changes	
+git add <file_name>
+git commit -m "Msg with changes"
+Merge into main	
+git checkout main
+git merge <branch_name>
+Delete branch after merging	
+git push origin --delete <branch_name>
+
+---
+Work_flow with branches
+1. Switch to branch:
+git checkout <my_branch>
+2. Fetch the latest changes from main:
+git fetch origin
+3. Rebase my branch onto the latest main:
+git rebase origin/main
+This reapplies the branch’s commits on top of the latest main. If there are conflicts, Git will pause and ask to resolve them.
+4. Resolve conflicts (if needed):
+Edit the files to fix conflicts.
+5. Stage the resolved files:
+git add <file>
+6. Continue the rebase:
+git rebase --continue
+7. Push the rebased branch (if already pushed before):
+git push --force origin my-feature
+
