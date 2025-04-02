@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 13:59:50 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/31 16:38:14 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:58:22 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void	unset_env_var(t_env **env, char *key)
 	t_env	*prev;
 
 	if (!env || !*env)
-		return ;
+		return ;//needs a different update for exit->status?
 	curr = *env;
 	prev = NULL;
 	while (curr)
@@ -40,34 +40,14 @@ void	unset_env_var(t_env **env, char *key)
 			else
 				*env = curr->next;
 			free_env_node(curr);
+			//needs a different update for exit->status?
 			return ;
 		}
 		prev = curr;
 		curr = curr->next;
 	}
 }
-/**
- * Checks whether a given string is a valid shell variable identifier.
- * A valid identifier must start with a letter, and contain only letters, 
- *      digits, or underscores.
- * returns (1) if the identifier is valid, (0) otherwise.
- * Also use by builtin_export() DO NOT MAKE THIS STATIC
- */
-int	is_valid_identifier(char *str)
-{
-	int	i;
 
-	if (!str || !ft_isalpha(str[0]))
-		return (0);
-	i = 1;
-	while (str[i])
-	{
-		if (!ft_isalnum(str[i]) && str[i] != '_')
-			return (0);
-		i++;
-	}
-	return (1);
-}
 /**
  * Iterates over the provided arguments and
  *      removes valid environment variables from the list.
@@ -87,6 +67,7 @@ int	builtin_unset(char **args, t_env **env)
 			unset_env_var(env, args[i]);
 		i++;
 	}
+	(*env)->exit_status = 0;
 	return (0);
 }
 

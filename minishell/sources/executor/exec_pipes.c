@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_pipes.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 10:03:31 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/03/26 16:58:54 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/02 14:45:47 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void	close_pipes(t_pipe *pipes)
 	}
 }
 
-void	fork_pipes(t_pipe *pipes, char **args, char **envp, int i)
+void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i)
 {
 	pid_t	pid;
 
@@ -73,12 +73,12 @@ void	fork_pipes(t_pipe *pipes, char **args, char **envp, int i)
 			dup2(pipes->pipefd[i][1], STDOUT_FILENO);
 		}
 		close_pipes(pipes);
-		execute_command(args[0], args, envp);
+		execute_command(args[0], args, env);
 		exit (0);
 	}
 }
 
-void	execute_pipeline(char **cmds, char **envp)
+void	execute_pipeline(char **cmds, t_env *env)
 {
 	int		i;
 	char	**args;
@@ -94,7 +94,7 @@ void	execute_pipeline(char **cmds, char **envp)
 	while (cmds[i])
 	{
 		args = ft_split(cmds[i], ' '); //Repalce with our parse_args function 
-		fork_pipes(&pipes, args, envp, i);
+		fork_pipes(&pipes, args, env, i);
 		free_split(args); // idem previous comment
 		i++;
 	}

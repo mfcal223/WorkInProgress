@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 11:36:41 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/31 10:41:45 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:33:48 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ int	builtin_cd(char **av, t_env *env)
 	set_env_value(env, "PWD", new_pwd);
 	free(old_pwd);
 	free(new_pwd);
+	env->exit_status = 0;
 	return (0);
 }
 /**

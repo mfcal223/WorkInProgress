@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 10:24:03 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/01 10:21:05 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 17:25:35 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,3 +62,40 @@ void	set_env_value(t_env *env, const char *key, const char *value)
 	add_env_variable(last, key, value);
 }
 
+/**
+ * Checks whether a given string is a valid shell variable identifier.
+ * A valid identifier must start with a letter, and contain only letters, 
+ *      digits, or underscores.
+ * returns (1) if the identifier is valid, (0) otherwise.
+ * Also use by builtin_export() DO NOT MAKE THIS STATIC
+ */
+int	is_valid_identifier(char *str)
+{
+	int	i;
+
+	if (!str || (!ft_isalpha(str[0]) && str[0] != '_'))
+		return (0);
+	i = 1;
+	while (str[i])
+	{
+		if (!ft_isalnum(str[i]) && str[i] != '_')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+/**
+ * counts how many nodes the list has
+ */
+int	env_list_size(t_env *env)
+{
+	int	count;
+
+	count = 0;
+	while (env)
+	{
+		count++;
+		env = env->next;
+	}
+	return (count);
+}

@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 14:46:30 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/01 13:52:28 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 17:26:37 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,22 +40,29 @@
 # include "executor.h"			//executor management
 # include "signal_handler.h"	//signal_handler
 # include "environment.h"		//environment structure
+# include "parser.h"
+
+//void	quit_program(int code);
 
 /*-----------BUILTINS---------------------------------*/
-int		builtin_echo(char **av);					//changed arguments to match executor calls
-int		builtin_pwd(void);							//pwd command
+int		builtin_echo(char **av, t_env *env);					//changed arguments to match executor calls
+int		builtin_pwd(t_env *env);							//pwd command
 int		builtin_env(t_env *env);					//env command
 int		builtin_cd(char **av, t_env *env);			//cd command
 int		builtin_unset(char **args, t_env **env);	// unset command. Iterates thourgh arguments
 void	unset_env_var(t_env **env, char *key);		//removes node from env list if match(+)
-int		is_valid_identifier(char *str);				//Checks whether a given string is a valid shell variable identifier.
+void	builtin_exit(char **args, t_env *env, int is_forked);
 
 /*---- BUILTIN_EXPORT.C ---- */
 void	print_export_error(char *arg);				// print error message when using wrong var syntax
 char	*strip_quotes(char *str);					//removes "" in values if needed
 void	split_key_value(char *arg, char **key, char **value);	//for export() - parses pairs key/value
-int		print_export_list(t_env *env);				//for export() -prints ENV var list
 int		builtin_export(char **args, t_env *env);	//main export() function
+
+/*---- BUILTIN_EXPORT2.C ---- */
+void	sort_env_list(t_env *env);					//Bubble sort env-list-copy elements
+t_env	*copy_env_list(t_env *env);					// creates copy of env list for sorting/printing
+int		print_export_list(t_env *env);				//for export() -prints ENV var list
 
 //builtins (***IN PROCESS***)
 //int		builtin_exit(char **args);
@@ -65,5 +72,8 @@ int		builtin_export(char **args, t_env *env);	//main export() function
 //signals
 void	catch_sigint(int signum);
 void	setup_signals_interactive(void);
+
+//utils
+void	quit_program(t_env *env);
 
 #endif

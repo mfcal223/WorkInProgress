@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 16:37:23 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/01 13:53:35 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:34:42 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,34 +64,8 @@ void	split_key_value(char *arg, char **key, char **value)
 }
 
 /**
- * Prints all environment variables in 'declare -x KEY="VALUE"' format.
- * Used when 'export' is called with no arguments.
- * 
- * @param env  The environment linked list.
- * @return     Always returns 0.
- */
-int	print_export_list(t_env *env)
-{
-	while (env)
-	{
-		ft_putstr_fd("declare -x ", 1);
-		ft_putstr_fd(env->key, 1);
-		if (env->value)
-		{
-			ft_putchar_fd('=', 1);
-			ft_putchar_fd('"', 1);
-			ft_putstr_fd(env->value, 1);
-			ft_putchar_fd('"', 1);
-		}
-		ft_putchar_fd('\n', 1);
-		env = env->next;
-	}
-	return (0);
-}
-
-/**
  * Implements the 'export' built-in.
- * - With no arguments, prints the environment.
+ * - With no arguments, prints the environment.(see builtin_export2.c)
  * - With arguments, adds or updates variables in the env list.
  * 
  * @param args  Arguments to export (args[0] == "export").
@@ -105,8 +79,10 @@ int	builtin_export(char **args, t_env *env)
 	char	*value;
 
 	if (!args[1]) // just 'export'
+	{
+		env->exit_status = 0;//check if correct
 		return (print_export_list(env));
-
+	}
 	i = 1;
 	while (args[i])
 	{
@@ -120,6 +96,7 @@ int	builtin_export(char **args, t_env *env)
 		free(value);
 		i++;
 	}
+	env->exit_status = 0;//check if correct here
 	return (0);
 }
 

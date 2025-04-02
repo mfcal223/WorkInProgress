@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 13:47:50 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/31 11:23:59 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:46:59 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ static int	is_valid_n_flag(char *str)
  * @param av   Argument values (e.g. {"echo", "-n", "hello", NULL}).
  */
 
-int	builtin_echo(char **av)
+int	builtin_echo(char **av, t_env *env)
 {
 	int		i;
 	int		new_line;
@@ -63,6 +63,7 @@ int	builtin_echo(char **av)
 	}
 	if (new_line)
 		ft_putchar_fd('\n', 1);
+	env->exit_status = 0;
 	return (0);
 }
 

@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 10:57:03 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/31 11:28:49 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:45:30 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
  *
  * No arguments are supported. This mimics the behavior of the `pwd` shell builtin.
  */
-int	builtin_pwd(void)
+int	builtin_pwd(t_env *env)
 {
 	char	*cwd;
 
@@ -33,6 +33,7 @@ int	builtin_pwd(void)
 	}
 	printf("%s\n", cwd);
 	free(cwd);
+	env->exit_status = 0;
 	return (0);
 }
  

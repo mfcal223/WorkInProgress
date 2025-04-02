@@ -491,14 +491,14 @@ SIGNALS
 🔹
 
 
-📢📕📗📘📙→🚨🔍⚠💡🎮 🎉 🔰🏁🚩🛟🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💀
-1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟✅.🚫❗⭐ 😴😵🍴🤔 🗑📥🚀🔥🎯 ❌ 🔹🔸🔺🔻📌🧪🧵📚📖📑
 
 
 ---
 
-📢📕📗📘📙→🚨🔍⚠💡🎮 🎉 🔰🏁🚩🛟🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💀🔊📡 
-1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔 📦 🗑📥🚀🔥🎯 ❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔❎✅
+📢📕📗📘📙→🚨🔍⚠💡🎮 🎉 🔰🏁🚩🛟⇶🙊
+🍝🧠🐢 🛠️🔧💭💀🔊📡⚔️📚📖📑🔶🔷🔴🟠🟢🟣🟡🔵
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.⭐ 😴😵🍴🤔 📦 🗑📥🚀🔥🎯 
+❔❓⛔❎✅🚫❗❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩
 
 pendientes: 
 
@@ -549,4 +549,99 @@ git add <file>
 git rebase --continue
 7. Push the rebased branch (if already pushed before):
 git push --force origin my-feature
+
+
+==================
+
+
+
+🔰 Team Git Workflow Guide 🔰
+============================
+
+📌 Scenario: You're working on a feature or update in a personal branch (e.g., develop_Name) and need to push it to main.
+
+🔁 Step-by-Step Git Workflow
+---------------------------
+
+🔹 1. Create or switch to your personal branch
+
+	> git checkout -b develop_YourName   # If creating a new branch
+	> git checkout develop_YourName      # Switch to a branch that already exists
+
+🔹 2. Make your changes locally
+//Edit your files as needed.
+Check status:
+	> git status
+
+🔹 3. Stage and commit your changes
+	> git add .                           # Or specify files
+	> git commit -m "Describe your update briefly"
+
+🔹 4. Push your branch to GitHub
+🚨 If it's your first push of this branch:
+		> git push -u origin develop_YourName
+
+📥 For later pushes:
+> git push
+
+🔹 5. Merge your changes into main when ready
+	a. Switch to main
+		> git checkout main
+	b. Pull the latest version of main
+		> git pull origin main
+	c. Merge your branch into main
+		> git merge develop_YourName
+
+🔹 6. Push the updated main branch to GitHub
+	> git push origin main
+
+✅ Now your changes are live on main and visible to everyone.
+
+🔹 7. (Optional) Clean up your branch
+If the feature is complete and no longer needed:
+git branch -d develop_YourName                # Delete local branch
+git push origin --delete develop_YourName     # Delete remote branch (if agreed by team)
+
+
+💡 Tips for Team Collaboration
+==============================
+⭐ Always pull the latest main before starting a new feature.
+⭐ Use clear and descriptive commit messages.
+⭐ Coordinate with the team before merging large updates.
+⭐ If conflicts happen during merge, check the following section.
+
+⚔️ How to Solve Merge Conflicts ⚔️
+===================================
+
+If you see something like this during merge:
+
+"CONFLICT (content): Merge conflict in somefile.c
+Automatic merge failed; fix conflicts and then commit the result."
+
+🧹 Step-by-step:
+-----------------
+1. Open the file and look for conflict markers:
+     <<<<<<< HEAD
+   code from main
+   =======
+   code from develop_YourName
+   >>>>>>> develop_YourName
+   
+2. Manually edit and keep the correct version.
+
+3. After editing:
+> git add somefile.c
+
+4. Then commit the merge:
+> git commit
+
+5. Finally, push the resolved version:
+> git push origin main
+
+
+📢📕📗📘📙→🚨🔍⚠💡🎮 🎉 🔰🏁🚩🛟⇶🙊
+🍝🧠🐢 🛠️🔧💭💀🔊📡⚔️📚📖📑🔶🔷🔴🟠🟢🟣🟡🔵
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.⭐ 😴😵🍴🤔 📦 🗑📥🚀🔥🎯 
+❔❓⛔❎✅🚫❗❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩🔁
+
 

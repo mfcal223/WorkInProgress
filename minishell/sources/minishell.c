@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 14:44:00 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/03/31 16:49:09 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 17:19:44 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,41 +17,35 @@
 int	main(int argc, char **argv, char **envp)
 {
 	char	*input;
+	t_env	*env_list;
+	char	**args;
 
 	(void)argc;
 	(void)argv;
 	(void)envp;
 	
 	setup_signals_interactive();//calls signal_handlers (signal_handler.c / signal_handler.h)
-		t_env	*env_list = init_env(envp);	// ✅ initialize env list
+	env_list = init_env(envp);	// ✅ initialize env list
 	while (1)
 	{
 		input = readline ("\001\033[1;32m\002minishell$ \001\033[0m\002");
 		if (!input)
 		{
 			printf("exit\n");
-			break ;
+			quit_program(env_list);
 		}
 		if (*input)
 		{
 			add_history(input);
-			char **args = ft_split(input, ' '); // simple split for testing
+			args = ft_split(input, ' '); // simple split for testing
 			if (args && args[0])
 			{
-				if (is_parent_builtin(args[0]))
-					execute_parent_builtin(args, env_list);
-				else if (is_child_builtin(args[0]))
-					execute_child_builtin(args, env_list);
-				else
-					printf("Command not recognized: %s\n", args[0]);
+				execute_command(args[0], args, env_list);//centralize the logic
 				free_split(args);
 			}
 		}
-		//printf("Input received: %s\n", input);
 		free(input);
 	}
-	free_env_list(env_list); // considerar closing_adm()
-	return (0);
 }
 
 /**

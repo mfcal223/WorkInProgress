@@ -3,20 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   exec_commands.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 09:49:54 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/03/26 14:37:42 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/02 17:05:39 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/executor.h"
+#include "../../includes/minishell.h"
 
 /*
  * check_command_path(cmd, envp):
  * 
  */
-
 char	*check_command_path(char *cmd)
 {
 	char	*cmd_path;
@@ -39,7 +39,6 @@ char	*check_command_path(char *cmd)
  * fork_and_execute(cmd_path, args, envp):
  * 
  */
-
 pid_t	fork_and_execute(char *cmd_path, char **args, char **envp)
 {
 	pid_t	pid;
@@ -63,53 +62,61 @@ pid_t	fork_and_execute(char *cmd_path, char **args, char **envp)
 	return (pid);
 }
 
+/**
+ * handles exit status for execute_external_commands()
+ */
+static void	handle_exit_status(int status, t_env *env)
+{
+	if (WIFEXITED(status))
+		env->exit_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+		env->exit_status = 128 + WTERMSIG(status);
+}
+
 /*
  * execute_external_command(cmd, args, envp):
  * Executes a command, either from an absolute path or by resolving the PATH.
  * If execution fails, prints an error message.
  */
-
-void	execute_external_command(char *cmd, char **args, char **envp)
+void	execute_external_command(char *cmd, char **args, t_env *env)
 {
+	char	*cmd_path;
+	char	**envp;
 	pid_t	pid;
 	int		status;
-	int		exit_status;
-	int		signal_number;
-	char	*cmd_path;
 
 	cmd_path = check_command_path(cmd);
 	if (!cmd_path)
 		return ;
+	envp = env_list_to_array(env);
+	if (!envp)
+	{
+		perror("env conversion failed");
+		if (cmd_path != cmd)
+			free(cmd_path);
+		env->exit_status = 1;
+		return ;
+	}
 	pid = fork_and_execute(cmd_path, args, envp);
 	waitpid(pid, &status, 0);
-	if (WIFEXITED(status))
-	{
-		exit_status = WEXITSTATUS(status);
-		if (exit_status != 0)
-			perror("command failed");
-	}
-	else if (WIFSIGNALED(status))
-	{
-		signal_number = WTERMSIG(status);
-		perror("command was terminated");
-	}
+	handle_exit_status(status, env);
 	if (cmd_path != cmd)
 		free(cmd_path);
+	free_split(envp);
 }
 
 /*
  * execute_commnad(cmd, args, envp):
  * 
  */
-
-void	execute_command(char *cmd, char **args, char **envp)
+void	execute_command(char *cmd, char **args, t_env *env)
 {
 	if (!cmd || !args || !args[0])
 		return ;
 	if (is_parent_builtin(args[0]) || is_child_builtin(args[0]))
-		execute_builtin(args);
+		execute_builtin(args, env);
 	else
-		execute_external_command(cmd, args, envp);
+		execute_external_command(cmd, args, env);
 }
 
 /*

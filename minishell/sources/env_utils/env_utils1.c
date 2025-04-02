@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 12:06:15 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/01 10:22:10 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/02 16:57:57 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,10 @@ t_env	*init_env(char **envp)
 			return (NULL); // Handle cleanup later
         }
         if (!head)
+		{
 			head = new_node;
+			new_node->exit_status = 0;
+		}
 		else
 			current->next = new_node;
 		current = new_node;
