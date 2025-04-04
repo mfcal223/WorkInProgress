@@ -6,15 +6,17 @@
 /*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 13:47:58 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/03/26 13:46:08 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/02 14:38:10 by mpiantan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/executor.h"
 
 /*
- * free_split(split):
- * Frees an array of strings and sets each pointer to NULL.
+ * free_split() = frees an array of strings. 
+ * Iterates through the array, freeing each str. 
+ * Sets each freed pointer to NULL. 
+ * Frees the array itself.
  */
 
 void	free_split(char **split)
@@ -34,10 +36,11 @@ void	free_split(char **split)
 }
 
 /*
- * find_full_path(cmd, path):
- * Constructs the full path of a cmd by iterating through the PATH directories. 
- * Returns the full path if the cmd exists and is executable or NULL if the cmd 
-is not found or if an error occurs. 
+ * find_full_path() = finds the executable path of a command. 
+ * Iterates through the PATH directories.
+ * Concatenates each directory with the command name. 
+ * Checks if the resulting path is executable. 
+ * Returns the full path if found, or NULL if not found or error.
  */
 
 char	*find_full_path(char *cmd, char **path)
@@ -67,11 +70,10 @@ char	*find_full_path(char *cmd, char **path)
 }
 
 /*
- * get_command_path(cmd, envp):
- * Gets the full executable path of a cmd.
- * * If the cmd is executable as given, returns its duplicate.
- * * Otherwisem searches the directories in PATH for the cmd.
- * Returns NULL if cmd is not found or if an error occurs. 
+ * get_command_path() = resolves full path of an executable command. 
+ * If the cmd is executable as given, returns its duplicate.
+ * Otherwise, searches the directories in PATH for the cmd.
+ * Returns the full path if found, or NULL not found or error. 
  */
 
 char	*get_command_path(char *cmd)

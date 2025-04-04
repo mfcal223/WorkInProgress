@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 14:06:01 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/02 16:41:00 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 10:14:54 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,19 +48,43 @@ void	builtin_exit(char **args, t_env *env, int is_forked)
 		quit_program(env);
 	if (!is_numeric(args[1]))
 	{
-		ft_putstr_fd("exit: ", STDERR_FILENO);
-		ft_putstr_fd(args[1], STDERR_FILENO);
-		ft_putendl_fd(": numeric argument required", STDERR_FILENO);
-		env->exit_status = 255;
+		env->exit_status = EXIT_NON_NUMERIC;
 		quit_program(env);
 	}
 	if (args[2])
 	{
-		ft_putendl_fd("exit: too many arguments", STDERR_FILENO);
-		env->exit_status = 1;
+		env->exit_status = EXIT_FAILURE;
 		return ;
 	}
 	code = ft_atoi(args[1]);
 	env->exit_status = (unsigned char)code;
 	quit_program(env);
 }
+
+/* WORKING VERSION - INCOMPLETE ERROR STATUS HADNLING
+void	builtin_exit(char **args, t_env *env, int is_forked)
+{
+	long	code;
+
+	if (!is_forked)
+		ft_putendl_fd("exit", STDERR_FILENO);
+	if (!args[1])
+		quit_program(env);
+	if (!is_numeric(args[1]))
+	{
+		ft_putstr_fd("exit: ", STDERR_FILENO);
+		ft_putstr_fd(args[1], STDERR_FILENO);
+		ft_putendl_fd(": numeric argument required", STDERR_FILENO);
+		env->exit_status = EXIT_NON_NUMERIC;
+		quit_program(env);
+	}
+	if (args[2])
+	{
+		ft_putendl_fd("exit: too many arguments", STDERR_FILENO);
+		env->exit_status = EXIT_FAILURE;
+		return ;
+	}
+	code = ft_atoi(args[1]);
+	env->exit_status = (unsigned char)code;
+	quit_program(env);
+}*/

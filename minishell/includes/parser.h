@@ -6,7 +6,7 @@
 /*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 14:14:38 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/01 16:38:13 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/03 14:26:01 by mpiantan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@
 # include <stdlib.h>
 # include <unistd.h> 
 # include <string.h>
+# include <fcntl.h>
 # include "../libft/libft.h"
+# include "environment.h"
 
 typedef struct s_cmd
 {
@@ -48,6 +50,14 @@ int		handle_quotes(char current, t_expand *exp);
 char	*replace_variable(char *input, t_expand *exp, int *i);
 char	*expand_variable(char	*input, int last_exit_status, int input_len);
 
+//utils/utils_parser.c
+t_cmd	*new_cmd(void);
+char	**append_to_array(char **array, const char *new_str);
+void	handle_new_cmd(t_cmd **cmd, t_cmd **head, t_cmd **current, t_cmd *new_cmd);
+
 //parser/parser.c
+t_cmd	*parse_cmd(char **tokens, int *i);
+t_cmd	*parse_tokens(char **tokens);
+void	process_cmd(t_cmd *cmd, int last_exit_status, t_env env);
 
 #endif

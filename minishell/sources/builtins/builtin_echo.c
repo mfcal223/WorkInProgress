@@ -6,11 +6,13 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 13:47:50 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/02 16:46:59 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:08:05 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+#include "../../includes/environment.h"
+
 /**
  * Checks if a string is a valid -n flag (e.g. "-n", "-nn", "-nnnn").
  * Used to determine if echo should suppress the trailing newline.

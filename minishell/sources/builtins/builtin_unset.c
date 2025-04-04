@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 13:59:50 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/02 16:58:22 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 10:43:36 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,31 @@ void	unset_env_var(t_env **env, char *key)
  */
 int	builtin_unset(char **args, t_env **env)
 {
+	int		i;
+	int		error;
+
+	i = 1;
+	error = 0;
+	while (args[i])
+	{
+		if (!is_valid_identifier(args[i]))
+		{
+			ft_putstr_fd("unset: `", 2);
+			ft_putstr_fd(args[i], 2);
+			ft_putendl_fd("': not a valid identifier", 2);
+			error = 1;
+		}
+		else
+			unset_env_var(env, args[i]);
+		i++;
+	}
+	(*env)->exit_status = error;
+	return (0);
+}
+
+/* VERSION QUE FUNCIONA PERO INCOMPLET ERROR EXIT HANDLING
+int	builtin_unset(char **args, t_env **env)
+{
 	int	i;
 
 	i = 1;
@@ -69,5 +94,4 @@ int	builtin_unset(char **args, t_env **env)
 	}
 	(*env)->exit_status = 0;
 	return (0);
-}
-
+}*/

@@ -6,11 +6,12 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 12:08:58 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/02 16:33:56 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:08:00 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+#include "../../includes/environment.h"
 
 /**
  * @brief Prints all environment variables to stdout.

@@ -6,11 +6,20 @@
 /*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 13:39:39 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/01 16:38:17 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/02 13:30:22 by mpiantan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/parser.h"
+
+/*
+ * init_expansion() = initialize expansion structure. 
+ * Allocates memory for the expanded result string. 
+ * Initializes expansion state variables: 
+ * * Stores last exit status
+ * * Tracks quote states (single and double)
+ * * Sets result index to 0
+ */
 
 char	*init_expansion(t_expand *exp, char *input, int last_exit_status)
 {
@@ -24,6 +33,12 @@ char	*init_expansion(t_expand *exp, char *input, int last_exit_status)
 	return (exp->result);
 }
 
+/*
+ * handle_quotes() = set quote states. 
+ * Tracks whether we are inside a single or double quotes. 
+ * * Single quotes disable variable expansion. 
+ * * Double quotes allow expansion but preserve spaces. 
+ */
 int	handle_quotes(char current, t_expand *exp)
 {
 	if (current == '\'' && !exp->double_quotes)
@@ -33,6 +48,13 @@ int	handle_quotes(char current, t_expand *exp)
 	return (0);
 }
 
+/*
+ * repalce_variable() = replace variable with its value. 
+ * Skips expansion inside single quotes. 
+ * Extracts variable name. 
+ * Retrieves the variable value from environment or exit status. 
+ * Inserts expanded value into result string. 
+ */
 char	*replace_variable(char *input, t_expand *exp, int *i)
 {
 	char	*var;
@@ -62,6 +84,14 @@ char	*replace_variable(char *input, t_expand *exp, int *i)
 	return (exp->result);
 }
 
+/*
+ * expand_variable() = expand all variables in input string. 
+ * * Initializes expansion structure. 
+ * * Iterates over the input string, handling: 
+ * * * Quotes to track expansion rules. 
+ * * * '$' symbol to expand environment variables. 
+ * * * Copies normal characters to result. 
+ */
 char	*expand_variable(char	*input, int last_exit_status, int input_len)
 {
 	int			i;

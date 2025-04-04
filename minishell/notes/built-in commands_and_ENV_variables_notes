@@ -1,11 +1,84 @@
-BUILTINS COMMANDS
-├── echo
-├── pwd
-├── env
-├── cd
-├── unset
+├── ENVIRONMENTAL VARIABLES ( ENVIRON())
 │ 
-└──
+├── BUILTINS COMMANDS
+	├── echo
+	├── pwd
+	├── env
+	├── cd
+	├── unset
+	├── export
+	│ 
+	└── exit
+
+ENVIRONMENTAL VARIABLES ( ENVIRON())
+========================================
+
+How the Environment and Environmental Variables Work
+----------------------------------------------------
+When interacting with your server through a shell session, there are many pieces of information that your shell compiles to determine its behavior and access to resources. Some of these settings are contained within configuration settings and others are determined by user input.
+
+One way that the shell keeps track of all of these settings and details is through an area it maintains called the environment. The environment is an area that the shell builds every time that it starts a session that contains variables that define system properties.
+Every time a shell session spawns, a process takes place to gather and compile information that should be available to the shell process and its child processes. It obtains the data for these settings from a variety of different files and settings on the system.
+
+The environment is implemented as strings that represent key-value pairs. If multiple values are passed, they are typically separated by colon (:) characters. Each pair will generally look something like this:
+
+KEY=value1:value2:...
+
+What does the manual says? (https://man7.org/linux/man-pages/man7/environ.7.html)
+
+The variable environ points to an array of pointers to strings
+       called the "environment".  The last pointer in this array has the
+       value NULL.  
+This array of strings is made available to the
+       process by the execve(2) call when a new program is started.  When
+       a child process is created via fork(2), it inherits a copy of its
+       parent`s environment.
+       
+By convention, the strings in environ have the form "name=value".
+       The name is:
+       	case-sensitive 
+       	cannot contain the character "=" or embedded null byte ('\0')
+       	can be anything that can be represented as a string.
+
+Environment variables may be placed in the shell`s environment by
+       the export command in sh(1), or by the setenv command if you use
+       csh(1).
+
+In order to implement certain elements of this project, like some of the builtin commands, the program will need to use a a structure to store and manage environment variables.
+
+envp is an array of strings:
+
+> envp = { "PATH=/bin:/usr/bin", "PWD=/home/user", ... NULL }
+
+But you need to modify environment variables (like PWD, OLDPWD, SHLVL, etc.)
+The C standard char **envp is not writable in a portable/safe way
+That`s why you’ll copy it into a custom data structure (usually a linked list), which you’ll manage yourself.
+
+Most students define something like:
+
+typedef struct s_env
+{
+	char			*key;
+	char			*value;
+	struct s_env	*next;
+}	t_env;
+
+Field	Type		Description
+----------------------------------------------------------------
+key		char *		The name of the variable (e.g., "PATH")
+value	char *		he value of the variable (e.g., "/bin:/usr/bin")
+next	t_env *		Pointer to the next node in the list
+
+This forms a linked list where each node holds a key=value pair from envp.
+
+Then write helper functions to be able to do the following actions:
+
+🔸 init_env(char **envp) → convert envp to t_env *
+🔸 get_env_value(t_env *env, const char *key)
+🔸 set_env_value(t_env *env, const char *key, const char *value)
+🔸 unset_env(t_env **env, const char *key)
+🔸 print_env(t_env *env) → for the env builtin
+==================================================================
 
 🛠️ BUILTINS COMMANDS
 ------------------------
@@ -478,9 +551,9 @@ Any trap on EXIT is executed before the shell terminates.
 - Only exit the whole shell if it's a standalone command.
 - Must properly clean up memory.
 
-************************************************************************
+*********************************************************************
    🧮 exit Builtin Implementation Plan 🧮
-************************************************************************
+*********************************************************************
 [  ]🧩 1. builtin_exit() function
 Purpose: Handle user input like exit, exit 42, exit abc, etc.
 
@@ -577,11 +650,13 @@ Then in builtin_exit():
 🔍 CASES:
 -----------
 
+USE MINISHELL INCEPTION TO TEST: By typing bash twice we would enter a bash inside our bash (bash-ception) By tiping exit 45 we would set the exit status from the seconds bash to 45. So when we type echo $? we will see the value from that environment variable (45)
+
 🔑 exit is run as a standalone command
 -----------------------------------
 🚪 > exit (with no arguments) 
-[ ] print exit\n 
-[ ]use quit_program function to exit the program with no memory leaks.
+[✅] print exit\n 
+[✅]use quit_program function to exit the program with no memory leaks.
 
 🚪 If there is only one numeric argument
 [ ] quit the program with the exit status of the argument,
@@ -592,21 +667,51 @@ Then in builtin_exit():
 > exit: too many arguments
 [ ] We print error message for too many argumentsand 
 [ ] don't quit the program.
+[ ] check that env->exit_status was set to 1, but behavior looks good
 
 🚪 if first argument is non-digit: 
 > exit sad
 [ ]  print numeric argument required\n 
-[ ]  exit with exit status 2 (EXIT_GENERAL_ERROR)
+[ ]  exit with exit status 2 (EXIT_GENERAL_ERROR) ?????
+----> Exits with code 255.
 
-🚪 > echo $? (special shell variable)
-This variable will save the exit status from the last executed function. 
-!!!! The expander manages the "$?"
-
+📢 TO CHECK DE EXIT STATUS:
+ > echo $? (special shell variable) --> This variable will save the exit status from the last executed function. 
 > exit 45
 > echo $?
 > 45
 
-By typing bash twice we would enter a bash inside our bash (bash-ception) By tiping exit 45 we would set the exit status from the seconds bash to 45. So when we type echo $? we will see the value from that environment variable (45)
+
+**Example in bash**
+> Cursus/git_minishell$ bash
+> Cursus/git_minishell$ exit
+> exit
+> Cursus/git_minishell$ echo $?
+> 0
+> Cursus/git_minishell$ bash
+> Cursus/git_minishell$ exit 45
+> exit
+> Cursus/git_minishell$ echo $?
+> 45
+> Cursus/git_minishell$ 
+
+🔥🔥🔥 [ ] pendiente!! !!!! The expander manages the "$?"🔥🔥🔥e
+
+Signals interrumping: 
+Example test:
+bash
+Copiar
+Editar
+minishell$ cat
+^C
+# exits with Ctrl+C, $? = 130
+bash
+Copiar
+Editar
+minishell$ cat
+^\
+Quit: 3
+# exits with Ctrl+\, $? = 131
 
 🔑 Inside a pipeline → don't actually exit
 ---------------------------------------
@@ -626,124 +731,152 @@ exit abc        	→ prints "exit: abc: numeric argument required", exits 255
 exit 1 2        	→ prints "exit: too many arguments", doesn't exit
 echo hey | exit 8  	→ sets exit status to 8, doesn’t exit
 
+*********************************************************************
+💣 Current Exit Status Behavior in Your Shell 💣
+*********************************************************************
+
+From our recent work:
+
+Case						Current Status			Matching Bash?
+Builtin success				exit_status = 0			✅ Yes
+Builtin error 				exit_status = 1 or 255	✅ Mostly
+(e.g. invalid args)
+exit sad 					exit_status = 255		✅ Yes
+(→ non-numeric arg)
+Too many args to exit		exit_status = 1			✅ Yes
+Unknown external command	exit_status = 127		✅ Yes
+Command found but 			not handled yet?		⚠️ Add 126
+not executable
+execve() fails with error	exit(1)				⚠️ Consider refining
+Child terminated by 		exit_status = 128 + N	✅ Yes
+  signal (SIGINT, etc.)
+
+You’re mostly matching Bash's behavior already, even without macros. Nice work!
+
+🧠 What Bash does with Exit Codes
+Error Type								Bash Exit Code
+Command not found						127
+Command found but not executable		126
+Non-numeric argument to exit			255
+Killed by signal N						128 + N
+Incorrect usage of a builtin			2
+Success									0
+General error							1
+
+🛠 Should you define these with macros?
+-------------------------------------------
+Yes, it’s a very good idea to define them using macros in a minishell.h or exit_codes.h, for clarity and future maintenance.
+
+✅ Suggested Macros
+#define EXIT_SUCCESS        0
+#define EXIT_FAILURE        1 //Too many arguments does not exit, just sets exit status = 1
+#define EXIT_COMMAND_NOT_FOUND 127
+#define EXIT_NOT_EXECUTABLE 126
+#define EXIT_INVALID_USAGE  2
+#define EXIT_NON_NUMERIC    255
+
+🎯 What still needs to be handled? 
+--------------------------------------
+1️⃣ Command found but not executable [ ✅ ]
+In check_command_path() or execve(), check for EACCES and return:
+
+exit(EXIT_NOT_EXECUTABLE); // 126
+This typically happens when:
+- The file exists but has no execute permissions (chmod -x)
+- You try to execve() a directory or script without permission
+
+2️⃣ Set exit_status = 127 when command not found [✅ ].
+in execute_external_command()
+
+3️⃣ Builtin exit status update  [  ]
+Each builtin should:
+- Return 0 (EXIT_SUCCESS) on success
+- Return 1 (EXIT_FAILURE) on general failure
+- Return 2 (EXIT_INVALID_USAGE) on incorrect usage (e.g. export 1bad=val)
+
+🤔 Should you consider more exit statuses for builtins?
+Yes — but only in these builtins:
+
+Builtin					Notes
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+cd						Bash returns 1 if cd fails (invalid dir, too many arg, etc)
+export					Returns 1 if you try export 1badvar=ok
+unset					Returns 1 if identifier is invalid 							[✅ Yes]
+echo, env, pwd			Usually just return 0 unless something catastrophic happens
+
+[ ]Set env->exit_status accordingly, so $? reflects it
+
+4️⃣ Refine signal termination logic  [  ]
+You're already handling:
+if (WIFSIGNALED(status))
+    env->exit_status = 128 + WTERMSIG(status);
+That’s perfect. ✅
+
+🤔 Is this related to Ctrl+C / Ctrl+\ ?
+Yes, absolutely:
+
+If a child is running and receives:
+SIGINT (Ctrl+C) → exit code 130
+SIGQUIT (Ctrl+\) → exit code 131
+
+Handled via:
+env->exit_status = 128 + WTERMSIG(status);
+This allows the shell to know why the process died and show feedback accordingly.
+
+What changes were made:
+handle_exit_status() was modified to updatethe shell's last exit status after waitpid().
+
+** @param status The status code returned by waitpid().
+** @param env    The shell's environment structure containing exit_status.
+**
+** This function analyzes the exit status of a child process, as returned by
+** waitpid(). It distinguishes between two cases:
+**
+** 1. Normal exit (WIFEXITED):
+**    - The child exited normally via exit(n).
+**    - We store n (from WEXITSTATUS) in env->exit_status.
+**
+** 2. Terminated by signal (WIFSIGNALED):
+**    - The child was killed by a signal like SIGINT or SIGQUIT.
+**    - According to Bash behavior, the exit status becomes 128 + signal number.
+**      For example: SIGINT (2) → 130, SIGQUIT (3) → 131
+**    - If the signal was SIGQUIT, we also write "Quit: 3\n" to stderr,
+**      which mimics Bash's terminal feedback (seen with Ctrl+\).
+**
+** This centralized function should be called after every waitpid() in the shell,
+** including external commands, pipelines, and child-run builtins.
+
+Summary of Logic:
+Child Behavior		Result Stored in env->exit_status
+exit(0)				0
+exit(42)			42
+Killed by SIGINT	130 (128 + 2)
+Killed by SIGQUIT	131 (128 + 3) + prints Quit: 3\n
+Any other signal	128 + signal_number
 
 
+✅ Summary
+Task							Recommended?		Action
+Use macros for exit codes			✅ Yes			Create a header like exit_codes.h
+Add missing cases (126, 2, etc.)	✅ Yes			Handle in exec/builtins
+Signals already handled				✅ Yes			Via WTERMSIG() logic
+Refine execve fallback exits		✅ Yes			Set specific exit codes
 
-📕📗📘📙→📢🚨🔍🧱⚠💡🎮 🎉 🔰🏁🚩🛟🔑🚪🔌🧮🚦⚡
-🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💀🔊📡  🖨️
-1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔 📦 🗑📥🚀🔥🎯 ❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔✅❎‼️
------------------------------------------------------------------------------------------------------------------------------------------------
-
-## 🚩 Additional Builtin-Related Info (from subject and Bash behavior)
-
-### Interruptibility:
-- All builtins must respond correctly to `Ctrl+C` (SIGINT) in **interactive mode**.
-- `env` or `exit` (when forking) must restore default signal handlers in the child process.
-
-### Redirections and Pipelines:
-- Builtins like `echo`, `env`, and `pwd` may be used in pipelines and redirections:
-  
-  echo hello | cat
-  pwd > file.txt
-  
-  For that, the execution mechanism must detect whether to run in parent or forked child depending on context.
-
-### Execution in Parent Shell:
-- Only `cd`, `export`, `unset`, and `exit` (when alone) must **NOT fork** because they modify the shell’s state.
-
-### SIGINT, SIGQUIT:
-- You're already handling Ctrl+C with `setup_signals_interactive()` (good).
-- Ensure child processes get `setup_signals_child()` (restore default behavior).
-
----
- ✅ Final Builtin List (from subject):
-
-| Command   | Forked? 			| Args/Options? 			| File |
-|--------   |--------			|--------------				|------|
-| `cd`      | No 				| [path] 					| `builtin_cd.c` |
-| `echo` 	| Yes 				| `[-n] [args...]` 			| `builtin_echo.c` |
-| `env` 	| Yes 				| (no args) 				| `builtin_env.c` |
-| `exit` 	| No (when alone) 	| `[n]` 					| `builtin_exit.c` |
-| `export` 	| No 				| `[VAR=value]` or none 	| `builtin_export.c` |
-| `unset` 	| No 				| `[VAR]` 					| `builtin_unset.c` |
-| `pwd` 	| Yes 				| (no args) 				| `builtin_pwd.c` |
-
+✅ Summary of your updates
+Change	Correct?	Notes
+execve() → EACCES → 126	✅	Excellent
+cmd not found → 127	✅	Handled before execve()
+exit() builtin error codes	✅	Matches Bash
+exit_status.h macros	✅	Clean and scalable
+Future builtin improvements	🟡	Add exit codes for cd, export, unset
 ======================================================================================
 
 
 =================================================================================
 
-ENVIRONMENTAL VARIABLES ( ENVIRON())
-========================================
-
-How the Environment and Environmental Variables Work
-----------------------------------------------------
-When interacting with your server through a shell session, there are many pieces of information that your shell compiles to determine its behavior and access to resources. Some of these settings are contained within configuration settings and others are determined by user input.
-
-One way that the shell keeps track of all of these settings and details is through an area it maintains called the environment. The environment is an area that the shell builds every time that it starts a session that contains variables that define system properties.
-Every time a shell session spawns, a process takes place to gather and compile information that should be available to the shell process and its child processes. It obtains the data for these settings from a variety of different files and settings on the system.
-
-The environment is implemented as strings that represent key-value pairs. If multiple values are passed, they are typically separated by colon (:) characters. Each pair will generally look something like this:
-
-KEY=value1:value2:...
-
-What does the manual says? (https://man7.org/linux/man-pages/man7/environ.7.html)
-
-The variable environ points to an array of pointers to strings
-       called the "environment".  The last pointer in this array has the
-       value NULL.  
-This array of strings is made available to the
-       process by the execve(2) call when a new program is started.  When
-       a child process is created via fork(2), it inherits a copy of its
-       parent`s environment.
-       
-By convention, the strings in environ have the form "name=value".
-       The name is:
-       	case-sensitive 
-       	cannot contain the character "=" or embedded null byte ('\0')
-       	can be anything that can be represented as a string.
-
-Environment variables may be placed in the shell`s environment by
-       the export command in sh(1), or by the setenv command if you use
-       csh(1).
-
-In order to implement certain elements of this project, like some of the builtin commands, the program will need to use a a structure to store and manage environment variables.
-
-envp is an array of strings:
-
-> envp = { "PATH=/bin:/usr/bin", "PWD=/home/user", ... NULL }
-
-But you need to modify environment variables (like PWD, OLDPWD, SHLVL, etc.)
-The C standard char **envp is not writable in a portable/safe way
-That`s why you’ll copy it into a custom data structure (usually a linked list), which you’ll manage yourself.
-
-Most students define something like:
-
-typedef struct s_env
-{
-	char			*key;
-	char			*value;
-	struct s_env	*next;
-}	t_env;
-
-Field	Type		Description
-----------------------------------------------------------------
-key		char *		The name of the variable (e.g., "PATH")
-value	char *		he value of the variable (e.g., "/bin:/usr/bin")
-next	t_env *		Pointer to the next node in the list
-
-This forms a linked list where each node holds a key=value pair from envp.
-
-Then write helper functions to be able to do the following actions:
-
-🔸 init_env(char **envp) → convert envp to t_env *
-🔸 get_env_value(t_env *env, const char *key)
-🔸 set_env_value(t_env *env, const char *key, const char *value)
-🔸 unset_env(t_env **env, const char *key)
-🔸 print_env(t_env *env) → for the env builtin
 
 
-==============================================================================
+=====================================================================
 ************
 ** ANEX I **
 ************
@@ -772,88 +905,8 @@ Expands to the decimal process ID of the most recent background command (see Lis
 
 ///////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////
-INTEGRATION TASK LIST
-///////////////////////////////////////////////////////////////////
 
-✅ Goals
-- Integrate your t_env *env linked list into the executor.
-- Replace envp usage with t_env where needed.
-- Ensure all builtins work with the t_env list.
-- Make exit status updates consistent (g_msh.exit_status).
-
-🔧 Integration Checklist
-
-✅ 1. Update execute_builtin() to accept t_env *env
-
-- Update execute_builtin() to:
-void	execute_builtin(char **args, t_env *env)
-- And in its body:
-if (is_parent_builtin(args[0]))
-	execute_parent_builtin(args, env);
-else if (is_child_builtin(args[0]))
-	execute_child_builtin(args, env);
-
-✅ 2. Update all execute_command() calls to pass env_list
-- In exec_commands.c, execute_command() needs this update:
-void	execute_command(char *cmd, char **args, t_env *env)
-- Then update all its calls to include env instead of envp
-execute_command(args[0], args, env);
-
-➡️ This change must propagate to:
-		- fork_pipes() in exec_pipes.c
-		- execute_pipeline() in exec_pipes.c
-
-[✅] 3. Update execute_external_command() to convert t_env → char **envp
-
-Your external commands still need char **envp, so you’ll need to write a helper = 
-
-char	**env_list_to_array(t_env *env);
-
-Use it in:
-char **envp = env_list_to_array(env);
-execve(cmd_path, args, envp);
-free_split(envp); // or equivalent
-
-[ ] 4. Modify main() in minishell.c 💻
-🔹 replace call for is_child_ or is_parent with:
-execute_command(args[0], args, env_list);
-[ ] ver como agregar el printf de error si comando no existe
-
-✅🔹And inside execute_pipeline(), instead of:
-void	execute_pipeline(char **cmds, char **envp)
-Use:
-void	execute_pipeline(char **cmds, t_env *env)
-🔹 And pass the list correctly all the way down.
-
-[✅] 5. Update builtin_* functions to use t_env *env consistently
-From what you shared, most of your builtins already use:
-int builtin_cd(char **args, t_env *env);
-int builtin_export(char **args, t_env *env);
-int builtin_env(t_env *env);
-So you’re good here — just ensure env is passed in from executor files correctly.
-[ ] update en el executor cuando agregue exit()
-
-
-🔹 6. Global exit status
-In builtin_echo(), pwd(), cd(), etc., at the end of each, set:
-
-g_msh.exit_status = 0; // or 1, if there was an error
-And in exec_commands.c:
-
-After a command executes and returns a code → store it into g_msh.exit_status.
-
-Example:
-int status;
-waitpid(pid, &status, 0);
-if (WIFEXITED(status))
-	g_msh.exit_status = WEXITSTATUS(status);
-
-
-
-
-📕📗📘📙→📢🚨🔍🧱⚠💡🎮 🎉 🔰🏁🚩🛟🔑🚪🔌🧮🚦⚡
-🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💀🔊📡  🖨️💻
-1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔 📦 🗑📥🚀🔥🎯 
-❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔✅❎‼️
-
+📕📗📘📙→📢🚨🔍🧱⚠💡🎮 🎉 🔰🏁🚩🛟🔑🚪🔌🧮🚦⚡💣
+🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💬💀🔊📡  🖨️💻🎓
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔✋📦 🗑📥🚀🔥🎯 
+❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔✅❎‼️🔚🔁🔗⚙️ 👾👻💆

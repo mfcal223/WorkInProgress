@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 09:49:54 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/02 17:05:39 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:24:01 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,12 @@
 #include "../../includes/minishell.h"
 
 /*
- * check_command_path(cmd, envp):
- * 
+ * check_command_path() = resolve command path
+ * If the command starts with '/' or '.', it is an absolute/relative path. 
+ * If not, it searches for the command in the system's PATH. 
+ * If the command is not found, it prints an error and returns NULL. 
  */
+
 char	*check_command_path(char *cmd)
 {
 	char	*cmd_path;
@@ -36,9 +39,13 @@ char	*check_command_path(char *cmd)
 }
 
 /*
- * fork_and_execute(cmd_path, args, envp):
- * 
+ * fork_and_execute() = fork a child process and execute command. 
+ * Creates a child process using fork(). 
+ * The child process executes the command using execve(). 
+ * If fork fails, it prints an error and exits. 
+ * If execve fails, the child prints an error and exits with status 127. 
  */
+
 pid_t	fork_and_execute(char *cmd_path, char **args, char **envp)
 {
 	pid_t	pid;
@@ -52,31 +59,26 @@ pid_t	fork_and_execute(char *cmd_path, char **args, char **envp)
 	}
 	if (pid == 0)
 	{
+		setup_signals_child(); // not sure this is the right place
 		if (execve(cmd_path, args, envp) == -1)
 		{
 			perror("execve failed");
 			free(cmd_path);
-			exit (127);
+			if (errno == EACCES)
+				exit(126); // ✅ Not executable
+			//exit (127);// don’t need to call exit(127) here / shouldn't happen if check_command_path worked
 		}
 	}
 	return (pid);
 }
 
-/**
- * handles exit status for execute_external_commands()
- */
-static void	handle_exit_status(int status, t_env *env)
-{
-	if (WIFEXITED(status))
-		env->exit_status = WEXITSTATUS(status);
-	else if (WIFSIGNALED(status))
-		env->exit_status = 128 + WTERMSIG(status);
-}
-
 /*
- * execute_external_command(cmd, args, envp):
- * Executes a command, either from an absolute path or by resolving the PATH.
- * If execution fails, prints an error message.
+ * execute_external_command() = run an external command. 
+ * Resolves the command path. 
+ * Forks a child process to execute the command. 
+ * Waits for the process to finish and retrieves the exit status. 
+ * Prints an error msg if the command fails o is terminated. 
+ * Frees the resolved command path if it was dynamically allocated. 
  */
 void	execute_external_command(char *cmd, char **args, t_env *env)
 {
@@ -87,7 +89,10 @@ void	execute_external_command(char *cmd, char **args, t_env *env)
 
 	cmd_path = check_command_path(cmd);
 	if (!cmd_path)
+	{
+		env->exit_status = EXIT_COMMAND_NOT_FOUND; // ✅ Bash-compatible "command not found"
 		return ;
+	}
 	envp = env_list_to_array(env);
 	if (!envp)
 	{
@@ -106,8 +111,10 @@ void	execute_external_command(char *cmd, char **args, t_env *env)
 }
 
 /*
- * execute_commnad(cmd, args, envp):
- * 
+ * execute_command() = execute a built-in or external command. 
+ * If no command or arguments are provided, return. 
+ * If the command is a built-in, calls the builtin executer. 
+ * Otherwise, calls the executor for external command.  
  */
 void	execute_command(char *cmd, char **args, t_env *env)
 {

@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 16:37:23 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/02 16:34:42 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:11:26 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,36 @@ void	split_key_value(char *arg, char **key, char **value)
  * @param env   The environment linked list.
  * @return      Always returns 0.
  */
+
+int	builtin_export(char **args, t_env *env)
+{
+	int		i;
+	char	*key;
+	char	*value;
+	int		error;
+
+	if (!args[1])
+		return (print_export_list(env));
+	i = 1;
+	error = 0;
+	while (args[i])
+	{
+		split_key_value(args[i], &key, &value);
+		if (!is_valid_identifier(key))
+		{
+			print_export_error(args[i]);
+			error = 1;
+		}
+		else
+			set_env_value(env, key, value);
+		free(key);
+		free(value);
+		i++;
+	}
+	env->exit_status = error;
+	return (0);
+}
+/* working version but incomplete error handling 
 int	builtin_export(char **args, t_env *env)
 {
 	int		i;
@@ -99,4 +129,5 @@ int	builtin_export(char **args, t_env *env)
 	env->exit_status = 0;//check if correct here
 	return (0);
 }
+*/
 

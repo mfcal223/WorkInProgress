@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 11:55:16 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/02 17:26:09 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 09:13:32 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,6 @@ t_env	*create_env_node(char *env_entry);									//Creates a new t_env node
 /* ----------------- ENV_UTILS2 --------------------*/
 void	add_env_variable(t_env *last, const char *key, const char *value);	//adds a variable to env
 void	set_env_value(t_env *env, const char *key, const char *value);		//Sets or updates the value of an existing env variable.
-int		is_valid_identifier(char *str);				//Checks whether a given string is a valid shell variable identifier.
-int		env_list_size(t_env *env); 						//counts the size of the list
+int		is_valid_identifier(char *str);										//Checks whether a given string is a valid shell variable identifier.
+int		env_list_size(t_env *env); 											//counts the size of the list
 #endif

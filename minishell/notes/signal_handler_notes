@@ -193,3 +193,151 @@ if (WIFSIGNALED(status))
 
 - [ ] Use `kill(0, signal)` to forward signals to all children (useful with pipelines).
 - [ ] Optionally block signals during heredoc or critical sections.
+
+==============================================================
+
+
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+= SIGNAL HANDLING & COMANDS =
+=.=.=.=.=.=.=.=.=.=.=.=.=.=.=
+
+**what’s needed to make your builtins interact properly with signals?**
+
+### Interruptibility:
+- All builtins must respond correctly to `Ctrl+C` (SIGINT) in `interactive mode`.
+- `env` or `exit` (when forking) must restore default signal handlers in the child process.
+
+ 🔌 Connect Signals with Builtin Execution
+-------------------------------------------
+
+🧩 In the parent process, use: 
+> setup_signals_interactive(); 
+[✅] doing this in main()
+
+🧩 In child processes (forked):
+In your executor, anywhere you fork(), you need to do:
+		if (pid == 0) // child
+		{
+			setup_signals_child();
+			// execute builtin or external command
+		}
+This allows:
+- cat, sleep, etc., to be interruptible (Ctrl+C)
+- SIGQUIT to show Quit: 3 like Bash
+[❔] add a call to setup_signals_child() in the forked child
+
+🧩 Special Case: builtin_exit and SIGINT
+If the user presses Ctrl+C before typing exit, your current setup handles that correctly — input is cleared.
+But if exit is called from a pipeline, you must ensure the child process doesn’t accidentally quit the whole shell. 
+So, in builtin_exit():
+🔺 Only call quit_program() when not forked.
+🔺 If is_forked == 1, just exit(env->exit_status).
+[ ] check the track method --> "is_forked" is correctly implemented?
+[ ] esta puesto "1" a la fuerza, no hay call de la funcion alternativo que tenga 0 
+
+🧩  In exec_commands.c → After waitpid()
+When you`re waiting on child processes (including builtins run in a fork), you should add this after waitpid():
+if (WIFSIGNALED(status))
+		{
+			if (WTERMSIG(status) == SIGINT)
+				write(1, "\n", 1);
+			else if (WTERMSIG(status) == SIGQUIT)
+				write(1, "Quit: 3\n", 8);
+		}
+[ ] it is in the code but uncomment and use it in the final exec_external_command() or exec_builtins().
+
+🔚 Final Checklist for Signal-Ready Builtins
+-------------------------------------------
+Task												Done?
+setup_signals_interactive() in main shell			[ ]
+setup_signals_child() in forked child				[ ] 🟡 Add call in child process
+builtin_exit() checks is_forked before exiting		[ ] 
+Parent checks WIFSIGNALED(status) after waitpid()	[ ] 🟡 To be used
+SIGQUIT is ignored in main shell					[ ]	✅
+Ctrl+C clears prompt input (via rl_* functions)		[ ] ✅
+
+
+---------------------------------------------------------------------------------------
+************************************************************
+* 🤔🚨 Should Ctrl+C terminate the "inner" minishell? 🤔🚨 *
+************************************************************
+
+Whether Ctrl+C (SIGINT) should terminate the "inner" minishell depends on when and what it’s doing:
+
+🧠 Behavior in Bash / POSIX Shells
+Context in Shell	Ctrl+C Behavior	Should inner shell terminate?
+Waiting for user input	Interrupts input, redraws prompt	❌ No
+Running a child process	Sends SIGINT to child process	❌ Shell survives
+Running a blocking command	Interrupts the command	❌ Shell survives
+Typing ./minishell manually	Starts a subshell	❌ Ctrl+C interrupts input, not exit
+
+✅ So the correct behavior:
+When the inner minishell is simply waiting for user input, Ctrl+C should not terminate it.
+
+It should:
+- Print a newline
+- Refresh the prompt
+- NOT quit
+
+🔍 What you observed earlier:
+
+minishell$ ./minishell
+minishell$ [SIGINT received]
+[SIGINT received]
+minishell$
+Both shells received Ctrl+C
+
+Both redrew the prompt ✅
+
+Neither exited ✅
+
+✅ So you’re behaving exactly like Bash does here.
+
+🧪 Compare in Bash:
+
+bash$ ./bash
+bash$ ^C
+bash$  # <-- still inside inner shell
+✅ Exact match to what you have.
+
+🚫 When should Ctrl+C terminate the shell?
+Only if you're running a command that doesn’t handle signals and the user wants to abort the whole process (e.g. in a script or during heredoc parsing, etc.).
+
+✅ Summary
+Test	Expected Behavior
+./minishell → Ctrl+C	Prompt redraws
+Typing input → Ctrl+C	Input cancelled
+Running command → Ctrl+C	Command killed
+Inside readline() → Ctrl+C	Shell stays open
+✅ You’re doing it right — no changes needed.
+
+Let me know if you’d like to test the behavior of Ctrl+\ (SIGQUIT) or signal behavior during pipelines!
+
+TERMINAL OUTPUT:
+c3r9s3% ./minishell
+minishell$ ./minishell
+got input: [./minishell]
+minishell$ 
+minishell$ 
+minishell$ 
+minishell$ 
+minishell$ ^C
+minishell$ 
+exit
+minishell$ 
+exit
+c3r9s3% bash
+mcalciat@c3r9s3:~/Cursus/git_minishell$ 
+mcalciat@c3r9s3:~/Cursus/git_minishell$ bash
+mcalciat@c3r9s3:~/Cursus/git_minishell$ 
+mcalciat@c3r9s3:~/Cursus/git_minishell$ ^C
+mcalciat@c3r9s3:~/Cursus/git_minishell$ 
+exit
+mcalciat@c3r9s3:~/Cursus/git_minishell$ 
+exit
+
+
+📕📗📘📙→📢🤔🚨🔍🧱⚠💡🎮 🎉 🔰🏁🚩🛟🔑🚪🔌🧮🚦⚡💣
+🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💬💀🔊📡  🖨️💻🎓
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔✋📦 🗑📥🚀🔥🎯 
+❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔✅❎‼️🔚🔁🔗⚙️ 👾👻💆

@@ -6,18 +6,19 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 11:36:41 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/02 16:33:48 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:08:39 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
+#include "../../includes/environment.h"
 
 /** Error printing auxiliary function:
  *  		- Error message printed to stderr (fd 2).
  *  		- Frees old_pwd to avoid leaks.
  * 			- Returns 1 to signal failure.
  */
-static int	print_cd_error(char *path, char *old_pwd)
+static int	print_cd_error(char *path, char *old_pwd, t_env *env)
 {
 	if (!path)
 		ft_putendl_fd("cd: HOME not set", 2);
@@ -28,6 +29,7 @@ static int	print_cd_error(char *path, char *old_pwd)
 		ft_putendl_fd(": No such file or directory", 2);
 	}
 	free(old_pwd);
+	env->exit_status = EXIT_FAILURE;
 	return (1);
 }
 
@@ -45,7 +47,7 @@ int	builtin_cd(char **av, t_env *env)
 	else
 		path = av[1];
 	if (!path || chdir(path) != 0)
-		return (print_cd_error(path, old_pwd));
+		return (print_cd_error(path, old_pwd, env));
 	new_pwd = getcwd(NULL, 0);
 	if (!new_pwd)
 		return (free(old_pwd), perror("getcwd"), 1);
@@ -53,7 +55,7 @@ int	builtin_cd(char **av, t_env *env)
 	set_env_value(env, "PWD", new_pwd);
 	free(old_pwd);
 	free(new_pwd);
-	env->exit_status = 0;
+	env->exit_status = EXIT_SUCCESS;
 	return (0);
 }
 /**

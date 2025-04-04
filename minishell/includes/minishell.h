@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 14:46:30 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/02 17:26:37 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 10:00:03 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@
 # include "signal_handler.h"	//signal_handler
 # include "environment.h"		//environment structure
 # include "parser.h"
+# include "exit_status.h"
 
 //void	quit_program(int code);
 

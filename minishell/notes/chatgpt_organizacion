@@ -6,7 +6,7 @@ https://github.com/gleal42/42_Minishell/tree/master
 🔰 Team Git Workflow Guide 🔰
 ============================
 
-📌 Scenario: You're working on a feature or update in a personal branch (e.g., develop_Name) and need to push it to main.
+📌 Scenario: You`re working on a feature or update in a personal branch (e.g., develop_Name) and need to push it to main.
 
 🔁 Step-by-Step Git Workflow
 ---------------------------
@@ -28,7 +28,7 @@ Check status:
 	> git commit -m "Describe your update briefly"
 
 🔹 4. Push your branch to GitHub
-🚨 If it's your first push of this branch:
+🚨 If it`s your first push of this branch:
 	> git push -u origin develop_YourName
 
 📥 For later pushes:
@@ -50,7 +50,7 @@ Check status:
 🔹 7. (Optional) Clean up your branch
 If the feature is complete and no longer needed:
 git branch -d develop_YourName                		# Delete local branch
-git push origin --delete develop_YourName     	# Delete remote branch (if agreed by team)
+git push origin --delete develop_YourName     		# Delete remote branch (if agreed by team)
 💡 Tips for Team Collaboration
 ==============================
 ⭐ Always pull the latest main before starting a new feature.
@@ -87,6 +87,7 @@ Automatic merge failed; fix conflicts and then commit the result."
 
 
 ☕️ Morning Git Ritual: Pull the Latest
+===================================
 Before you do anything else, it’s a great habit to:
 
 git checkout main
@@ -107,11 +108,16 @@ git rebase main
 
 (Rebase is great to keep history clean. I can help with that if you’d like!)
 
+/////////////////////
+After update from own branch has been merge into main, and after pull request approved: 
+
+from own branch: 
+> git fetch origin
+> git rebase origin/main
+> git push
 
 =============================
-Team collaboration is key in **Minishell**, especially since the project is complex and involves deep system-level features. Given your situation — one person experienced with **signals**, and the other with **pipes and `fork()`** — here’s a smart and strategic way to **divide and conquer** the development process.
 
----
 
 ## 🧩 Suggested Division of Work
 
@@ -232,9 +238,6 @@ minishell/
 ✅ Example Structs
 You'll need a few central data structures:
 
-c
-Copiar
-Editar
 // in minishell.h
 typedef struct s_token
 {
@@ -268,35 +271,7 @@ Reads input from the user
 
 Exits gracefully on EOF (Ctrl+D)
 
-✅ Example: main.c
-c
-Copiar
-Editar
-#include "minishell.h"
-#include <readline/readline.h>
-#include <readline/history.h>
 
-int	main(int ac, char **av, char **envp)
-{
-	char	*input;
-
-	(void)ac;
-	(void)av;
-	while (1)
-	{
-		input = readline("minishell$ ");
-		if (!input)
-		{
-			printf("exit\n");
-			break;
-		}
-		if (*input)
-			add_history(input);
-		printf("You typed: %s\n", input); // Replace this later with parsing
-		free(input);
-	}
-	return (0);
-}
 🧠 Note: readline() already handles Ctrl+C line-killing for you. Later you’ll override its behavior with custom signal handlers.
 
 🔹 Includes
@@ -312,9 +287,7 @@ readline(): Reads a line of user input with a prompt.
 add_history(): Saves commands to the shell history (so up/down arrows work).
 
 🔹 Function Signature
-c
-Copiar
-Editar
+
 int	main(int ac, char **av, char **envp)
 Standard main() for a C program.
 
@@ -323,9 +296,7 @@ ac (argument count) and av (argument values) are unused here for now.
 envp: Array of environment variables (you’ll likely store this in a global struct later).
 
 🔹 Ignore Unused Arguments
-c
-Copiar
-Editar
+
 (void)ac;
 (void)av;
 This is a trick to silence compiler warnings about unused variables.
@@ -334,17 +305,14 @@ Since ac and av aren't used yet, casting them to (void) tells the compiler "yes,
 
 🔹 Infinite Shell Loop
 c
-Copiar
-Editar
+
 while (1)
 Runs forever, unless something breaks the loop.
 
 This is the shell's main REPL loop: Read-Eval-Print Loop.
 
 🔹 Readline Prompt
-c
-Copiar
-Editar
+
 input = readline("minishell$ ");
 Displays a prompt like minishell$ and waits for user input.
 
@@ -353,9 +321,7 @@ Returns a pointer to a dynamically allocated string (you must free() it).
 If the user hits Ctrl+D, readline() returns NULL.
 
 🔹 Handle EOF (Ctrl+D)
-c
-Copiar
-Editar
+
 if (!input)
 {
 	printf("exit\n");
@@ -366,9 +332,7 @@ If the user presses Ctrl+D, input == NULL.
 This simulates how bash exits with exit when you hit Ctrl+D.
 
 🔹 Add Command to History
-c
-Copiar
-Editar
+
 if (*input)
 	add_history(input);
 Only add to history if the input is not an empty string.
@@ -376,27 +340,21 @@ Only add to history if the input is not an empty string.
 Lets user press ↑ to repeat previous commands (just like bash).
 
 🔹 Debug Output for Now
-c
-Copiar
-Editar
+
 printf("You typed: %s\n", input); // Replace this later with parsing
 Temporary placeholder to prove input was received.
 
 Later, you'll replace this with tokenizing, parsing, and executing the command.
 
 🔹 Free Input String
-c
-Copiar
-Editar
+
 free(input);
 Always free the result of readline() after you're done using it.
 
 Prevents memory leaks — very important for Minishell.
 
 🔹 Return Exit Code
-c
-Copiar
-Editar
+
 return (0);
 Exits the shell with status 0.
 
@@ -417,16 +375,10 @@ The subject strictly limits you to only one global variable, and it can only sto
 
 So you cannot do:
 
-c
-Copiar
-Editar
 t_shell *g_shell; // ❌ NOT ALLOWED by the subject
 ✅ How to Do It Right
 Use a static variable with accessors, like this:
 
-c
-Copiar
-Editar
 // in a file called state.c
 int	*get_exit_status(void)
 {
@@ -435,9 +387,6 @@ int	*get_exit_status(void)
 }
 Then in any part of your code:
 
-c
-Copiar
-Editar
 *get_exit_status() = 127; // Update exit status
 printf("Exit: %d\n", *get_exit_status());
 🧠 This lets you "fake" global variables:

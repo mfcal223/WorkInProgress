@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:42:05 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/03/26 14:06:13 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/03 10:14:47 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,6 @@
 
 void	catch_sigint(int signum);
 void	setup_signals_interactive(void);
-//void	setup_signals_child(void);
+void	setup_signals_child(void);
 
 #endif
