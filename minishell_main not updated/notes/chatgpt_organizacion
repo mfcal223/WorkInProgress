@@ -1,0 +1,397 @@
+https://www.gnu.org/software/bash/manual/bash.html
+https://www.cs.purdue.edu/homes/grr/SystemsProgrammingBook/Book/Chapter5-WritingYourOwnShell.pdf
+https://github.com/gleal42/42_Minishell/tree/master
+===========================================================
+
+🔰 Team Git Workflow Guide 🔰
+============================
+
+📌 Scenario: You`re working on a feature or update in a personal branch (e.g., develop_Name) and need to push it to main.
+
+🔁 Step-by-Step Git Workflow
+---------------------------
+
+🔹 1. Create or switch to your personal branch
+
+	> git checkout -b develop_YourName   # If creating a new branch
+	
+> git checkout develop_YourName      # Switch to a branch that already exists
+
+
+🔹 2. Make your changes locally
+//Edit your files as needed.
+Check status:
+	> git status
+
+🔹 3. Stage and commit your changes
+	> git add .                           # Or specify files
+	> git commit -m "Describe your update briefly"
+
+🔹 4. Push your branch to GitHub
+🚨 If it`s your first push of this branch:
+	> git push -u origin develop_YourName
+
+📥 For later pushes:
+> git push
+
+🔹 5. Merge your changes into main when ready
+	a. Switch to main
+		> git checkout main
+	b. Pull the latest version of main
+		> git pull origin main
+	c. Merge your branch into main
+		> git merge develop_YourName
+
+🔹 6. Push the updated main branch to GitHub
+	> git push origin main
+
+✅ Now your changes are live on main and visible to everyone.
+
+🔹 7. (Optional) Clean up your branch
+If the feature is complete and no longer needed:
+git branch -d develop_YourName                		# Delete local branch
+git push origin --delete develop_YourName     		# Delete remote branch (if agreed by team)
+💡 Tips for Team Collaboration
+==============================
+⭐ Always pull the latest main before starting a new feature.
+⭐ Use clear and descriptive commit messages.
+⭐ Coordinate with the team before merging large updates.
+⭐ If conflicts happen during merge, check the following section.
+
+⚔️ How to Solve Merge Conflicts ⚔️
+===================================
+If you see something like this during merge:
+
+"CONFLICT (content): Merge conflict in somefile.c
+Automatic merge failed; fix conflicts and then commit the result."
+
+🧹 Step-by-step:
+
+1. Open the file and look for conflict markers:
+     <<<<<<< HEAD
+   code from main
+   =======
+   code from develop_YourName
+   >>>>>>> develop_YourName
+
+2. Manually edit and keep the correct version.
+
+3. After editing:
+> git add somefile.c
+
+4. Then commit the merge:
+> git commit
+
+5. Finally, push the resolved version:
+> git push origin main
+
+
+☕️ Morning Git Ritual: Pull the Latest
+===================================
+Before you do anything else, it’s a great habit to:
+
+git checkout main
+git pull origin main
+
+Why?
+To make sure you’re working on top of the latest team code.
+Avoid future merge conflicts by starting with an up-to-date base.
+
+✅ Then: Start Your New Task
+After pulling main, you can either:
+🔹 Create a new branch:
+git checkout -b develop_Flor_taskX
+
+🔹 Or update your existing branch with the latest main:
+git checkout develop_Flor
+git rebase main
+
+(Rebase is great to keep history clean. I can help with that if you’d like!)
+
+/////////////////////
+After update from own branch has been merge into main, and after pull request approved: 
+
+from own branch: 
+> git fetch origin
+> git rebase origin/main
+> git push
+
+=============================
+
+
+## 🧩 Suggested Division of Work
+
+### **Phase 1: Core Infrastructure & Agreement**
+> ⏱️ Duration: 1–2 days  
+> 👥 Work together  
+**Both teammates** should:
+- Agree on a **project structure** (`/src`, `/inc`, `/libft`, etc.).
+- Set up a basic **Makefile**, **libft integration**, and shared **structs** in headers.
+- Create a **main loop** with a minimal working prompt (`readline`, `printf`, etc.).
+- Decide how to manage global state (e.g., `g_exit_status`, error messages, etc.).
+
+---
+
+## 🔧 Phase 2: Role-Based Development
+
+### 👤 **Teammate A – Signal Expert**
+Focus: **User Input Handling, Signals, Builtins**
+
+#### Tasks:
+- Implement signal handling:
+  - `SIGINT` (Ctrl+C), `SIGQUIT` (Ctrl+\), and `EOF` (Ctrl+D).
+  - Setup proper behavior in **interactive mode**.
+- Manage and process input:
+  - Handle unclosed quotes, prompt re-display.
+  - Setup `readline()` and `add_history()`.
+- Implement **builtins** (excluding those that require forking, like `env`, `exit`):
+  - `cd`, `export`, `unset`, `pwd`, `echo`.
+
+---
+
+### 👤 **Teammate B – Pipes & Fork Expert**
+Focus: **Execution Engine, Redirections, Pipes**
+
+#### Tasks:
+- Implement command execution engine:
+  - Handle **fork**, **execve**, **waitpid**, return codes.
+  - Search for binaries via `PATH`.
+- Build the **pipe system**:
+  - Support pipelines (`cmd1 | cmd2 | cmd3`).
+  - Proper `dup2` and `close` handling.
+- Handle **redirections**:
+  - Input/output (`<`, `>`, `>>`) and **here_doc** (`<<`).
+- Implement builtins that run inside forks:
+  - `env`, `exit`.
+
+---
+
+## 🔄 Phase 3: Merge & Integrate
+
+> ⏱️ Duration: 2–3 days  
+> 👥 Work together again
+
+- Merge parser with execution logic.
+- Ensure builtins run correctly inside and outside of child processes.
+- Handle edge cases:
+  - Expansion of `$?`, invalid redirections, quotes inside heredocs.
+- Write signal-safe code and avoid leaks.
+
+---
+
+## 🧪 Phase 4: Testing & Debugging
+
+- Write test scripts for:
+  - Syntax errors
+  - Piped commands
+  - Redirections (especially nested)
+  - Ctrl+C/D signals
+- Run valgrind for **leak checks**.
+- Create a defense folder with test inputs.
+
+---
+
+## 🧠 Pro Tips
+
+- Agree on **naming conventions and code style** (stick to 42 Norm).
+- Comment or document shared structs and flags.
+- Use a **shared Trello/Notion board** or TODO.txt to track progress.
+- Use `git` branches or flags (`DEV_PIPE`, `DEV_SIG`) to avoid conflicts.
+
+---
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+✅ 1) Project Structure & What Structs You Might Need
+A solid folder structure makes your teamwork and code much more manageable. Here's a common and clean structure:
+
+pgsql
+Copiar
+Editar
+minishell/
+├── Makefile
+├── src/
+│   ├── main.c
+│   ├── prompt/
+│   │   ├── prompt.c
+│   ├── parser/
+│   │   ├── tokenizer.c
+│   │   ├── parser.c
+│   ├── executor/
+│   │   ├── execute.c
+│   │   ├── pipe.c
+│   │   ├── redirections.c
+│   ├── builtins/
+│   │   ├── builtin_cd.c
+│   │   ├── builtin_env.c
+│   │   ├── builtin_exit.c
+│   ├── signals/
+│   │   ├── signals.c
+│   └── utils/
+│       ├── env_utils.c
+│       ├── str_utils.c
+│       ├── errors.c
+├── inc/
+│   └── minishell.h
+├── libft/
+│   └── (your libft files)
+✅ Example Structs
+You'll need a few central data structures:
+
+// in minishell.h
+typedef struct s_token
+{
+	char			*value;
+	int				type;
+	struct s_token	*next;
+}	t_token;
+
+typedef struct s_cmd
+{
+	char	**args;
+	int		infile;
+	int		outfile;
+	int		is_builtin;
+	struct s_cmd *next;
+}	t_cmd;
+
+typedef struct s_shell
+{
+	char	**envp;
+	t_cmd	*cmd_list;
+}	t_shell;
+These structures help organize commands, tokens, and overall shell state.
+
+✅ 2) Minimal Working Prompt with readline
+You’ll want a basic interactive loop that:
+
+Displays a prompt
+
+Reads input from the user
+
+Exits gracefully on EOF (Ctrl+D)
+
+
+🧠 Note: readline() already handles Ctrl+C line-killing for you. Later you’ll override its behavior with custom signal handlers.
+
+🔹 Includes
+#include "minishell.h"
+#include <readline/readline.h>
+#include <readline/history.h>
+minishell.h: Your custom header file (you'll define structs, functions, macros, etc. here).
+
+readline.h and history.h: Part of the GNU Readline library, which gives you:
+
+readline(): Reads a line of user input with a prompt.
+
+add_history(): Saves commands to the shell history (so up/down arrows work).
+
+🔹 Function Signature
+
+int	main(int ac, char **av, char **envp)
+Standard main() for a C program.
+
+ac (argument count) and av (argument values) are unused here for now.
+
+envp: Array of environment variables (you’ll likely store this in a global struct later).
+
+🔹 Ignore Unused Arguments
+
+(void)ac;
+(void)av;
+This is a trick to silence compiler warnings about unused variables.
+
+Since ac and av aren't used yet, casting them to (void) tells the compiler "yes, I meant to ignore them."
+
+🔹 Infinite Shell Loop
+c
+
+while (1)
+Runs forever, unless something breaks the loop.
+
+This is the shell's main REPL loop: Read-Eval-Print Loop.
+
+🔹 Readline Prompt
+
+input = readline("minishell$ ");
+Displays a prompt like minishell$ and waits for user input.
+
+Returns a pointer to a dynamically allocated string (you must free() it).
+
+If the user hits Ctrl+D, readline() returns NULL.
+
+🔹 Handle EOF (Ctrl+D)
+
+if (!input)
+{
+	printf("exit\n");
+	break;
+}
+If the user presses Ctrl+D, input == NULL.
+
+This simulates how bash exits with exit when you hit Ctrl+D.
+
+🔹 Add Command to History
+
+if (*input)
+	add_history(input);
+Only add to history if the input is not an empty string.
+
+Lets user press ↑ to repeat previous commands (just like bash).
+
+🔹 Debug Output for Now
+
+printf("You typed: %s\n", input); // Replace this later with parsing
+Temporary placeholder to prove input was received.
+
+Later, you'll replace this with tokenizing, parsing, and executing the command.
+
+🔹 Free Input String
+
+free(input);
+Always free the result of readline() after you're done using it.
+
+Prevents memory leaks — very important for Minishell.
+
+🔹 Return Exit Code
+
+return (0);
+Exits the shell with status 0.
+
+Later, you'll return *get_exit_status() or similar to reflect the last command result.
+
+
+✅ 3) Managing Global State (e.g., Exit Codes, Errors)
+Minishell is long-running, so you need a consistent way to store and access:
+
+The last exit status ($?)
+
+Signal status (e.g., if SIGINT was received)
+
+Maybe the current shell environment
+
+✅ Why Only One Global?
+The subject strictly limits you to only one global variable, and it can only store a signal number (not a pointer or struct).
+
+So you cannot do:
+
+t_shell *g_shell; // ❌ NOT ALLOWED by the subject
+✅ How to Do It Right
+Use a static variable with accessors, like this:
+
+// in a file called state.c
+int	*get_exit_status(void)
+{
+	static int	status = 0;
+	return (&status);
+}
+Then in any part of your code:
+
+*get_exit_status() = 127; // Update exit status
+printf("Exit: %d\n", *get_exit_status());
+🧠 This lets you "fake" global variables:
+It obeys Norminette
+
+You get "shared state" across your project
+
+You can do the same for signal flags or other single values you might want to access across files.

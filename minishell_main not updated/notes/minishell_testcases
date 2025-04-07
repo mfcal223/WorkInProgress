@@ -89,7 +89,7 @@ Expected Output: No output on terminal, but output.txt should contain the lines 
 7. Command with Invalid Arguments
 Test Case 10: Invalid command (e.g., nonexistentcommand)
 Input: nonexistentcommand
-Expected Output: bash: nonexistentcommand: command not found (or similar error depending on your shell`s behavior)
+Expected Output: bash: nonexistentcommand: command not found (or similar error depending on your shell's behavior)
 
 8. Piping and Redirection Together
 Test Case 11: Pipe and redirect output in a single line (e.g., echo "test" | grep "test" > result.txt)
@@ -109,7 +109,7 @@ Expected Output: (No output, just a new prompt)
 11. Command with Environment Variable
 Test Case 14: Use environment variable (e.g., echo $HOME)
 Input: echo $HOME
-Expected Output: The path to the user`s home directory
+Expected Output: The path to the user's home directory
 
 12. Command with Special Characters
 Test Case 15: Using special characters like & or ; (e.g., echo "hello"; echo "world")
@@ -159,7 +159,7 @@ Input: echo "apple orange" | tr " " "\n" | sort > fruits.txt
 Expected Output: No terminal output, but fruits.txt should contain apple and orange sorted.
 
 
-Edge Cases: It`s important to test edge cases such as empty strings, invalid syntax, and missing arguments.
+Edge Cases: It's important to test edge cases such as empty strings, invalid syntax, and missing arguments.
 
 Error Handling: minishell must handle errors gracefully (e.g., invalid commands, invalid arguments for redirection).
 

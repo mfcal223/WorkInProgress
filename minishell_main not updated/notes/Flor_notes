@@ -968,6 +968,7 @@ What it does:
 - Tracks quote context ('' vs "")
 
 🔺 Handles 
+
 🔸Special Characters:
 						$VAR
 						$? (exit status)
@@ -984,7 +985,7 @@ What it does:
 # if (str[1] == '?')
 #    return (ft_itoa(last_exit_status));
 # ✅ That means $? is working correctly inside "...". */
-🔺 Returns the Expanded String with all variables replaced and quotes handled.
+🔺 Return the Expanded String with all variables replaced and quotes handled.
 
 🧱 3. Parser (parser.c)
 ========================
@@ -1001,53 +1002,51 @@ Goals of the Parser
 
 What it does:
 --------------
-🔺 Receives expanded tokens
-🔺 Groups tokens into t_cmd structs to store:
-🔸 Command & Arguments (args array)
-🔸 Input/Output Redirections (input_fd, output_fd)
-			< = input redirection 
-			> = output redirection (truncate)
-			>> = output redirection (append)
-🔸 Pipes (is_pipe)
+Receives expanded tokens
 
-🔺 Links commands into a pipeline (linked list)
+Groups tokens into t_cmd structs
 
-/*
- * parse_tokens() = Parse tokens int a linked list of commands.
- * Iterates through tokenized input (lexer.c)
- * Calls parse_cmd() to create a command structure. 
- * Detects pipes and returns a linked list of commands.
- */
+args (actual command & args)
 
- /*
- * Parse_cmd() = parse a single command from tokens.
- * Iterates through tokens until it encounters a pipe. 
- * Handles input and output redirections. 
- * Stores arguments dynamically in the cmd structure. 
- */
-/*
-* new_cmd() = Create command structure
-* handle_new_cmd() = link the new command to the command list. 
-* append_to_array() = append a string to an array.
-*/
+Redirection fields (input_fd, output_fd)
+
+pipe field
+
+Links commands into a pipeline (linked list)
+
+What it doesn`t do:
+Doesn`t re-tokenize strings like "echo $?"
+
+Doesn`t care about quote context anymore — that`s the expander`s job
+
+✅ Its job is structural, not semantic.
 
 🧱 4. Execution (execute_commands() → execute_command() → etc.)
-================================================================
 This layer:
------------
 
-🔺 Receives parsed + expanded commands
-🔺 Decides if a command is:
-	🔸Builtin (cd, exit, etc.)
-	🔸 External (e.g. ls, echo)
-🔺 Calls the correct executor path
-🔺 Handles exit statuses using handle_exit_status()
+Receives parsed + expanded commands
+
+Decides if a command is:
+
+Builtin (cd, exit, etc.)
+
+External (e.g. ls, echo)
+
+Calls the correct executor path
+
+Handles exit statuses using handle_exit_status()
 
 ✅ Output and return codes are handled here.
 
 -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
 
-
+✅ Summary of Strengths
+Layer	Purpose	Status
+Lexer	Tokenizes input (words + symbols)	✅ Good
+Expander	Handles $VAR, $?, "...", '...'	✅ Good
+Parser	Converts tokens → t_cmd	✅ Good
+Executor	Runs commands, tracks exit_status	✅ Good
+Exit status propagation	Used in expander	🟡 Needs fix (pass real value)
 
 
 1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟❔❓⛔✅❎‼️🚫❗❌⭕

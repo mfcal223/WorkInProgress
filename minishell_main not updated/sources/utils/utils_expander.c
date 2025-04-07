@@ -63,7 +63,7 @@ char	*get_variable_name(const char *input, t_expand *exp)
  * * Returns an empty str if variable is not found. 
  */
 
-char	*get_variable_value(char *str, t_env *env)
+char	*get_variable_value(char *str, int last_exit_status)
 {
 	char	*result;
 	char	*env_value;
@@ -71,8 +71,8 @@ char	*get_variable_value(char *str, t_env *env)
 	if (str[0] != '$')
 		return (NULL);
 	if (str[1] == '?')
-		return (ft_itoa(env->exit_status));
-	env_value = get_env_value(env, str + 1);
+		return (ft_itoa(last_exit_status));
+	env_value = getenv(str + 1);
 	if (env_value)
 		result = ft_strdup(env_value);
 	else

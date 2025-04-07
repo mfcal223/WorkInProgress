@@ -21,12 +21,13 @@
  * * Sets result index to 0
  */
 
-char	*init_expansion(t_expand *exp, char *input)
+char	*init_expansion(t_expand *exp, char *input, int last_exit_status)
 {
 	exp->result = malloc (ft_strlen(input) + 1);
 	if (!exp->result)
 		return (NULL);
 	exp->result_id = 0;
+	exp->last_exit = last_exit_status;
 	exp->single_quotes = 0;
 	exp->double_quotes = 0;
 	return (exp->result);
@@ -38,7 +39,6 @@ char	*init_expansion(t_expand *exp, char *input)
  * * Single quotes disable variable expansion. 
  * * Double quotes allow expansion but preserve spaces. 
  */
-
 int	handle_quotes(char current, t_expand *exp)
 {
 	if (current == '\'' && !exp->double_quotes)
@@ -49,14 +49,13 @@ int	handle_quotes(char current, t_expand *exp)
 }
 
 /*
- * repalce_variable() = replace variable with its value. 
+ * replace_variable() = replace variable with its value. 
  * Skips expansion inside single quotes. 
  * Extracts variable name. 
  * Retrieves the variable value from environment or exit status. 
  * Inserts expanded value into result string. 
  */
-
-char	*replace_variable(char *input, t_expand *exp, int *i, t_env *env)
+char	*replace_variable(char *input, t_expand *exp, int *i)
 {
 	char	*var;
 	char	*expander;
@@ -69,7 +68,7 @@ char	*replace_variable(char *input, t_expand *exp, int *i, t_env *env)
 		return (exp->result);
 	}
 	var = get_variable_name(input + *i, exp);
-	expander = get_variable_value(var, env);
+	expander = get_variable_value(var, exp->last_exit);
 	var_len = get_variable_length(input + *i, exp);
 	free(var);
 	if (expander)
@@ -93,13 +92,12 @@ char	*replace_variable(char *input, t_expand *exp, int *i, t_env *env)
  * * * '$' symbol to expand environment variables. 
  * * * Copies normal characters to result. 
  */
-
-char	*expand_variable(char *input, int input_len, t_env *env)
+char	*expand_variable(char	*input, int last_exit_status, int input_len)
 {
 	int			i;
 	t_expand	exp;
 
-	if (!init_expansion(&exp, input))
+	if (!init_expansion(&exp, input, last_exit_status))
 		return (NULL);
 	i = 0;
 	while (i < input_len)
@@ -108,18 +106,14 @@ char	*expand_variable(char *input, int input_len, t_env *env)
 		if (input[i] == '$' && input[i + 1] && (ft_isalnum(input[i + 1])
 				|| input[i + 1] == '_' || input[i + 1] == '?'))
 		{
-			if (!replace_variable(input, &exp, &i, env))
+			if (!replace_variable(input, &exp, &i))
 			{
 				free(exp.result);
 				return (NULL);
 			}
 		}
 		else
-		{
-			if (!(input[i] == '"' && !exp.single_quotes))
-				exp.result[(exp.result_id)++] = input[i];
-			i++;
-		}
+			exp.result[(exp.result_id)++] = input[i++];
 	}
 	exp.result[exp.result_id] = '\0';
 	return (exp.result);

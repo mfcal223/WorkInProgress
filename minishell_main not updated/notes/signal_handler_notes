@@ -268,15 +268,15 @@ Ctrl+C clears prompt input (via rl_* functions)		[ ] ✅
 Whether Ctrl+C (SIGINT) should terminate the "inner" minishell depends on when and what it’s doing:
 
 🧠 Behavior in Bash / POSIX Shells
-Context in Shell				Ctrl+C Behavior						Should inner shell terminate?
----------------------------------------------------------------------------------------------------
-Waiting for user input			Interrupts input, redraws prompt	❌ No
-Running a child process			Sends SIGINT to child process		❌ Shell survives
-Running a blocking command		Interrupts the command				❌ Shell survives
-Typing ./minishell manually		Starts a subshell					❌ Ctrl+C interrupts input, not exit
+Context in Shell	Ctrl+C Behavior	Should inner shell terminate?
+Waiting for user input	Interrupts input, redraws prompt	❌ No
+Running a child process	Sends SIGINT to child process	❌ Shell survives
+Running a blocking command	Interrupts the command	❌ Shell survives
+Typing ./minishell manually	Starts a subshell	❌ Ctrl+C interrupts input, not exit
 
 ✅ So the correct behavior:
 When the inner minishell is simply waiting for user input, Ctrl+C should not terminate it.
+
 It should:
 - Print a newline
 - Refresh the prompt
@@ -291,6 +291,7 @@ minishell$
 Both shells received Ctrl+C
 
 Both redrew the prompt ✅
+
 Neither exited ✅
 
 ✅ So you’re behaving exactly like Bash does here.
@@ -306,13 +307,14 @@ bash$  # <-- still inside inner shell
 Only if you're running a command that doesn’t handle signals and the user wants to abort the whole process (e.g. in a script or during heredoc parsing, etc.).
 
 ✅ Summary
-Test	                      	Expected Behavior
------------------------------------------------------
-./minishell → Ctrl+C				Prompt redraws
-Typing input → Ctrl+C				Input cancelled
-Running command → Ctrl+C			Command killed
-Inside readline() → Ctrl+C			Shell stays open
+Test	Expected Behavior
+./minishell → Ctrl+C	Prompt redraws
+Typing input → Ctrl+C	Input cancelled
+Running command → Ctrl+C	Command killed
+Inside readline() → Ctrl+C	Shell stays open
+✅ You’re doing it right — no changes needed.
 
+Let me know if you’d like to test the behavior of Ctrl+\ (SIGQUIT) or signal behavior during pipelines!
 
 TERMINAL OUTPUT:
 c3r9s3% ./minishell
@@ -338,61 +340,8 @@ mcalciat@c3r9s3:~/Cursus/git_minishell$
 exit
 
 
-USING A GLOBAL VARIABLE TO FLAG THAT A SIGNAL IS BEING USED IN A PARENT OR A CHILD PROCESS
-
-🔄 Why this happens:
-When you press Ctrl-C, the SIGINT signal is sent to all processes in the foreground process group — including both the parent shell and any child processes (like echo, wc, etc.).
-
-If both your parent shell and a child process receive SIGINT, and both trigger rl_on_new_line() / rl_redisplay(), you might get weird behaviors like:
-- double prompts
-- garbled inputs
-- inconsistent redraws
-
-✅ Solution:
-Use a global int flag (the only type allowed by the Minishell subject!) to differentiate the parent shell process from the child process inside your signal handler.
-
-✅ Example:
-
-// global variable (allowed by subject)
-volatile sig_atomic_t g_is_parent = 1;
-Then in your shell setup (e.g., in main() or right before readline() loop):
-
-g_is_parent = 1; // set this only in parent shell
-In the fork()ed child:
-
-
-g_is_parent = 0; // child won't trigger rl_on_new_line()
-Then modify your sigint_handler:
-
-
-void	sigint_handler(int sig)
-{
-	if (sig == SIGINT && g_is_parent)
-	{
-		write(1, "\n", 1);
-		rl_on_new_line();
-		rl_replace_line("", 0);
-		rl_redisplay();
-	}
-}
-This way, only the parent shell handles redrawing the prompt — child processes will exit or do their own thing without interfering with prompt display.
-
-🧠 Why volatile sig_atomic_t?
-volatile: tells the compiler this variable might change unexpectedly (e.g., via signal handler)
-
-sig_atomic_t: a type safe to use in signal handlers (usually int underneath)
-
-✅ Summary:
-Concept										Should you do it?
-Use rl_on_new_line() only in the parent?	✅ Yes
-Use global int flag?						✅ Yes, allowed and useful
-Call rl_on_new_line() in child?				❌ Never
-Use volatile sig_atomic_t for safety?		✅ Recommended
-
-
 1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟❔❓⛔✅❎‼️🚫❗❌⭕
 🔰🔹🔸🔺🔻⇶→⚡📌📚📖📑📕📗📘📙🔶🔷🔴🟠🟢🟣🟡🔵
-💭💬🔊📡⚠💡⭐🏁🚩🛟🔑📢🚨🔎🔍🔌🧮🧪🧵🧩🚀
-🎉🔥🎯🍝🎓🍴😴😵🤔🫩💀👾👻💆✋🫶🙊🧠🐢🏆
-🧱🎮🚪💣⚔️🛠️🔧🖨️💻🗑📥📦🔚🔁🔗⚙️🥊🥇🎧🎤
-🕸🧉🧊🔦⏰☎️🔪✂️📍✏️🪄
+💭💬🔊📡⚠💡⭐🏁🚩🛟🔑📢🚨🔍🔌🧮🧪🧵🧩🚀
+🎉🔥🎯🍝🎓🍴😴😵🤔💀👾👻💆✋🙊🧠🐢
+🧱🎮🚪💣⚔️🛠️🔧🖨️💻🗑📥📦🔚🔁🔗⚙️

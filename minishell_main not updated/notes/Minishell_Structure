@@ -1,0 +1,46 @@
+minishell/
+│── Makefile
+│── includes
+│   │── minishell.h			# [ ](SHARED) Main header (includes, structs)
+│   │── environment.h		    	# [X] (A) t_env struct & unctions in env_utils
+│   │── executor.h			# [X] (B) header for executor related functions
+│   │── parser.h			# [X] (B) header for parser/lexer/executor related functions 
+│   │──signal_handler.h 	    	# [X] (A) header for signal related function like signals 
+│── libft/				# [X](SHARED) Custom or 42’s libft
+│── sources/
+│   │── minishell.c			# [ ](SHARED) Entry point (handles input loop)
+│   │── signals/
+│   │── signal_handler.c		# [X](A) Handles Ctrl+C, Ctrl+\ (SIGINT, SIGQUIT)
+│   │── parser/
+│   │   │── lexer.c			# [X](B) Tokenizes input (splits input into words, handles quotes)
+│   │   │── parser.c			# [X](B) Builds AST/command table from tokens
+│   │   │── expander.c			# [X](B) Expands env variables ($VAR, $?) and removes quotes
+│   │── builtins/
+│   │   │── builtin_cd.c		# [X](A) Implements cd command
+│   │   │── builtin_echo.c		# [X](A) Implements echo command
+│   │   │── builtin_env.c		# [X](A) Implements env command (print environment variables)
+│   │   │── builtin_exit.c		# [X](A) Implements exit command (handle process exit)
+│   │   │── builtin_export.c	# [X](A) Implements export command (set env variables)
+│   │   │── builtin_pwd.c		# [X](A) Implements pwd command (print working directory)
+│   │   │── builtin_unset.c		# [X](A) Implements unset command (remove env variables)
+│   │── executor/
+│   │   │── exec_cmds.c			# [X](B) Runs commands (forks child, executes binary via execve)
+│   │   │── exec_pipes.c		# [X](B) Handles pipes (cmd1 | cmd2 | cmd3 using dup2)
+│   │   │── exec_builtins.c		# [X](B) Runs builtins inside child processes when needed
+│   │   │── exec_redirections.c		# [X](B) Handles <, >, >> (dup2 redirection logic)
+│   │── env_utils/
+│   │   │── env_utils1.c		# [X](A) Handles environment variable storage & retrieval
+│   │   │── env_utils2.c		# [X](A) Handles environment variable creation & updating
+│   │   │── free_env_list.c		# [X](A) frees t_list structure use for env variables
+│   │── utils/
+│   │   │── utils_envpath.c 		# [X](B) Auxiliary functions for exec_cmds.c
+│   │   │── utils_expander.c 		# [X](B) Auxiliary functions for expander.c
+│   │   │── utils_parser.c 	    	# [X](B) Auxiliary functions for parser.c
+│   │   │── error.c			# [ ](SHARED) Handles error messages (invalid syntax, execve errors)
+│   │   │── memory.c			# [ ](SHARED) Frees allocated memory (tokens, command structures)
+│── tests/                		# [ ](SHARED) Test scripts and test cases for validation
+│── notes/				# [ ](SHARED) General notes & development logs
+
+(A) Flor
+(B) Sofi
+

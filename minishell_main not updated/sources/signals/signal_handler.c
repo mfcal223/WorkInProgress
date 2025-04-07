@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   signal_handler.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:19:07 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/07 16:18:11 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:57:06 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void	catch_sigint(int signum)
 	write(1, "\n", 1);
 	//write(2, "[SIGINT received]\n", 18);//DEBUG
 	rl_replace_line("", 0);
-	rl_on_new_line();// agrega condicion para que cuando llama de subproceso solo llame esto 1 vez y no duplique la nueva linea
+	rl_on_new_line();
 	rl_redisplay();
 }
 

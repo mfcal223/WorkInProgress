@@ -6,11 +6,11 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 14:44:00 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/07 17:11:27 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/07 14:48:15 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/minishell.h"
+#include "minishell.h"
 #include "../includes/parser.h"
 
 /*
@@ -45,30 +45,12 @@ void	expand_tokens(char **tokens, int last_exit_status)
 
 void	execute_commands(t_cmd *cmd_list, t_env *env)
 {
-	int		redirection;
-	int		status;
-	pid_t	pid;
-
 	while (cmd_list)
 	{
-		if (cmd_list->redir)
-		{
-			redirection = handle_redirections(cmd_list);
-			if (redirection == -1)
-			{
-				perror("redirection failed");
-				return ;
-			}
-		}
 		if (cmd_list->pipe)
-			pid = execute_pipeline(cmd_list, env);
+			execute_pipeline(cmd_list, env);
 		else
-			pid = execute_command(cmd_list->args[0], cmd_list->args, env);
-		if (pid > 0)
-		{
-			waitpid(pid, &status, 0);
-			handle_exit_status(status, env);
-		}
+			execute_command(cmd_list->args[0], cmd_list->args, env);
 		cmd_list = cmd_list->next;
 	}
 }
@@ -82,7 +64,7 @@ void	execute_commands(t_cmd *cmd_list, t_env *env)
  * Cleans up allocated memory.
  */
 
-void	process_input(char *input, t_env *env)
+void	process_input(char *input, int last_exit_status, t_env env)
 {
 	char	**tokens;
 	t_cmd	*cmd_list;
@@ -93,7 +75,7 @@ void	process_input(char *input, t_env *env)
 		perror("lexer failed");
 		return ;
 	}
-	expand_tokens(tokens, env->exit_status);
+	expand_tokens(tokens, last_exit_status);
 	cmd_list = parse_tokens(tokens);
 	if (!cmd_list)
 	{
@@ -101,7 +83,7 @@ void	process_input(char *input, t_env *env)
 		free_tokens(tokens);
 		return ;
 	}
-	execute_commands(cmd_list, env);
+	execute_commands(cmd_list, &env);
 	free_tokens(tokens);
 	free_cmd_list(cmd_list);
 }
@@ -116,7 +98,7 @@ int	main(int argc, char **argv, char **envp)
 	(void)argc;
 	(void)argv;
 	(void)envp;
-
+	
 	setup_signals_interactive();
 	env_list = init_env(envp);
 	while (1)
@@ -130,8 +112,8 @@ int	main(int argc, char **argv, char **envp)
 		if (*input)
 		{
 			add_history(input);
-			process_input(input, env_list);
-		}
+			process_input(input, env_list->exit_status, *env_list); //update last_exit_status
+		}// cambiar 0 por env->exit_status???? si no ver como el expander captaria "?!"
 		free(input);
 	}
 }
