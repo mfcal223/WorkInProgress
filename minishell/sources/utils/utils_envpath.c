@@ -6,7 +6,7 @@
 /*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 13:47:58 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/02 14:38:10 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:49:48 by mpiantan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ char	*get_command_path(char *cmd)
 		return (ft_strdup(cmd));
 	path_env = getenv("PATH");
 	if (!path_env || !*path_env)
-	{	
+	{
 		write(2, "minishell: PATH is not set\n", 27);
 		return (NULL);
 	}

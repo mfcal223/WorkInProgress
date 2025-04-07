@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   exec_pipes.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 10:03:31 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/03 11:08:41 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:05:13 by mpiantan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/executor.h"
+#include "../../includes/parser.h"
 
 /*
  * count_pipes() = count the number of pipes in the command sequence. 
@@ -18,13 +19,16 @@
  * Returns the number of pipes (one less than the number of commands). 
  */
 
-int	count_pipes(char **cmds)
+int	count_pipes(t_cmd *cmd_list)
 {
 	int		count;
 
 	count = 0;
-	while (cmds[count])
+	while (cmd_list)
+	{
 		count++;
+		cmd_list = cmd_list->next;
+	}
 	return (count - 1);
 }
 
@@ -89,7 +93,7 @@ void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i)
 	if (pid == 0)
 	{
 		if (i == 0 && pipes->pipe_count > 0)
-			dup2(pipes->pipefd[0][1], STDOUT_FILENO);
+			dup2(pipes->pipefd[i][1], STDOUT_FILENO);
 		else if (i == pipes->pipe_count)
 			dup2(pipes->pipefd[i - 1][0], STDIN_FILENO);
 		else if (pipes->pipe_count > 0)
@@ -99,7 +103,7 @@ void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i)
 		}
 		close_pipes(pipes);
 		execute_command(args[0], args, env);
-		exit (0);
+		exit (1);
 	}
 }
 
@@ -110,24 +114,24 @@ void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i)
  * After execution, closes pipes and waits for all child processes. 
  */
 
-void	execute_pipeline(char **cmds, t_env *env)
+void	execute_pipeline(t_cmd *cmd_list, t_env *env)
 {
 	int		i;
 	char	**args;
 	t_pipe	pipes;
 
-	pipes.pipe_count = count_pipes(cmds);
+	pipes.pipe_count = count_pipes(cmd_list);
 	if (pipes.pipe_count > 0)
 	{
 		pipes.pipefd = malloc(sizeof(*pipes.pipefd) * pipes.pipe_count);
 		create_pipes(&pipes);
 	}
 	i = 0;
-	while (cmds[i])
+	while (cmd_list)
 	{
-		args = ft_split(cmds[i], ' '); //Replace with our parse_args function 
+		args = cmd_list->args;
 		fork_pipes(&pipes, args, env, i);
-		free_split(args); // Replace with cleaning function.
+		cmd_list = cmd_list->next;
 		i++;
 	}
 	if (pipes.pipe_count > 0)

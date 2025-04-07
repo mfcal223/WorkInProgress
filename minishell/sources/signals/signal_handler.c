@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   signal_handler.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:19:07 by mcalciat          #+#    #+#             */
 /*   Updated: 2025/04/04 11:57:06 by mcalciat         ###   ########.fr       */
@@ -53,12 +53,10 @@ void	setup_signals_interactive(void)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART;
 	sigaction(SIGINT, &sa, NULL);
-
     signal(SIGQUIT, SIG_IGN);
 }
 
 /*--------- TO USE WHEN CHILD PROCESSES ----------------*/
-
 
 /*// Usage in fork() before executing child
 pid = fork();

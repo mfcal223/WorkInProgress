@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expander.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 13:39:39 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/02 13:30:22 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/07 14:17:08 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ int	handle_quotes(char current, t_expand *exp)
 }
 
 /*
- * repalce_variable() = replace variable with its value. 
+ * replace_variable() = replace variable with its value. 
  * Skips expansion inside single quotes. 
  * Extracts variable name. 
  * Retrieves the variable value from environment or exit status. 

@@ -98,10 +98,12 @@ We were asked to remake the following builtins:
 
 **File**: `builtin_echo.c`  
 **Behavior**:
-- [❎] Prints arguments to `stdout`, separated by spaces, followed by a newline. - [❎] It writes all the non-flag tokens to the standard input in order, separated by spaces, followed by a linebreak (\n)
+- [❎] Prints arguments to `stdout`, separated by spaces, followed by a newline. 
+- [❎] It writes all the non-flag tokens to the standard input in order, separated by spaces, followed by a linebreak (\n)
 - [❎] If the `-n` option is given, suppresses the newline.
 - [❎] Handle multiple `-n` (like `echo -n -n hi` should suppress newline).
 - [❓] Should be interruptible by `Ctrl+C` before execution starts.
+
 
 **Example**:
 INPUT                                   SHELL
@@ -676,38 +678,35 @@ USE MINISHELL INCEPTION TO TEST: By typing bash twice we would enter a bash insi
 ----> Exits with code 255.
 
 📢 TO CHECK DE EXIT STATUS:
+-------------------------
  > echo $? (special shell variable) --> This variable will save the exit status from the last executed function. 
 > exit 45
 > echo $?
 > 45
-
+[ ] 
 
 **Example in bash**
-> Cursus/git_minishell$ bash
-> Cursus/git_minishell$ exit
+>$ bash
+>bash$ exit
 > exit
-> Cursus/git_minishell$ echo $?
+>$ echo $?
 > 0
-> Cursus/git_minishell$ bash
-> Cursus/git_minishell$ exit 45
+>$ bash
+>bash$ exit 45
 > exit
-> Cursus/git_minishell$ echo $?
+>$ echo $?
 > 45
-> Cursus/git_minishell$ 
+>$ 
 
 🔥🔥🔥 [ ] pendiente!! !!!! The expander manages the "$?"🔥🔥🔥e
 
 Signals interrumping: 
 Example test:
-bash
-Copiar
-Editar
+
 minishell$ cat
 ^C
 # exits with Ctrl+C, $? = 130
-bash
-Copiar
-Editar
+
 minishell$ cat
 ^\
 Quit: 3
@@ -801,7 +800,7 @@ Builtin					Notes
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 cd						Bash returns 1 if cd fails (invalid dir, too many arg, etc)
 export					Returns 1 if you try export 1badvar=ok
-unset					Returns 1 if identifier is invalid 							[✅ Yes]
+unset					Returns 1 if identifier is invalid 							
 echo, env, pwd			Usually just return 0 unless something catastrophic happens
 
 [ ]Set env->exit_status accordingly, so $? reflects it
@@ -869,14 +868,10 @@ cmd not found → 127	✅	Handled before execve()
 exit() builtin error codes	✅	Matches Bash
 exit_status.h macros	✅	Clean and scalable
 Future builtin improvements	🟡	Add exit codes for cd, export, unset
+
 ======================================================================================
 
 
-=================================================================================
-
-
-
-=====================================================================
 ************
 ** ANEX I **
 ************
@@ -905,8 +900,13 @@ Expands to the decimal process ID of the most recent background command (see Lis
 
 ///////////////////////////////////////////////////////////////////
 
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟❔❓⛔✅❎‼️🚫❗❌⭕
+🔰🔹🔸🔺🔻⇶→⚡📌📚📖📑📕📗📘📙🔶🔷🔴🟠🟢🟣🟡🔵
+💭💬🔊📡⚠💡⭐🏁🚩🛟🔑📢🚨🔍🔌🧮🧪🧵🧩🚀
+🎉🔥🎯🍝🎓🍴😴😵🤔💀👾👻💆✋🙊🧠🐢
+🧱🎮🚪💣⚔️🛠️🔧🖨️💻🗑📥📦🔚🔁🔗⚙️
 
-📕📗📘📙→📢🚨🔍🧱⚠💡🎮 🎉 🔰🏁🚩🛟🔑🚪🔌🧮🚦⚡💣
-🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💬💀🔊📡  🖨️💻🎓
-1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔✋📦 🗑📥🚀🔥🎯 
-❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔✅❎‼️🔚🔁🔗⚙️ 👾👻💆
+
+    
+   
+  

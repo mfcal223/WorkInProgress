@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+         #
+#    By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/27 11:40:56 by mpiantan          #+#    #+#              #
-#    Updated: 2025/04/02 17:29:39 by mcalciat         ###   ########.fr        #
+#    Updated: 2025/04/04 10:48:45 by mpiantan         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,13 +33,17 @@ SRC_FILES = $(SRC_DIR)/minishell.c \
 	$(SRC_DIR)/executor/exec_builtins.c \
 	$(SRC_DIR)/executor/exec_commands.c \
 	$(SRC_DIR)/executor/exec_pipes.c \
+	$(SRC_DIR)/executor/exec_redirections.c \
+	$(SRC_DIR)/parser/lexer.c \
+	$(SRC_DIR)/parser/expander.c \
+	$(SRC_DIR)/parser/parser.c \
 	$(SRC_DIR)/signals/signal_handler.c \
 	$(SRC_DIR)/utils/quit_program.c \
 	$(SRC_DIR)/utils/utils_envpath.c \
-	$(SRC_DIR)/utils/utils_executor.c 
+	$(SRC_DIR)/utils/utils_executor.c \
+	$(SRC_DIR)/utils/utils_expander.c \
+	$(SRC_DIR)/utils/utils_cleaner.c \
 
-#	$(SRC_DIR)/utils/utils_expander.c
-# $(SRC_DIR)/executor/exec_redirections.c \
 
 OBJ_FILES = $(SRC_FILES:$(SRC_DIR)/%.c=$(SRC_DIR)/%.o)
 

@@ -6,12 +6,62 @@
 /*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 13:39:59 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/03 14:24:34 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:47:55 by mpiantan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/parser.h"
-#include "../../includes/executor.h"
+
+/*
+ * new_cmd() = Create command structure
+ * Allocates memory for a t_cmd structure.
+ * Initializes fields (args, fd, pipe).
+ */
+
+t_cmd	*new_cmd(void)
+{
+	t_cmd	*cmd;
+
+	cmd = malloc (sizeof(t_cmd));
+	if (!cmd)
+		return (NULL);
+	cmd->args = NULL;
+	cmd->input_fd = STDIN_FILENO;
+	cmd->output_fd = STDOUT_FILENO;
+	cmd->pipe = 0;
+	cmd->next = NULL;
+	return (cmd);
+}
+
+/*
+ * append_to_array() = append a string to an array.
+ * Reallocates memory to expand the array by one element. 
+ * Copies the new string to the last position.
+ * Ensures the array remains NULL-terminated. 
+ */
+char	**append_to_array(char **array, const char *new_str)
+{
+	int		i;
+	char	**new_array;
+
+	i = 0;
+	while (array && array[i])
+		i++;
+	new_array = malloc (sizeof(char *) * (i + 2));
+	if (!new_array)
+		return (NULL);
+	i = 0;
+	while (array && array[i])
+	{
+		new_array[i] = ft_strdup(array[i]);
+		free(array[i]);
+		i++;
+	}
+	free(array);
+	new_array[i] = ft_strdup(new_str);
+	new_array[i +1] = NULL;
+	return (new_array);
+}
 
 /*
  * Parse_cmd() = parse a single command from tokens.
@@ -41,6 +91,25 @@ t_cmd	*parse_cmd(char **tokens, int *i)
 		(*i)++;
 	}
 	return (cmd);
+}
+
+/*
+ * handle_new_cmd() = link the new command to the command list. 
+ * If it is the first command, it initializes the list. 
+ * If not, it appends the new command to the end of the list. 
+ */
+
+void	handle_new_cmd(t_cmd **cmd, t_cmd **head, t_cmd **current,
+		t_cmd *new_cmd)
+{
+	if (!*cmd)
+	{
+		*cmd = new_cmd;
+		*head = *cmd;
+	}
+	else
+		(*current)->next = new_cmd;
+	*current = new_cmd;
 }
 
 /*
@@ -75,32 +144,6 @@ t_cmd	*parse_tokens(char **tokens)
 		}
 	}
 	return (head);
-}
-/*
- * process_cmd() = Process a parsed command.
- * Expands variables using the expander function.
- * Determines whether to execute a pipeline or a single command.
- */
-
-void	process_cmd(t_cmd *cmd, int last_exit_status, t_env env)
-{
-	int		i;
-	char	**cmds;
-
-	cmds = cmd->args;
-	if (!cmd)
-		return ;
-	i = 0;
-	while (cmd->args[i])
-	{
-		cmd->args[i] = expand_variable(cmd->args[i], last_exit_status,
-				ft_strlen(cmd->args[i]));
-		i++;
-	}
-	if (cmd->pipe)
-		execute_pipeline(cmds, &env);
-	else
-		execute_command(cmd->args[0], cmd->args, &env);
 }
 
 /*

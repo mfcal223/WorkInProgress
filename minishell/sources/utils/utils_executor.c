@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   utils_executor.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 16:11:59 by mcalciat          #+#    #+#             */
 /*   Updated: 2025/04/04 11:25:44 by mcalciat         ###   ########.fr       */

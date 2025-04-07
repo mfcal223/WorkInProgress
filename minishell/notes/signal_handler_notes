@@ -155,7 +155,10 @@ This lets you simulate the user pressing Ctrl+\ or Ctrl+C programmatically.
 ✅ ▶️ **On Ctrl+\ (SIGQUIT)**
 - [X] Do **nothing** — no output, no quit, just ignore it.
 - [🚫] Set `SIGQUIT` to `SIG_IGN` using `sigaction()`. 
-//🚨 sigaction to handle sigquit was change to signal, because of wrong behaviour (it printed ^\ on screen instead of doing nothing). It is commented in signal_handler() in case it is needed in the future
+
+//🚨 sigaction to handle sigquit was change to signal, because of wrong behaviour 
+(it printed ^\ on screen instead of doing nothing). 
+It is commented in signal_handler() in case it is needed in the future
 
 🧩 **IN CHILD PROCESSES (executing external commands like `cat`, `sleep`)**
 
@@ -337,7 +340,8 @@ mcalciat@c3r9s3:~/Cursus/git_minishell$
 exit
 
 
-📕📗📘📙→📢🤔🚨🔍🧱⚠💡🎮 🎉 🔰🏁🚩🛟🔑🚪🔌🧮🚦⚡💣
-🔶🔷🔴🟠🟢🟣🟡🔵⇶🙊 🍝🧠🐢 🛠️🔧💭💬💀🔊📡  🖨️💻🎓
-1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟.🚫❗⭐ 😴😵🍴🤔✋📦 🗑📥🚀🔥🎯 
-❌⭕ 🔹🔸🔺🔻📌🧪🧵🧩❔❓⛔✅❎‼️🔚🔁🔗⚙️ 👾👻💆
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟❔❓⛔✅❎‼️🚫❗❌⭕
+🔰🔹🔸🔺🔻⇶→⚡📌📚📖📑📕📗📘📙🔶🔷🔴🟠🟢🟣🟡🔵
+💭💬🔊📡⚠💡⭐🏁🚩🛟🔑📢🚨🔍🔌🧮🧪🧵🧩🚀
+🎉🔥🎯🍝🎓🍴😴😵🤔💀👾👻💆✋🙊🧠🐢
+🧱🎮🚪💣⚔️🛠️🔧🖨️💻🗑📥📦🔚🔁🔗⚙️

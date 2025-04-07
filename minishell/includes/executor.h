@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 11:03:52 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/04 11:24:31 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/04 11:56:24 by mpiantan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,16 @@
 # include <sys/wait.h>
 # include "../libft/libft.h"
 # include "environment.h"	//environment structure
+# include "parser.h"
+
+struct					s_cmd;
+typedef struct s_cmd	t_cmd;
 
 typedef struct s_pipe
 {
-    int (*pipefd)[2];
-    int pipe_count;
-}   t_pipe;
-
+	int	(*pipefd)[2];
+	int	pipe_count;
+}	t_pipe;
 
 //utils/utils_envpath.c 
 void	free_split(char **split);
@@ -51,10 +54,10 @@ void	execute_child_builtin(char **args, t_env *env);
 void	execute_builtin(char **args, t_env *env);
 
 //executor/exec_pipes.c
-int		count_pipes(char **cmds);
+int		count_pipes(t_cmd *cmd_list);
 void	create_pipes(t_pipe *pipes);
 void	close_pipes(t_pipe *pipes);
 void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i);
-void	execute_pipeline(char **cmds, t_env *env);
+void	execute_pipeline(t_cmd *cmd_list, t_env *env);
 
 #endif
