@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 14:46:30 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/04 10:00:03 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/08 16:51:11 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,9 @@
 # include "parser.h"
 # include "exit_status.h"
 
-//void	quit_program(int code);
+#ifndef PROMPT
+# define PROMPT "\001\033[1;32m\002minishell$ \001\033[0m\002"
+#endif
 
 /*-----------BUILTINS---------------------------------*/
 int		builtin_echo(char **av, t_env *env);					//changed arguments to match executor calls

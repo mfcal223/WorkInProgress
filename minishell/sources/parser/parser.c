@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 13:39:59 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/04 11:47:55 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/08 12:38:07 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,20 @@
  * Allocates memory for a t_cmd structure.
  * Initializes fields (args, fd, pipe).
  */
-
 t_cmd	*new_cmd(void)
+{
+	t_cmd	*cmd;
+
+	cmd = malloc(sizeof(t_cmd));
+	if (!cmd)
+		return (NULL);
+	ft_memset(cmd, 0, sizeof(t_cmd)); // 👈 sets everything to zero safely
+	cmd->input_fd = STDIN_FILENO;
+	cmd->output_fd = STDOUT_FILENO;
+	return (cmd);
+}
+/* version original de Sofi */
+/*t_cmd	*new_cmd(void)
 {
 	t_cmd	*cmd;
 
@@ -31,7 +43,7 @@ t_cmd	*new_cmd(void)
 	cmd->pipe = 0;
 	cmd->next = NULL;
 	return (cmd);
-}
+}*/
 
 /*
  * append_to_array() = append a string to an array.
@@ -136,6 +148,11 @@ t_cmd	*parse_tokens(char **tokens)
 	while (tokens[i])
 	{
 		new_cmd = parse_cmd(tokens, &i);
+		if (!new_cmd)//Add null check before calling handle_new_cmd() 
+		{
+			free_cmd_list(head);  // if you have this helper
+			return (NULL);        // stop early to avoid undefined behavior
+		}
 		handle_new_cmd(&cmd, &head, &current, new_cmd);
 		if (tokens[i] && ft_strncmp(tokens[i], "|", 1) == 0)
 		{

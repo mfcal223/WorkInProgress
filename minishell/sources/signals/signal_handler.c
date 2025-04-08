@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 10:19:07 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/07 16:18:11 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/08 12:11:41 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-/**
+volatile sig_atomic_t	g_is_parent = 1;
+
+/** 
  * Resets signals to default for child processes
  * so they behave like in Bash (e.g., sleep, cat, etc.)
  * 
@@ -32,12 +34,15 @@ void	setup_signals_child(void)
 
 void	catch_sigint(int signum)
 {
-	(void)signum;
-	write(1, "\n", 1);
-	//write(2, "[SIGINT received]\n", 18);//DEBUG
-	rl_replace_line("", 0);
-	rl_on_new_line();// agrega condicion para que cuando llama de subproceso solo llame esto 1 vez y no duplique la nueva linea
-	rl_redisplay();
+	if (g_is_parent)
+	{
+		(void)signum;
+		write(1, "\n[SIGINT caught in parent]\n", 27);//DEBUG PRINT
+		write(1, "\n", 1);
+		rl_replace_line("", 0);
+		rl_on_new_line();
+		rl_redisplay();
+	}
 }
 
 /*
@@ -55,26 +60,3 @@ void	setup_signals_interactive(void)
 	sigaction(SIGINT, &sa, NULL);
     signal(SIGQUIT, SIG_IGN);
 }
-
-/*--------- TO USE WHEN CHILD PROCESSES ----------------*/
-
-/*// Usage in fork() before executing child
-pid = fork();
-if (pid == 0)
-{
-	setup_signals_child();
-	// execve() or command execution
-}
-else
-{
-	waitpid(pid, &status, 0);
-	if (WIFSIGNALED(status))
-	{
-		if (WTERMSIG(status) == SIGINT)
-			write(1, "\n", 1);
-		else if (WTERMSIG(status) == SIGQUIT)
-			write(1, "Quit: 3\n", 8);
-	}
-}
-
-*/

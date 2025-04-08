@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils_executor.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/02 16:11:59 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/04 11:25:44 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/08 12:12:50 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,10 @@ void	handle_exit_status(int status, t_env *env)
 	else if (WIFSIGNALED(status))
 	{
 		env->exit_status = 128 + WTERMSIG(status);
-		if (WTERMSIG(status) == SIGQUIT)
+		if (WTERMSIG(status) == SIGINT)
+			write(1, "\n", 1); // mimic bash behavior
+		else if (WTERMSIG(status) == SIGQUIT)
 			write(2, "Quit: 3\n", 8);
 	}
+	printf("[EXIT STATUS] signal = %d, status = %d\n", WTERMSIG(status), status);
 }

@@ -6,12 +6,13 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 14:44:00 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/07 17:11:27 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/08 16:55:50 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 #include "../includes/parser.h"
+#include "../includes/executor.h"
 
 /*
  * expand_tokens() = expand environment variables in the token list. 
@@ -20,7 +21,7 @@
  * Frees the old token and replaces it with the expanded value. 
  */
 
-void	expand_tokens(char **tokens, int last_exit_status)
+void	expand_tokens(char **tokens, t_env *env)
 {
 	int		i;
 	char	*expanded;
@@ -28,8 +29,13 @@ void	expand_tokens(char **tokens, int last_exit_status)
 	i = 0;
 	while (tokens[i])
 	{
-		expanded = expand_variable(tokens[i], last_exit_status,
-				ft_strlen(tokens[i]));
+		expanded = expand_variable(tokens[i], ft_strlen(tokens[i]), env);
+		if (!expanded)
+		{
+			free(tokens[i]);
+			tokens[i] = NULL;
+			return ;
+		}
 		free(tokens[i]);
 		tokens[i] = expanded;
 		i++;
@@ -42,14 +48,11 @@ void	expand_tokens(char **tokens, int last_exit_status)
  * Calls execute_pipeline() if the command has pipes. 
  * Calls execute_command() for standalone commands.
  */
-
 void	execute_commands(t_cmd *cmd_list, t_env *env)
 {
 	int		redirection;
-	int		status;
-	pid_t	pid;
 
-	while (cmd_list)
+	if (cmd_list)
 	{
 		if (cmd_list->redir)
 		{
@@ -61,16 +64,11 @@ void	execute_commands(t_cmd *cmd_list, t_env *env)
 			}
 		}
 		if (cmd_list->pipe)
-			pid = execute_pipeline(cmd_list, env);
+			execute_pipeline(cmd_list, env);
 		else
-			pid = execute_command(cmd_list->args[0], cmd_list->args, env);
-		if (pid > 0)
-		{
-			waitpid(pid, &status, 0);
-			handle_exit_status(status, env);
-		}
-		cmd_list = cmd_list->next;
+			execute_command(cmd_list, env);
 	}
+	g_is_parent = 1; // restore signal handling context for next loop // debug ??????
 }
 
 /*
@@ -93,7 +91,7 @@ void	process_input(char *input, t_env *env)
 		perror("lexer failed");
 		return ;
 	}
-	expand_tokens(tokens, env->exit_status);
+	expand_tokens(tokens, env);
 	cmd_list = parse_tokens(tokens);
 	if (!cmd_list)
 	{
@@ -112,12 +110,82 @@ int	main(int argc, char **argv, char **envp)
 {
 	char	*input;
 	t_env	*env_list;
+	char	*prompt;//borrar si se elimina el macro PROMPT
 
 	(void)argc;
 	(void)argv;
 	(void)envp;
-
 	setup_signals_interactive();
+	g_is_parent = 1;
+	env_list = init_env(envp);
+	prompt = NULL;//borrar si se elimina el macro PROMPT
+	while (1)
+	{
+		if (isatty(STDIN_FILENO))
+			prompt = PROMPT;
+		input = readline(prompt);
+		if (!input)
+		{
+			if (isatty(STDIN_FILENO))
+				printf("exit\n");
+			quit_program(env_list);
+		}
+		if (*input)
+		{
+			add_history(input);
+			process_input(input, env_list);
+		}
+		free(input);
+	}
+}
+
+/**
+ * THIS SUGGESTED VERSION OF EXECUTE_COMMANDS() WOULD BE USEFUL IS OUR MINISHELL 
+ * NEEDS TO HANDLE ";" - MULTIPLE/MIXED SEQUENCES .p.e. echo hello | grep h ; echo world ; ls -l | wc -l)
+ * 
+ void	execute_commands(t_cmd *cmd_list, t_env *env)
+{
+	while (cmd_list)
+	{
+		if (cmd_list->pipe)
+		{
+			execute_pipeline(cmd_list, env);
+			while (cmd_list && cmd_list->pipe)
+				cmd_list = cmd_list->next;
+			if (cmd_list)
+				cmd_list = cmd_list->next;
+		}
+		else
+		{
+			if (cmd_list->redir)
+			{
+				if (handle_redirections(cmd_list) == -1)
+				{
+					perror("redirection failed");
+					return ;
+				}
+			}
+			execute_command(cmd_list, env);
+			cmd_list = cmd_list->next;
+		}
+	}
+	g_is_parent = 1;
+}
+
+ */
+
+/* VERSION DE MAIN QUE NO USA MACRO PARA EL PROMPT
+
+int	main(int argc, char **argv, char **envp)
+{
+	char	*input;
+	t_env	*env_list;
+
+	(void)argc;
+	(void)argv;
+	(void)envp;
+	setup_signals_interactive();
+	g_is_parent = 1;
 	env_list = init_env(envp);
 	while (1)
 	{
@@ -136,11 +204,4 @@ int	main(int argc, char **argv, char **envp)
 	}
 }
 
-/**
- * 
-void	closing_adm(t_env *env_list, char *input)
-{
-	free(input);
-	free_env_list(env_list);
-}
- */
+*/

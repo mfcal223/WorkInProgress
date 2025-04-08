@@ -141,7 +141,7 @@ This lets you simulate the user pressing Ctrl+\ or Ctrl+C programmatically.
 - [X] Use `sigaction()` to assign handlers in `main()` or shell loop.
 
 - [🚫 ]Avoid using `signal()` unless testing — `sigaction()` is more reliable. 🚨 See Ctrl+\ section
-- [❓] Use **only one global variable** (e.g., `volatile sig_atomic_t g_signal_flag`) to store signal state, as per Minishell subject rules.
+- [✅] Use **only one global variable** (e.g., `volatile sig_atomic_t g_signal_flag`) to store signal state, as per Minishell subject rules.
 
 🧩 **IN THE SHELL (INTERACTIVE MODE — i.e., waiting for input with `readline()`)**
 
@@ -154,11 +154,6 @@ This lets you simulate the user pressing Ctrl+\ or Ctrl+C programmatically.
 
 ✅ ▶️ **On Ctrl+\ (SIGQUIT)**
 - [X] Do **nothing** — no output, no quit, just ignore it.
-- [🚫] Set `SIGQUIT` to `SIG_IGN` using `sigaction()`. 
-
-//🚨 sigaction to handle sigquit was change to signal, because of wrong behaviour 
-(it printed ^\ on screen instead of doing nothing). 
-It is commented in signal_handler() in case it is needed in the future
 
 🧩 **IN CHILD PROCESSES (executing external commands like `cat`, `sleep`)**
 
@@ -313,6 +308,12 @@ Typing input → Ctrl+C				Input cancelled
 Running command → Ctrl+C			Command killed
 Inside readline() → Ctrl+C			Shell stays open
 
+🧠 Signal Behavior Summary (Bash-like)
+Signal	Key			Parent Shell					Child Process
+SIGINT	Ctrl+C		Clears line + redisplay prompt	Terminates the process
+SIGQUIT	Ctrl+\		Ignored							Terminates and prints Quit: 3
+EOF		Ctrl+D		Exits shell						N/A
+
 
 TERMINAL OUTPUT:
 c3r9s3% ./minishell
@@ -390,9 +391,273 @@ Call rl_on_new_line() in child?				❌ Never
 Use volatile sig_atomic_t for safety?		✅ Recommended
 
 
-1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟❔❓⛔✅❎‼️🚫❗❌⭕
+**********************************************************
+** 🚨🚨 Use a global int to detect parent vs child.🚨🚨 **
+**********************************************************
+
+📑 Step-by-Step Implementation Plan
+----------------------------------------
+1. Add the global flag for process context
+
+In signal_handler.c:
+
+// At the top (outside functions)
+	volatile sig_atomic_t	g_is_parent = 1; ✅
+
+⚠️ Also declare it in your signal_handler.h:
+	extern volatile sig_atomic_t g_is_parent; ✅
+
+2. Update main() to set it properly
+In minishell.c, just after setup_signals_interactive():
+
+	g_is_parent = 1; ✅
+
+This tells the signal handler you're in the parent shell.
+
+3. In all child processes, set the flag to 0
+Anywhere you fork(), set:
+	g_is_parent = 0;
+
+Examples:
+
+In fork_pipes(): ✅
+	if (pid == 0)
+	{
+		g_is_parent = 0;
+
+In fork_and_execute(): ✅
+
+	if (pid == 0)
+	{
+		g_is_parent = 0;
+
+In execute_child_builtin():✅
+
+	if (pid == 0)
+	{
+		g_is_parent = 0;
+
+4. Modify catch_sigint() to check the flag ✅
+
+void	catch_sigint(int signum)
+{
+	if (g_is_parent)
+	{
+		(void)signum;
+		write(1, "\n", 1);
+		rl_replace_line("", 0);
+		rl_on_new_line();
+		rl_redisplay();
+	}
+}
+This prevents child processes from redrawing the prompt.
+
+5. Bonus polish for SIGQUIT ✅
+
+You already do this correctly:
+	signal(SIGQUIT, SIG_IGN); // In interactive mode
+
+In children (e.g., setup_signals_child()):
+
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+
+Optional: in the parent waitpid() section (if not already): ✅
+
+if (WIFSIGNALED(status))
+{
+	if (WTERMSIG(status) == SIGINT)
+		write(1, "\n", 1);
+	else if (WTERMSIG(status) == SIGQUIT)
+		write(1, "Quit: 3\n", 8);
+}
+
+
+🧪 Final Test
+Launch your minishell:
+
+./minishell
+Run:
+echo hello | wc -l
+
+While waiting at the prompt, press Ctrl-C — you should only see:
+
+^C
+minishell$
+
+==================
+
+🔖🔖 EXPLANATION REGARDING THE SYNTAX AND THE NAME OF THE GLOBAL VARIABLE 🔖🔖
+
+ 🔖 Why `g_is_parent`?
+
+We chose `g_is_parent` because:
+
+- ✅ **`g_`**: According to the [42 Norms summary you uploaded](#8), all global variables **must** start with `g_`.
+- ✅ **`is_parent`**: It's a descriptive name that clearly means “this is the **parent shell process**.”
+- So:  
+
+  g_is_parent = 1; // we're in the shell's main process  
+  g_is_parent = 0; // we're in a child process (like a command or pipe stage)
+  ```
+That name helps anyone reading your code immediately understand the purpose without needing a comment.
+
+🔖 What is `volatile sig_atomic_t`?
+
+ 🧠 `sig_atomic_t`
+- It’s a special **integer type** guaranteed to be accessed safely in **signal handlers**.
+- Basically: it’s safe to read and write this variable **even when interrupted by signals**.
+
+If you just used a regular `int`, the compiler **might optimize** access in a way that breaks things in a signal context (like caching or partial writes).
+> ✅ Use `sig_atomic_t` for **any variable shared between main code and a signal handler**.
+
+ ⚡ `volatile`
+- Tells the compiler: “**Don’t optimize this variable**, it might change unexpectedly.”
+- Why? Because signals can interrupt code at *any time*, so the compiler must always **read from memory**, not from a register or cache.
+
+Together: 		volatile sig_atomic_t g_is_parent;
+
+Means > “This is a **global**, **signal-safe**, and **always up-to-date** flag for whether we’re in the parent process.”
+
+✅ Summary
+
+| Modifier          | Purpose                                                                 |
+|-------------------|-------------------------------------------------------------------------|
+| `g_` prefix        | Required by 42 Norm for global variables                               |
+| `is_parent`        | Descriptive, tells us what the variable tracks                         |
+| `volatile`         | Prevents compiler from optimizing it away, ensures real-time updates   |
+| `sig_atomic_t`     | Ensures safe, atomic access in signal handlers                         |
+
+Let me know if you want help putting this into your `.h` and `.c` files with correct includes!
+
+====================================================
+
+RECAP OF KEY COMPONENTS IN SIGNAL HANDLING IN Minishell
+
+Function						Where it's used			Purpose
+setup_signals_interactive()		🟢 Parent only (shell)	Setup signals like Bash for the prompt (SIGINT clears line, etc.)
+setup_signals_child()			🔵 Child only			Reset signals to default (terminate on SIGINT/SIGQUIT)
+handle_exit_status()			🟢 Parent only			After waitpid(), read child's exit and update prompt + print if needed
+catch_sigint()					🟢 Parent only			Custom handler for Ctrl+C at prompt — clears line and redisplays
+
+🔁 Step-by-Step Example with Signals
+--------------------------------------
+Let's imagine this full scenario:
+
+		> minishell$ sleep 10 | wc -l
+
+-------------------------------------------------
+🟢 Normal workflow - no signals used yet
+-------------------------------------------------
+
+🔹 Step 1: Shell Starts
+
+int main()
+{
+	setup_signals_interactive(); // 🟢
+	g_is_parent = 1;
+}
+
+✔️ SIGINT (Ctrl+C)  → custom handler (catch_sigint)
+✔️ SIGQUIT (Ctrl+\)	→ ignored
+✔️ Shell is ready to receive input
+
+🔹 Step 2: User inputs command
+
+> minishell$ sleep 10 | wc -l
+
+🔸 readline() returns the input
+🔸 Tokens are parsed
+🔸 Execution begins
+🔸 The shell forks twice:
+	fork() → child process for sleep
+	fork() → child process for wc
+
+🔹 Step 3: In child processes (e.g., sleep, wc)
+
+if (pid == 0)
+{
+	g_is_parent = 0;
+	setup_signals_child(); // 🔵
+}
+
+✔️ SIGINT (Ctrl+C) → terminates the child
+✔️ SIGQUIT (Ctrl+) → prints Quit: 3 and terminates
+
+🔹 Step 4: Parent waits
+
+waitpid(pid, &status, 0);
+handle_exit_status(status, env); // 🟢
+
+-------------------------------------------------
+🔴 SCENARIO A: Ctrl+C (SIGINT) during command
+-------------------------------------------------
+User presses Ctrl+C while sleep or wc is running.
+
+Result:
+🔵 In child:
+				SIGINT → child process is terminated
+
+🟢 In parent:
+
+		if (WTERMSIG(status) == SIGINT)
+			write(1, "\n", 1);
+
+✔️ A newline is printed
+✔️ $? becomes 130 (128 + SIGINT)
+✔️ Prompt returns cleanly
+
+-------------------------------------------------
+🟠 SCENARIO B: Ctrl+\ (SIGQUIT) during command
+-------------------------------------------------
+User presses Ctrl+\ during sleep or wc.
+
+Result:
+🔵 In child:
+			SIGQUIT → prints Quit: 3, terminates
+
+🟢 In parent:
+
+			if (WTERMSIG(status) == SIGQUIT)
+				write(2, "Quit: 3\n", 8);
+
+✔️ "Quit: 3" is printed
+✔️ $? becomes 131 (128 + SIGQUIT)
+✔️ Prompt returns
+
+-------------------------------------------------
+🟢 SCENARIO C: Ctrl+C while idle at the prompt
+-------------------------------------------------
+
+User presses Ctrl+C with nothing running, just at:
+		> minishell$
+No child processes running - Function readline() is active
+
+Result:
+🟢 Parent receives SIGINT > catch_sigint() is triggered:
+
+			write(1, "\n", 1);
+			rl_replace_line("", 0);
+			rl_on_new_line();
+			rl_redisplay();
+
+✔️ Clears the input line
+✔️ Moves to a new line
+✔️ Reprints prompt
+✔️ $? stays the same
+
+
+✅ Summary Chart of Behaviors
+Where?		Signal		What Happens
+-------------------------------------------------------------------------------
+Prompt		Ctrl+C		Clears input line, prints new prompt
+Prompt		Ctrl+\		Nothing (ignored)
+Command		Ctrl+C		Child terminates, parent prints \n, $? = 130
+Command		Ctrl+\		Child prints Quit: 3, parent prints same, $? = 131
+
+1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟❔❓⛔✅❎‼️🚫❗❌⭕✔️
 🔰🔹🔸🔺🔻⇶→⚡📌📚📖📑📕📗📘📙🔶🔷🔴🟠🟢🟣🟡🔵
-💭💬🔊📡⚠💡⭐🏁🚩🛟🔑📢🚨🔎🔍🔌🧮🧪🧵🧩🚀
-🎉🔥🎯🍝🎓🍴😴😵🤔🫩💀👾👻💆✋🫶🙊🧠🐢🏆
+💭💬🔊📡⚠💡⭐🏁🚩🛟🔑📢🚨🔎🔍🔌🧮🧪🧵🧩🚀🐛
+🎉🔖🔥🎯🍝🎓🍴😴😵🤔🫩💀👾👻💆✋🫶🙊🧠🐢🏆
 🧱🎮🚪💣⚔️🛠️🔧🖨️💻🗑📥📦🔚🔁🔗⚙️🥊🥇🎧🎤
 🕸🧉🧊🔦⏰☎️🔪✂️📍✏️🪄

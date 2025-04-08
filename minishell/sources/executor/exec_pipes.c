@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   exec_pipes.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 10:03:31 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/04 11:05:13 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/08 16:32:53 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/executor.h"
 #include "../../includes/parser.h"
+#include "../../includes/minishell.h"
 
 /*
  * count_pipes() = count the number of pipes in the command sequence. 
@@ -80,7 +81,7 @@ void	close_pipes(t_pipe *pipes)
  * After stting up the pipes, executes the command. 
  */
 
-void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i)
+void	fork_pipes(t_pipe *pipes, t_cmd *cmd_list, t_env *env, int i)
 {
 	pid_t	pid;
 
@@ -92,6 +93,8 @@ void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i)
 	}
 	if (pid == 0)
 	{
+		g_is_parent = 0;//global variable - signals behaviour for child processes
+		printf("[FORK] In child (pid = %d)\n In parent, waiting\n", getpid());//DEBUG PRINT
 		if (i == 0 && pipes->pipe_count > 0)
 			dup2(pipes->pipefd[i][1], STDOUT_FILENO);
 		else if (i == pipes->pipe_count)
@@ -102,7 +105,7 @@ void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i)
 			dup2(pipes->pipefd[i][1], STDOUT_FILENO);
 		}
 		close_pipes(pipes);
-		execute_command(args[0], args, env);
+		execute_command(cmd_list, env);
 		exit (1);
 	}
 }
@@ -117,7 +120,6 @@ void	fork_pipes(t_pipe *pipes, char **args, t_env *env, int i)
 void	execute_pipeline(t_cmd *cmd_list, t_env *env)
 {
 	int		i;
-	char	**args;
 	t_pipe	pipes;
 
 	pipes.pipe_count = count_pipes(cmd_list);
@@ -129,8 +131,14 @@ void	execute_pipeline(t_cmd *cmd_list, t_env *env)
 	i = 0;
 	while (cmd_list)
 	{
-		args = cmd_list->args;
-		fork_pipes(&pipes, args, env, i);
+		// 🚨 Skip if the command has no actual args (ghost command)
+		if (!cmd_list->args || !cmd_list->args[0])
+		{
+			cmd_list = cmd_list->next;
+			continue;
+		}
+		printf("[DEBUG] Forking cmd: %s\n", cmd_list->args[0]); // 🧠 DEBUG PRINT
+		fork_pipes(&pipes, cmd_list, env, i);
 		cmd_list = cmd_list->next;
 		i++;
 	}
@@ -142,21 +150,3 @@ void	execute_pipeline(t_cmd *cmd_list, t_env *env)
 	while (i--)
 		wait(NULL);
 }
-
-/*
-//main to test
-int	main(int argc, char **argv, char **envp)
-{
-	char	**cmds;
-	
-	if (argc != 2)
-	{
-		write(1, "Usage: ./executor \"cmd1 | cmd2 | cmd3\"\n", 36);
-		return (1);
-	}
-	cmds = ft_split(argv[1], '|');
-	execute_pipeline(cmds, envp);
-	free_split(cmds);
-	return (0);
-}
-*/

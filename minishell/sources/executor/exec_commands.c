@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 09:49:54 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/04 11:24:01 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/08 15:06:03 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,18 @@
  * If the command is not found, it prints an error and returns NULL. 
  */
 
-char	*check_command_path(char *cmd)
+char	*check_command_path(t_cmd *cmd)
 {
 	char	*cmd_path;
 
-	cmd_path = cmd;
-	if (cmd[0] != '/' && cmd[0] != '.')
+	cmd_path = cmd->path;
+	if (cmd->path == NULL || (cmd->path[0] != '/' && cmd->path[0] != '.'))
 	{
-		cmd_path = get_command_path(cmd);
+		cmd_path = get_command_path(cmd->args[0]);
 		if (!cmd_path)
 		{
 			write (2, "minishell: command not found: ", 30);
-			ft_putendl_fd(cmd, 2);
+			ft_putendl_fd(cmd->args[0], 2);
 			return (NULL);
 		}
 	}
@@ -46,7 +46,7 @@ char	*check_command_path(char *cmd)
  * If execve fails, the child prints an error and exits with status 127. 
  */
 
-pid_t	fork_and_execute(char *cmd_path, char **args, char **envp)
+pid_t	fork_and_execute(char *cmd_path, t_cmd *cmd, char **envp)
 {
 	pid_t	pid;
 
@@ -59,14 +59,26 @@ pid_t	fork_and_execute(char *cmd_path, char **args, char **envp)
 	}
 	if (pid == 0)
 	{
+		printf("[DEBUG] Executing cmd: %s\n", cmd->args ? cmd->args[0] : "NULL"); //DEBUG PRINT
+		g_is_parent = 0;//global variable - signals behaviour for child processes
+		printf("[FORK] In child (pid = %d)\n", getpid());//DEBUG PRINT
+		printf("[FORK] In parent, waiting\n");//DEBUG PRINT
 		setup_signals_child(); // not sure this is the right place
-		if (execve(cmd_path, args, envp) == -1)
+		if (cmd->redir)
+		{
+			if (handle_redirections(cmd) == -1)
+			{
+				perror("redirection failed");
+				exit(1);
+			}
+		}
+		if (execve(cmd_path, cmd->args, envp) == -1)
 		{
 			perror("execve failed");
 			free(cmd_path);
 			if (errno == EACCES)
 				exit(126); // ✅ Not executable
-			//exit (127);// don’t need to call exit(127) here / shouldn't happen if check_command_path worked
+			exit (127);// don’t need to call exit(127) here / shouldn't happen if check_command_path worked
 		}
 	}
 	return (pid);
@@ -80,7 +92,7 @@ pid_t	fork_and_execute(char *cmd_path, char **args, char **envp)
  * Prints an error msg if the command fails o is terminated. 
  * Frees the resolved command path if it was dynamically allocated. 
  */
-void	execute_external_command(char *cmd, char **args, t_env *env)
+void	execute_external_command(t_cmd *cmd, t_env *env)
 {
 	char	*cmd_path;
 	char	**envp;
@@ -97,15 +109,15 @@ void	execute_external_command(char *cmd, char **args, t_env *env)
 	if (!envp)
 	{
 		perror("env conversion failed");
-		if (cmd_path != cmd)
+		if (cmd_path != cmd->path)
 			free(cmd_path);
 		env->exit_status = 1;
 		return ;
 	}
-	pid = fork_and_execute(cmd_path, args, envp);
+	pid = fork_and_execute(cmd_path, cmd, envp);
 	waitpid(pid, &status, 0);
 	handle_exit_status(status, env);
-	if (cmd_path != cmd)
+	if (cmd_path != cmd->path)
 		free(cmd_path);
 	free_split(envp);
 }
@@ -116,26 +128,12 @@ void	execute_external_command(char *cmd, char **args, t_env *env)
  * If the command is a built-in, calls the builtin executer. 
  * Otherwise, calls the executor for external command.  
  */
-void	execute_command(char *cmd, char **args, t_env *env)
+void	execute_command(t_cmd *cmd, t_env *env)
 {
-	if (!cmd || !args || !args[0])
+	if (!cmd || !cmd->args || !cmd->args[0])
 		return ;
-	if (is_parent_builtin(args[0]) || is_child_builtin(args[0]))
-		execute_builtin(args, env);
+	if (is_parent_builtin(cmd->args[0]) || is_child_builtin(cmd->args[0]))
+		execute_builtin(cmd->args, env);
 	else
-		execute_external_command(cmd, args, env);
+		execute_external_command(cmd, env);
 }
-
-/*
- * main to test
-int main(int argc, char **argv, char **envp)
-{
-    if (argc < 2)
-    {
-        printf("Usage: %s <command> [args]\n", argv[0]);
-        return (1);
-    }
-    execute_command(argv[1], &argv[1], envp);
-    return (0);
-}
-*/

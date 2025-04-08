@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 12:06:15 by mcalciat          #+#    #+#             */
-/*   Updated: 2025/04/02 16:57:57 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/08 12:26:50 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,15 @@ t_env	*create_env_node(char *env_entry)
 		return (free(node), NULL);
 	key_len = equal_sign - env_entry;
 	node->key = ft_substr(env_entry, 0, key_len);
+	if (!node->key)
+		return (free(node), NULL);
 	node->value = ft_strdup(equal_sign + 1);
+	if (!node->value)
+	{
+		free(node->key);
+		free(node);
+		return (NULL);
+	}
 	node->next = NULL;
 	return (node);
 }
@@ -88,12 +96,13 @@ t_env	*init_env(char **envp)
 	t_env	*head;
 	t_env	*current;
 	int		i;
+	t_env	*new_node;
 
 	i = 0;
 	head = NULL;
 	while (envp[i])
 	{
-		t_env *new_node = create_env_node(envp[i]);
+		new_node = create_env_node(envp[i]);
 		if (!new_node)
         {
             free_env_list(head);

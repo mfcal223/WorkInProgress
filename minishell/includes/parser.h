@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpiantan <mpiantan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 14:14:38 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/04 11:52:13 by mpiantan         ###   ########.fr       */
+/*   Updated: 2025/04/08 10:47:38 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ typedef struct s_redir
 typedef struct s_cmd
 {
 	char			**args;
+	char			*path;
 	int				input_fd;
 	int				output_fd;
 	int				pipe;
@@ -53,7 +54,7 @@ char	*get_variable_name(const char *input, t_expand *exp);
 char	*get_variable_value(char *str, t_env *env);
 
 //parser/expander.c
-char	*init_expansion(t_expand *exp, char *input);
+char	*init_expansion(t_expand *exp);
 int		handle_quotes(char current, t_expand *exp);
 char	*replace_variable(char *input, t_expand *exp, int *i, t_env *env);
 char	*expand_variable(char	*input, int input_len, t_env *env);

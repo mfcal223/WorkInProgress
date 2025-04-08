@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 13:39:39 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/07 14:17:08 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/08 10:49:01 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@
  * * Sets result index to 0
  */
 
-char	*init_expansion(t_expand *exp, char *input)
+char	*init_expansion(t_expand *exp)
 {
-	exp->result = malloc (ft_strlen(input) + 1);
+	exp->result = malloc (1024);
 	if (!exp->result)
 		return (NULL);
 	exp->result_id = 0;
@@ -99,7 +99,7 @@ char	*expand_variable(char *input, int input_len, t_env *env)
 	int			i;
 	t_expand	exp;
 
-	if (!init_expansion(&exp, input))
+	if (!init_expansion(&exp))
 		return (NULL);
 	i = 0;
 	while (i < input_len)
@@ -144,7 +144,7 @@ int	main()
         int		input_len = ft_strlen(inputs[i]);
 		printf("\nTest case %d:\n", i + 1);
         printf("Input: %s\n", inputs[i]);
-        expanded = expand_string(inputs[i], last_exit_status, input_len);
+        expanded = expand_variable(inputs[i], input_len, env_list);
         printf("Expanded: %s\n", expanded);
         free(expanded);
 		i++;
