@@ -2,6 +2,104 @@ https://www.gnu.org/software/bash/manual/bash.html
 https://www.cs.purdue.edu/homes/grr/SystemsProgrammingBook/Book/Chapter5-WritingYourOwnShell.pdf
 https://github.com/gleal42/42_Minishell/tree/master
 ===========================================================
+SYNTAX Test
+----------------------------
+>$ >
+
+==683396== Syscall param openat(filename) points to unaddressable byte(s)
+==683396==    at 0x49E753B: open (open64.c:41)
+==683396==    by 0x4042DF: parse_cmd (parser.c:94)
+==683396==    by 0x4044C7: parse_tokens (parser.c:150)
+==683396==    by 0x4014C1: process_input (minishell.c:95)
+==683396==    by 0x4015E1: main (minishell.c:136)
+==683396==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==683396== 
+==683396== Conditional jump or move depends on uninitialised value(s)
+==683396==    at 0x40424B: parse_cmd (parser.c:91)
+==683396==    by 0x4044C7: parse_tokens (parser.c:150)
+==683396==    by 0x4014C1: process_input (minishell.c:95)
+==683396==    by 0x4015E1: main (minishell.c:136)
+==683396== 
+==683396== Conditional jump or move depends on uninitialised value(s)
+==683396==    at 0x40450F: parse_tokens (parser.c:157)
+==683396==    by 0x4014C1: process_input (minishell.c:95)
+==683396==    by 0x4015E1: main (minishell.c:136)
+==683396== 
+==683396== Conditional jump or move depends on uninitialised value(s)
+==683396==    at 0x4044B5: parse_tokens (parser.c:148)
+==683396==    by 0x4014C1: process_input (minishell.c:95)
+==683396==    by 0x4015E1: main (minishell.c:136)
+
+'
+
+minishell$ <
+
+==683396== Syscall param openat(filename) points to unaddressable byte(s)
+==683396==    at 0x49E753B: open (open64.c:41)
+==683396==    by 0x404399: parse_cmd (parser.c:100)
+==683396==    by 0x4044C7: parse_tokens (parser.c:150)
+==683396==    by 0x4014C1: process_input (minishell.c:95)
+==683396==    by 0x4015E1: main (minishell.c:136)
+==683396==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+
+'
+
+minishell$ >>|<<
+==686109== Syscall param openat(filename) points to unaddressable byte(s)
+==686109==    at 0x49E753B: open (open64.c:41)
+==686109==    by 0x404399: parse_cmd (parser.c:100)
+==686109==    by 0x4044C7: parse_tokens (parser.c:150)
+==686109==    by 0x4014C1: process_input (minishell.c:95)
+==686109==    by 0x4015E1: main (minishell.c:136)
+==686109==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==686109== 
+==686109== Conditional jump or move depends on uninitialised value(s)
+==686109==    at 0x40424B: parse_cmd (parser.c:91)
+==686109==    by 0x4044C7: parse_tokens (parser.c:150)
+==686109==    by 0x4014C1: process_input (minishell.c:95)
+==686109==    by 0x4015E1: main (minishell.c:136)
+==686109== 
+==686109== Conditional jump or move depends on uninitialised value(s)
+==686109==    at 0x40450F: parse_tokens (parser.c:157)
+==686109==    by 0x4014C1: process_input (minishell.c:95)
+==686109==    by 0x4015E1: main (minishell.c:136)
+==686109== 
+==686109== Conditional jump or move depends on uninitialised value(s)
+==686109==    at 0x4044B5: parse_tokens (parser.c:148)
+==686109==    by 0x4014C1: process_input (minishell.c:95)
+==686109==    by 0x4015E1: main (minishell.c:136)
+
+'
+
+minishell$ .
+execve failed: Permission denied
+==687989== 
+==687989== HEAP SUMMARY:
+==687989==     in use at exit: 216,854 bytes in 500 blocks
+==687989==   total heap usage: 1,494 allocs, 994 frees, 309,540 bytes allocated
+==687989== 
+==687989== LEAK SUMMARY:
+==687989==    definitely lost: 0 bytes in 0 blocks
+==687989==    indirectly lost: 0 bytes in 0 blocks
+==687989==      possibly lost: 0 bytes in 0 blocks
+==687989==    still reachable: 216,854 bytes in 500 blocks
+==687989==         suppressed: 0 bytes in 0 blocks
+==687989== Rerun with --leak-check=full to see details of leaked memory
+==687989== 
+==687989== For lists of detected and suppressed errors, rerun with: -s
+==687989== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+[EXIT STATUS] signal = 0, status = 32256
+
+
+same thing for:
+minishell$ ..
+execve failed: Permission denied
+
+🔥🔥🔥🔥🔥🔥🔥
+>$ unset PATH
+>$ env 
+segmentation fault when reaching PATH
+hay que agregar un check a que si el pointer es null no lo imprima env y/O ver que unset deje el pointer null
 
 
 1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣🔟❔❓⛔✅❎‼️🚫❗❌⭕✔️

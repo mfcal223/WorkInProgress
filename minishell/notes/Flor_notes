@@ -545,7 +545,7 @@ BRIEF EXPLANATION REGADING
 🔺Creates a child process that is an almost-exact copy of the parent, but after the fork, the parent and child can run independently.
 🔺Returns:
 	🔹0 in the child
-	🔹The child's pid in the parent
+	🔹The child`s pid in the parent
 	🔹-1 if it fails
 
 💻 execve()
@@ -554,7 +554,7 @@ BRIEF EXPLANATION REGADING
 It does not create a new process; it only changes the current process's behavior.
 🔺 Must be used only in the child, otherwise you kill your shell.
 
-💡Process Image: it's all the information the operating system uses to manage and execute a process, including code, data, open files, and environment variables.
+💡Process Image: it`s all the information the operating system uses to manage and execute a process, including code, data, open files, and environment variables.
 
 
 🔗 Pipes (pipe(fd[2]))
@@ -672,7 +672,7 @@ It duplicates a file descriptor: makes [new_fd] now refer to the same thing as [
 If new_fd already exists, it is closed first.
 It returns new_fd, or -1 on error
 
-💡 Why it's useful:
+💡 Why it`s useful:
 You can redirect input/output like this:
 
 dup2(pipe_read_fd, STDIN_FILENO);  // Make stdin read from a pipe
@@ -683,13 +683,13 @@ You have a struct t_pipe with:
 		pipes->pipefd[i][0] = read end of pipe i
 		pipes->pipefd[i][1] = write end of pipe i
 
-You're in a loop that runs once per command in a pipeline.
+You`re in a loop that runs once per command in a pipeline.
 Let’s break down the logic:
 
 ✅ Case: First command (i == 0)
 		dup2(pipes->pipefd[0][1], STDOUT_FILENO);
 
-You're saying:
+You`re saying:
 “Instead of writing to the terminal (stdout), write into pipe 0.”
 
 So:
@@ -699,7 +699,7 @@ So:
 
 		dup2(pipes->pipefd[i - 1][0], STDIN_FILENO);
 
-You're saying:
+You`re saying:
 	“Instead of reading from the terminal (stdin), read from pipe i-1.”
 
 So:
@@ -710,7 +710,7 @@ So:
 		dup2(pipes->pipefd[i - 1][0], STDIN_FILENO);
 		dup2(pipes->pipefd[i][1], STDOUT_FILENO);
 
-You're saying:
+You`re saying:
 		“Read from the previous pipe, write to the next pipe.”
 
 So:
@@ -734,7 +734,7 @@ That’s why you call "close_pipes(pipes);" right after the dup2() calls.
 ** - Resolves the command’s executable path via check_command_path().
 ** - Converts the linked list `env` into a `char **envp` array for execve().
 ** - Forks a child process using fork_and_execute().
-** - Waits for the child and updates the shell's exit status.
+** - Waits for the child and updates the shell`s exit status.
 ** - Cleans up all allocated memory.
 **
 ** Only used for non-builtin commands like:
@@ -747,7 +747,7 @@ That’s why you call "close_pipes(pipes);" right after the dup2() calls.
 cmd_path = check_command_path(cmd);
 If the command is /bin/ls, ./myscript, or ls, this function tries to find the full path.
 It may return:
-- cmd itself (if it's already a full path)
+- cmd itself (if it`s already a full path)
 - A dynamically allocated string (e.g. /bin/ls)
 - NULL → if not found (in that case, the function prints an error)
 
@@ -1146,85 +1146,6 @@ Editar
 bash test_minishell_expansion.sh ./minishell
 
 --------------------
-#!/bin/bash
-
-# Usage: ./test_minishell_expansion.sh ./minishell
-MINISHELL=$1
-
-if [ ! -x "$MINISHELL" ]; then
-	echo "Usage: $0 /path/to/minishell"
-	exit 1
-fi
-
-TMP1=$(mktemp)
-TMP2=$(mktemp)
-
-# Test cases: each test is a command to run
-TESTS=(
-	"echo hello"
-	"echo \$?"
-	"false"
-	"echo \$?"
-	"idontexist"
-	"echo \$?"
-	"echo \$HOME"
-	"echo \$HOME \$USER"
-	"echo \"Welcome, \$USER!\""
-	"echo '\$HOME'"
-	"echo \"\$HOME\""
-	"echo \"'\$HOME'\""
-	"false | true"
-	"echo \$?"
-	"true | false"
-	"echo \$?"
-	"echo \$? > out.txt && cat out.txt"
-	"echo \"Exit status was \$?\""
-)
-
-echo "Running tests against Bash and your Minishell..."
-echo
-
-for i in "${!TESTS[@]}"; do
-	CMD="${TESTS[$i]}"
-	echo "$CMD" | bash > "$TMP1" 2>&1
-	echo "$CMD" | "$MINISHELL" > "$TMP2" 2>&1
-
-	echo "🔹 Test $((i+1)): $CMD"
-	diff -u "$TMP1" "$TMP2" > /dev/null
-	if [ $? -eq 0 ]; then
-		echo "✅ Output matches"
-	else
-		echo "❌ Output differs:"
-		echo "--- Bash"
-		cat "$TMP1"
-		echo "--- Minishell"
-		cat "$TMP2"
-	fi
-	echo
-done
-
-rm "$TMP1" "$TMP2"
---------------------------
-
-🧪 What It Does:
-Runs each command in both Bash and your Minishell
-
-Captures their outputs to temporary files
-
-Compares them using diff
-
-✅ Marks it ✅ or ❌ and prints differences
-
-🛠 Requirements
-Make sure your minishell:
-
-Accepts a single-line command via stdin (echo "cmd" | ./minishell)
-
-Doesn’t print extra prompts when piped
-
-Otherwise, modify your minishell to disable prompt when not interactive (check isatty(STDIN_FILENO))
-
-
 
 ===============================================
 PROBLEM WITH TESTER:
@@ -1377,10 +1298,44 @@ minishell$ echo $USER | wc -l
 
 ---
 
-Let me know if you'd like this as a `.txt` or `.md` file to send or track in Git!
+Work done 09/04
+-----------------
 
+1) Made a copy of the Excell test cases, applied format and features for organization.
+2) Testing syntax group of input.
 
+Test			Expected Status					Fix
+Spaces only			0						ft_strtrim() and check if empty
+Tabs only			0						Same as above
+:					0						Treat as builtin noop
+!					1						Handle as unsupported (event not found)
+#					0						Treat as comment (ignore)
 
+2.1 ) Create a new file utils_input.c where I added a handler for this special situation. Prototypes have been added in parser.hace
+2.2 ) fixing cases with Invalid Redirections ">" or "<" alone (no other chars)
 
+🔍 Should These Be Handled Before the Parser?
+No. These cases are syntactically valid enough to be tokenized (e.g., > is a token).
+But invalid at parsing time (because a file/token is expected after redirection).
+So: ✅ These should be handled in the parser, not before it.
 
+summary of handling:
+Case				Handle In	How to fix
+------------------------------------------------------------------------------------
+>, <, >>, 			parser.c	Check tokens[i + 1] exists before opening
+					parser2.c		modified parse_cmd() to include the check for filename or token (and parse_tokens() to pass t_env)
+								Created parser2.c to include all functions 42Norm complaint.
 
+>>>, <<<, ><, etc.	lexer.c		Detect invalid token length > 2 and reject with syntax error
+
+<<					nowhere (is for heredoc which has not been implemented just yet)
+
+Explanation: fixing >, <, >>, issues:
+-----------------------------------------
+$> >
+bash: syntax error near unexpected token `newline`
+This means: bash expects a file or word after > and found nothing — hence the syntax error.
+
+So, a function to check that was added for each of the cases of redirection.
+(when heredoc is added it should be added here too)
+This helper function validates the presence of a filename or token after a redirection operator like >, >>, or <.

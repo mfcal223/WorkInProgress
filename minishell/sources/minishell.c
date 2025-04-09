@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/24 14:44:00 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/08 16:55:50 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/09 16:14:17 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,8 @@ void	process_input(char *input, t_env *env)
 	char	**tokens;
 	t_cmd	*cmd_list;
 
+	if (handle_special_cases(input, env))
+		return ;
 	tokens = lexer(input);
 	if (!tokens)
 	{
@@ -92,7 +94,7 @@ void	process_input(char *input, t_env *env)
 		return ;
 	}
 	expand_tokens(tokens, env);
-	cmd_list = parse_tokens(tokens);
+	cmd_list = parse_tokens(tokens, env);
 	if (!cmd_list)
 	{
 		perror("parser failed");

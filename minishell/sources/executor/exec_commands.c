@@ -59,10 +59,10 @@ pid_t	fork_and_execute(char *cmd_path, t_cmd *cmd, char **envp)
 	}
 	if (pid == 0)
 	{
-		printf("[DEBUG] Executing cmd: %s\n", cmd->args ? cmd->args[0] : "NULL"); //DEBUG PRINT
+		//printf("[DEBUG] Executing cmd: %s\n", cmd->args ? cmd->args[0] : "NULL"); //DEBUG PRINT
 		g_is_parent = 0;//global variable - signals behaviour for child processes
-		printf("[FORK] In child (pid = %d)\n", getpid());//DEBUG PRINT
-		printf("[FORK] In parent, waiting\n");//DEBUG PRINT
+		//printf("[FORK] In child (pid = %d)\n", getpid());//DEBUG PRINT
+		//printf("[FORK] In parent, waiting\n");//DEBUG PRINT
 		setup_signals_child(); // not sure this is the right place
 		if (cmd->redir)
 		{
@@ -78,7 +78,7 @@ pid_t	fork_and_execute(char *cmd_path, t_cmd *cmd, char **envp)
 			free(cmd_path);
 			if (errno == EACCES)
 				exit(126); // ✅ Not executable
-			exit (127);// don’t need to call exit(127) here / shouldn't happen if check_command_path worked
+			//exit (127);// don’t need to call exit(127) here / shouldn't happen if check_command_path worked
 		}
 	}
 	return (pid);

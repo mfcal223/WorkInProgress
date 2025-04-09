@@ -94,7 +94,7 @@ void	fork_pipes(t_pipe *pipes, t_cmd *cmd_list, t_env *env, int i)
 	if (pid == 0)
 	{
 		g_is_parent = 0;//global variable - signals behaviour for child processes
-		printf("[FORK] In child (pid = %d)\n In parent, waiting\n", getpid());//DEBUG PRINT
+		//printf("[FORK] In child (pid = %d)\n In parent, waiting\n", getpid());//DEBUG PRINT
 		if (i == 0 && pipes->pipe_count > 0)
 			dup2(pipes->pipefd[i][1], STDOUT_FILENO);
 		else if (i == pipes->pipe_count)
@@ -137,7 +137,7 @@ void	execute_pipeline(t_cmd *cmd_list, t_env *env)
 			cmd_list = cmd_list->next;
 			continue;
 		}
-		printf("[DEBUG] Forking cmd: %s\n", cmd_list->args[0]); // 🧠 DEBUG PRINT
+		//printf("[DEBUG] Forking cmd: %s\n", cmd_list->args[0]); // 🧠 DEBUG PRINT
 		fork_pipes(&pipes, cmd_list, env, i);
 		cmd_list = cmd_list->next;
 		i++;

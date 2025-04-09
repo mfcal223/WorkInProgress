@@ -6,7 +6,7 @@
 /*   By: mcalciat <mcalciat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 13:39:39 by mpiantan          #+#    #+#             */
-/*   Updated: 2025/04/08 10:49:01 by mcalciat         ###   ########.fr       */
+/*   Updated: 2025/04/09 13:34:47 by mcalciat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ char	*init_expansion(t_expand *exp)
 int	handle_quotes(char current, t_expand *exp)
 {
 	if (current == '\'' && !exp->double_quotes)
-		exp->single_quotes = !exp->single_quotes;
+			exp->single_quotes = !exp->single_quotes;
 	else if (current == '\"' && !exp->single_quotes)
 		exp->double_quotes = !exp->double_quotes;
 	return (0);
@@ -63,7 +63,7 @@ char	*replace_variable(char *input, t_expand *exp, int *i, t_env *env)
 	int		var_len;
 	int		j;
 
-	if (exp->single_quotes)
+	if (exp->single_quotes && !exp->double_quotes)
 	{
 		exp->result[(exp->result_id)++] = input[(*i)++];
 		return (exp->result);
@@ -105,8 +105,8 @@ char	*expand_variable(char *input, int input_len, t_env *env)
 	while (i < input_len)
 	{
 		handle_quotes(input[i], &exp);
-		if (input[i] == '$' && input[i + 1] && (ft_isalnum(input[i + 1])
-				|| input[i + 1] == '_' || input[i + 1] == '?'))
+		if ((input[i] == '$' && input[i + 1] && (ft_isalnum(input[i + 1])
+				|| input[i + 1] == '_' || input[i + 1] == '?')))
 		{
 			if (!replace_variable(input, &exp, &i, env))
 			{
@@ -116,9 +116,12 @@ char	*expand_variable(char *input, int input_len, t_env *env)
 		}
 		else
 		{
-			if (!(input[i] == '"' && !exp.single_quotes))
-				exp.result[(exp.result_id)++] = input[i];
-			i++;
+			if ((input[i] == '\"') || (input[i] == '\'' && !exp.double_quotes))
+			{
+				i++;
+				continue ;
+			}
+			exp.result[(exp.result_id)++] = input[i++];
 		}
 	}
 	exp.result[exp.result_id] = '\0';
